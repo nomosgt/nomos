@@ -1,0 +1,493 @@
+"use client";
+
+import { motion, useInView } from "framer-motion";
+import { useRef, useState } from "react";
+import { Container } from "@/components/ui/section";
+import { Reveal } from "@/components/motion/reveal";
+import { ESTADOS_PATHS } from "./estados-paths";
+import { CAPITAL_POS } from "./capital-pos";
+
+/**
+ * MAPA DO BRASIL — coordenadas geográficas REAIS convertidas para viewBox.
+ *
+ * Sistema:
+ *   x = (lon + 74) * 13.5    // lon -74 → x=0; lon -34 → x=540
+ *   y = (5.5 - lat) * 15     // lat +5.5 → y=0; lat -34 → y=592
+ *
+ * Path com ~50 pontos cobrindo todos os marcos geográficos:
+ *   - Monte Caburaí (RR, extremo norte)
+ *   - Serra do Divisor (AC, extremo oeste)
+ *   - Arroio Chuí (RS, extremo sul)
+ *   - Ponta do Seixas (PB, extremo leste)
+ *   - Bico do Amapá, cotovelo do Nordeste, costa BA→ES→RJ→SP, afunilamento RS
+ *
+ * 27 capitais com lat/lon reais do IBGE.
+ */
+
+interface Capital {
+  uf: string;
+  nome: string;
+  cidade: string;
+  lat: number;
+  lon: number;
+  sede?: boolean;
+}
+
+// Conversão lat/lon → viewBox
+const toX = (lon: number) => (lon + 74) * 13.5;
+const toY = (lat: number) => (5.5 - lat) * 15;
+
+// 27 capitais brasileiras com coordenadas reais (IBGE)
+const CAPITAIS_RAW: Omit<Capital, never>[] = [
+  // NORTE
+  { uf: "AC", nome: "Acre", cidade: "Rio Branco", lat: -9.97, lon: -67.81 },
+  { uf: "AM", nome: "Amazonas", cidade: "Manaus", lat: -3.12, lon: -60.02 },
+  { uf: "AP", nome: "Amapá", cidade: "Macapá", lat: 0.04, lon: -51.07 },
+  { uf: "PA", nome: "Pará", cidade: "Belém", lat: -1.46, lon: -48.49 },
+  { uf: "RO", nome: "Rondônia", cidade: "Porto Velho", lat: -8.76, lon: -63.9 },
+  { uf: "RR", nome: "Roraima", cidade: "Boa Vista", lat: 2.82, lon: -60.67 },
+  { uf: "TO", nome: "Tocantins", cidade: "Palmas", lat: -10.18, lon: -48.33 },
+  // NORDESTE
+  { uf: "AL", nome: "Alagoas", cidade: "Maceió", lat: -9.65, lon: -35.74 },
+  { uf: "BA", nome: "Bahia", cidade: "Salvador", lat: -12.97, lon: -38.51 },
+  { uf: "CE", nome: "Ceará", cidade: "Fortaleza", lat: -3.72, lon: -38.54 },
+  { uf: "MA", nome: "Maranhão", cidade: "São Luís", lat: -2.53, lon: -44.3 },
+  { uf: "PB", nome: "Paraíba", cidade: "João Pessoa", lat: -7.12, lon: -34.85 },
+  { uf: "PE", nome: "Pernambuco", cidade: "Recife", lat: -8.05, lon: -34.88 },
+  { uf: "PI", nome: "Piauí", cidade: "Teresina", lat: -5.09, lon: -42.8 },
+  { uf: "RN", nome: "Rio Grande do Norte", cidade: "Natal", lat: -5.79, lon: -35.21 },
+  { uf: "SE", nome: "Sergipe", cidade: "Aracaju", lat: -10.95, lon: -37.07 },
+  // CENTRO-OESTE
+  { uf: "DF", nome: "Distrito Federal", cidade: "Brasília", lat: -15.78, lon: -47.93 },
+  { uf: "GO", nome: "Goiás", cidade: "Goiânia", lat: -16.69, lon: -49.27 },
+  { uf: "MS", nome: "Mato Grosso do Sul", cidade: "Campo Grande", lat: -20.44, lon: -54.65 },
+  { uf: "MT", nome: "Mato Grosso", cidade: "Cuiabá", lat: -15.6, lon: -56.1 },
+  // SUDESTE
+  { uf: "ES", nome: "Espírito Santo", cidade: "Vitória", lat: -20.32, lon: -40.34 },
+  { uf: "MG", nome: "Minas Gerais", cidade: "Belo Horizonte", lat: -19.92, lon: -43.94 },
+  { uf: "RJ", nome: "Rio de Janeiro", cidade: "Rio de Janeiro", lat: -22.91, lon: -43.21 },
+  // SP — coordenadas exatas da Praça da Sé (marco zero da cidade de São Paulo)
+  { uf: "SP", nome: "São Paulo", cidade: "São Paulo", lat: -23.5505, lon: -46.6333, sede: true },
+  // SUL
+  { uf: "PR", nome: "Paraná", cidade: "Curitiba", lat: -25.43, lon: -49.27 },
+  { uf: "SC", nome: "Santa Catarina", cidade: "Florianópolis", lat: -27.59, lon: -48.55 },
+  { uf: "RS", nome: "Rio Grande do Sul", cidade: "Porto Alegre", lat: -30.03, lon: -51.23 },
+];
+
+// Para cada capital: usa a posição pré-calculada de CAPITAL_POS,
+// que garante via point-in-polygon que o dot cai dentro do polígono SVG do estado.
+// (Capitais costeiras como Rio, Salvador, Recife têm lat/lon real sobre o mar
+//  na geometria simplificada do SVG; capital-pos.ts as ajusta minimamente.)
+const CAPITAIS: (Capital & { x: number; y: number })[] = CAPITAIS_RAW.map(
+  (c) => ({ ...c, ...CAPITAL_POS[c.uf] }),
+);
+
+// Contorno do Brasil em sentido HORÁRIO partindo do extremo norte (Monte Caburaí, RR)
+// Cada ponto é (lat, lon) convertido. Pontos escolhidos para preservar
+// reconhecibilidade: bico do AP, cotovelo do Nordeste, costa BA, ponta do RS.
+const CONTORNO_BRASIL: [number, number][] = [
+  // Extremo norte (RR)
+  [5.27, -60.21], // Monte Caburaí
+  [4.5, -59.5],
+  [3.8, -59.7], // Monte Roraima
+  [3.0, -59.5],
+  [1.8, -59], // RR/Guiana sul
+  [1.5, -56.5], // PA/Suriname
+  [2.0, -54], // PA norte
+  [4.4, -51.7], // AP/Oiapoque norte
+  [3.5, -51.3], // Cabo Orange
+  [1.5, -50.5], // AP costa
+  [0.04, -51.07], // Macapá
+  // Costa norte (PA → MA)
+  [-0.5, -48.5], // PA/Belém
+  [-2.5, -44.3], // São Luís
+  [-2.8, -41.8], // Parnaíba
+  // Bico do Nordeste (CE → RN → PB → PE)
+  [-3.7, -38.5], // Fortaleza
+  [-5, -36], // RN norte
+  [-5.2, -35.4],
+  [-5.79, -35.21], // Natal
+  [-6.5, -34.95],
+  [-7.15, -34.79], // Ponta do Seixas (extremo leste)
+  [-8.05, -34.88], // Recife
+  [-9.65, -35.74], // Maceió
+  // Bahia → Espírito Santo → Rio → São Paulo
+  [-10.95, -37.07], // Aracaju
+  [-12.97, -38.51], // Salvador
+  [-15.5, -39], // Sul da BA
+  [-18, -39.5], // BA/ES
+  [-20.32, -40.34], // Vitória
+  [-22.91, -43.21], // Rio de Janeiro
+  [-23.5, -45.5], // SP norte
+  [-24.7, -47.5], // Paranaguá SP
+  [-25.5, -48.5], // PR litoral
+  [-27, -48.4], // SC norte
+  [-28, -48.6], // Florianópolis
+  [-29.7, -49.7], // SC/RS
+  [-30.5, -50.3], // Tramandaí
+  [-32, -52], // RS leste
+  [-33.74, -53.37], // Arroio Chuí (extremo sul)
+  // Fronteira oeste do RS (subindo)
+  [-33, -53.5],
+  [-31.5, -55.5], // Bagé
+  [-30, -57.5], // Uruguaiana
+  [-27.5, -55], // RS/Argentina
+  [-25.6, -54.5], // Foz do Iguaçu
+  [-24, -54.5], // PR oeste
+  [-22, -56], // MS sul
+  [-20, -57.5], // MS oeste
+  [-17.5, -58], // Pantanal
+  [-15, -60], // MT/Bolívia
+  [-13, -61], // RO/Bolívia
+  [-11, -65.5], // RO/Bolívia
+  [-10.5, -68], // AC/Bolívia
+  [-9, -69.5], // AC/Peru
+  [-9, -72.5],
+  [-7.55, -73.99], // Serra do Divisor (extremo oeste)
+  [-6, -73.5], // AM/Peru
+  [-4, -70.5], // AM/Peru
+  [-2.5, -69.8], // AM/Colômbia
+  [-0.5, -69.5], // Tríplice fronteira
+  [1, -69.8], // Pico da Neblina região
+  [1.5, -67], // AM/Venezuela
+  [3, -65], // RR/Venezuela
+  [4.5, -61.5], // Monte Roraima região
+  // Fecha no Monte Caburaí
+];
+
+const BRAZIL_PATH = CONTORNO_BRASIL.map(
+  ([lat, lon], i) => `${i === 0 ? "M" : "L"} ${toX(lon).toFixed(1)} ${toY(lat).toFixed(1)}`,
+).join(" ") + " Z";
+
+
+export function MapaBrasil() {
+  const ref = useRef<HTMLDivElement>(null);
+  const inView = useInView(ref, { once: true, margin: "-15%" });
+  const [hovered, setHovered] = useState<(typeof CAPITAIS)[number] | null>(null);
+  const active = hovered || CAPITAIS.find((c) => c.sede)!;
+  const sede = CAPITAIS.find((c) => c.sede)!;
+
+  return (
+    <section
+      ref={ref}
+      className="relative py-28 lg:py-40 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] overflow-hidden border-t border-[color:var(--color-paper)]/10"
+    >
+      <Container>
+        {/* Header */}
+        <div className="grid grid-cols-1 lg:grid-cols-[1fr_1.5fr] gap-12 lg:gap-20 items-end mb-16 lg:mb-20">
+          <div>
+            <div className="font-mono text-[10px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/50 mb-8 flex items-center gap-3">
+              <span className="h-px w-8 bg-[color:var(--color-brand-soft)]" />
+              Atuação nacional
+            </div>
+            <h2 className="font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight text-[color:var(--color-paper)]">
+              Sede em São Paulo.<br />
+              <span className="italic text-[color:var(--color-brand-soft)]">
+                Operação em todo o Brasil.
+              </span>
+            </h2>
+          </div>
+          <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-paper)]/65 max-w-md lg:justify-self-end">
+            Recuperações administrativas integralmente remotas. Ações judiciais
+            em qualquer vara federal ou estadual via parceria local quando
+            necessário. CFOs em SP têm reuniões presenciais.
+          </p>
+        </div>
+
+        <div className="grid grid-cols-1 lg:grid-cols-[1.6fr_1fr] gap-10 lg:gap-16 items-start">
+          {/* MAPA */}
+          <Reveal>
+            <div className="relative">
+              <svg
+                viewBox="0 0 560 620"
+                className="w-full h-auto"
+                aria-label="Mapa do Brasil com 27 capitais"
+              >
+                <defs>
+                  <pattern
+                    id="mapGrid"
+                    x="0"
+                    y="0"
+                    width="40"
+                    height="40"
+                    patternUnits="userSpaceOnUse"
+                  >
+                    <path
+                      d="M 40 0 L 0 0 0 40"
+                      fill="none"
+                      stroke="var(--color-paper)"
+                      strokeOpacity="0.04"
+                      strokeWidth="0.5"
+                    />
+                  </pattern>
+                </defs>
+
+                <rect width="560" height="620" fill="url(#mapGrid)" />
+
+                {/* Linha do Equador */}
+                <motion.line
+                  x1={toX(-74)}
+                  y1={toY(0)}
+                  x2={toX(-50)}
+                  y2={toY(0)}
+                  stroke="var(--color-paper)"
+                  strokeOpacity="0.1"
+                  strokeWidth="0.5"
+                  strokeDasharray="3 5"
+                  initial={{ pathLength: 0 }}
+                  animate={inView ? { pathLength: 1 } : {}}
+                  transition={{ duration: 1.5, delay: 2.4 }}
+                />
+                <motion.text
+                  x={toX(-74) + 4}
+                  y={toY(0) - 4}
+                  fill="var(--color-paper)"
+                  fillOpacity="0.28"
+                  fontSize="8"
+                  fontFamily="var(--font-mono), monospace"
+                  letterSpacing="1"
+                  initial={{ opacity: 0 }}
+                  animate={inView ? { opacity: 0.28 } : {}}
+                  transition={{ delay: 2.8 }}
+                >
+                  EQUADOR
+                </motion.text>
+
+                {/* Trópico de Capricórnio */}
+                <motion.line
+                  x1={toX(-58)}
+                  y1={toY(-23.5)}
+                  x2={toX(-39)}
+                  y2={toY(-23.5)}
+                  stroke="var(--color-paper)"
+                  strokeOpacity="0.1"
+                  strokeWidth="0.5"
+                  strokeDasharray="3 5"
+                  initial={{ pathLength: 0 }}
+                  animate={inView ? { pathLength: 1 } : {}}
+                  transition={{ duration: 1.5, delay: 2.5 }}
+                />
+                <motion.text
+                  x={toX(-58) + 4}
+                  y={toY(-23.5) - 4}
+                  fill="var(--color-paper)"
+                  fillOpacity="0.22"
+                  fontSize="7.5"
+                  fontFamily="var(--font-mono), monospace"
+                  letterSpacing="1"
+                  initial={{ opacity: 0 }}
+                  animate={inView ? { opacity: 0.22 } : {}}
+                  transition={{ delay: 2.9 }}
+                >
+                  TR. CAPRICÓRNIO
+                </motion.text>
+
+                {/* 27 estados — paths reais do IBGE/Natural Earth via @svg-maps/brazil,
+                    reprojetados para o mesmo sistema lat/lon do mapa NGT */}
+                <g>
+                  {Object.entries(ESTADOS_PATHS).map(([uf, info], i) => {
+                    const isHovered = hovered?.uf === uf;
+                    return (
+                      <motion.path
+                        key={`estado-${uf}`}
+                        d={info.d}
+                        fill="var(--color-paper)"
+                        fillOpacity={isHovered ? 0.14 : 0.05}
+                        stroke="var(--color-paper)"
+                        strokeOpacity="0.35"
+                        strokeWidth="0.6"
+                        strokeLinejoin="round"
+                        strokeLinecap="round"
+                        initial={{ opacity: 0, pathLength: 0 }}
+                        animate={
+                          inView ? { opacity: 1, pathLength: 1 } : {}
+                        }
+                        transition={{
+                          opacity: { duration: 0.6, delay: 0.4 + i * 0.04 },
+                          pathLength: {
+                            duration: 1.6,
+                            delay: 0.4 + i * 0.04,
+                            ease: [0.22, 1, 0.36, 1],
+                          },
+                        }}
+                        style={{ transition: "fill-opacity 220ms" }}
+                      />
+                    );
+                  })}
+                </g>
+
+
+                {/* Linhas hairline SP → todas as capitais */}
+                {CAPITAIS.filter((c) => !c.sede).map((c, i) => (
+                  <motion.line
+                    key={`line-${c.uf}`}
+                    x1={sede.x}
+                    y1={sede.y}
+                    x2={c.x}
+                    y2={c.y}
+                    stroke="var(--color-brand-soft)"
+                    strokeOpacity="0.1"
+                    strokeWidth="0.5"
+                    initial={{ pathLength: 0 }}
+                    animate={inView ? { pathLength: 1 } : {}}
+                    transition={{
+                      duration: 1.2,
+                      delay: 1.8 + i * 0.025,
+                      ease: [0.22, 1, 0.36, 1],
+                    }}
+                  />
+                ))}
+
+                {/* 27 capitais */}
+                {CAPITAIS.map((c, i) => {
+                  const isActive = active?.uf === c.uf;
+                  return (
+                    <g key={c.uf}>
+                      {c.sede && (
+                        <motion.circle
+                          cx={c.x}
+                          cy={c.y}
+                          r={8}
+                          fill="var(--color-brand-soft)"
+                          fillOpacity="0.4"
+                          animate={{ r: [8, 26, 8], fillOpacity: [0.4, 0, 0.4] }}
+                          transition={{
+                            duration: 2.6,
+                            repeat: Infinity,
+                            ease: "easeOut",
+                          }}
+                        />
+                      )}
+                      {isActive && !c.sede && (
+                        <motion.circle
+                          cx={c.x}
+                          cy={c.y}
+                          r={14}
+                          fill="var(--color-paper)"
+                          fillOpacity="0.18"
+                          initial={{ scale: 0 }}
+                          animate={{ scale: 1 }}
+                          transition={{ duration: 0.3 }}
+                        />
+                      )}
+                      <motion.circle
+                        cx={c.x}
+                        cy={c.y}
+                        r={c.sede ? 5 : isActive ? 4 : 2.5}
+                        fill={c.sede ? "var(--color-brand-soft)" : "var(--color-paper)"}
+                        fillOpacity={c.sede ? 1 : isActive ? 1 : 0.7}
+                        stroke={c.sede ? "var(--color-paper)" : "none"}
+                        strokeWidth={c.sede ? 0.5 : 0}
+                        initial={{ scale: 0, opacity: 0 }}
+                        animate={inView ? { scale: 1, opacity: 1 } : {}}
+                        transition={{
+                          duration: 0.4,
+                          delay: 1.2 + i * 0.03,
+                          ease: [0.22, 1, 0.36, 1],
+                        }}
+                        style={{
+                          cursor: "pointer",
+                          transition:
+                            "r 220ms cubic-bezier(.22,1,.36,1), fill-opacity 220ms",
+                        }}
+                        onMouseEnter={() => setHovered(c)}
+                        onMouseLeave={() => setHovered(null)}
+                      />
+                      {(c.sede || isActive) && (
+                        <motion.text
+                          x={c.x + 9}
+                          y={c.y + 4}
+                          fill="var(--color-paper)"
+                          fontSize="11"
+                          fontFamily="var(--font-mono), monospace"
+                          fontWeight="500"
+                          letterSpacing="1"
+                          initial={{ opacity: 0, x: c.x + 4 }}
+                          animate={{ opacity: 1, x: c.x + 9 }}
+                          transition={{ duration: 0.25 }}
+                        >
+                          {c.uf}
+                        </motion.text>
+                      )}
+                    </g>
+                  );
+                })}
+              </svg>
+
+              {/* Legenda mobile */}
+              <div className="lg:hidden mt-4 flex items-center justify-center gap-6 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/50">
+                <span className="flex items-center gap-2">
+                  <span className="w-2 h-2 rounded-full bg-[color:var(--color-brand-soft)]" />
+                  Sede SP
+                </span>
+                <span className="flex items-center gap-2">
+                  <span className="w-1.5 h-1.5 rounded-full bg-[color:var(--color-paper)]/60" />
+                  Capitais
+                </span>
+              </div>
+            </div>
+          </Reveal>
+
+          {/* PAINEL LATERAL */}
+          <div className="lg:sticky lg:top-32 space-y-8">
+            <div className="grid grid-cols-2 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
+              <div className="bg-[color:var(--color-ink)] p-6">
+                <div className="font-mono text-4xl lg:text-5xl tracking-tight text-[color:var(--color-paper)] leading-none">
+                  27
+                </div>
+                <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/55">
+                  Estados cobertos
+                </div>
+              </div>
+              <div className="bg-[color:var(--color-ink)] p-6">
+                <div className="font-mono text-4xl lg:text-5xl tracking-tight text-[color:var(--color-paper)] leading-none">
+                  100<span className="text-[color:var(--color-brand-soft)]">%</span>
+                </div>
+                <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/55">
+                  Cobertura nacional
+                </div>
+              </div>
+            </div>
+
+            <motion.div
+              key={active.uf}
+              initial={{ opacity: 0, y: 8 }}
+              animate={{ opacity: 1, y: 0 }}
+              transition={{ duration: 0.4, ease: [0.22, 1, 0.36, 1] }}
+              className="border border-[color:var(--color-paper)]/15 p-6 lg:p-8"
+            >
+              <div className="flex items-center justify-between mb-5">
+                <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-brand-soft)]">
+                  {active.sede ? "Sede" : "Atuação"}
+                </div>
+                <div className="font-mono text-[28px] tracking-tighter text-[color:var(--color-paper)] leading-none">
+                  {active.uf}
+                </div>
+              </div>
+              <h3 className="font-serif text-2xl lg:text-3xl tracking-tight text-[color:var(--color-paper)] mb-2">
+                {active.cidade}
+              </h3>
+              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-[color:var(--color-paper)]/55">
+                {active.nome}
+              </div>
+              <div className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-[color:var(--color-paper)]/35">
+                {active.lat.toFixed(2)}° · {active.lon.toFixed(2)}°
+              </div>
+              {active.sede && (
+                <div className="mt-6 pt-5 border-t border-[color:var(--color-paper)]/15 text-[13px] leading-relaxed text-[color:var(--color-paper)]/70">
+                  Reuniões presenciais com CFO em SP capital. Demais praças
+                  via parceria local + remoto.
+                </div>
+              )}
+            </motion.div>
+
+            <p className="text-[12px] leading-relaxed text-[color:var(--color-paper)]/45 max-w-sm">
+              Passe o mouse pelas capitais para detalhar.
+            </p>
+          </div>
+        </div>
+      </Container>
+    </section>
+  );
+}
+// end of MapaBrasil

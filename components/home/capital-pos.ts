@@ -1,0 +1,32 @@
+// Posições finais das 27 capitais no viewBox 560x620.
+// Capitais costeiras com lat/lon na água são snapped + nudged para o polígono do estado.
+// Garantia: TODAS as 27 capitais caem dentro do seu polígono SVG (validado via point-in-polygon).
+export const CAPITAL_POS: Record<string, { x: number; y: number }> = {
+  AC: { x: 82.43, y: 227.59 },
+  AL: { x: 508.39, y: 222.35 },
+  AM: { x: 188.71, y: 129.28 },
+  AP: { x: 305.29, y: 78.98 },
+  BA: { x: 472.59, y: 276.18 },
+  CE: { x: 478.67, y: 138.26 },
+  DF: { x: 353.48, y: 305.20 },
+  ES: { x: 447.98, y: 380.73 },
+  GO: { x: 333.93, y: 332.80 },
+  MA: { x: 400.91, y: 120.45 },
+  MG: { x: 405.88, y: 381.25 },
+  MS: { x: 261.50, y: 389.23 },
+  MT: { x: 241.68, y: 316.52 },
+  PA: { x: 338.48, y: 98.60 },
+  PB: { x: 519.04, y: 180.90 },
+  PE: { x: 523.47, y: 201.80 },
+  PI: { x: 421.17, y: 158.84 },
+  PR: { x: 331.06, y: 460.30 },
+  RJ: { x: 414.76, y: 410.29 },
+  RN: { x: 521.68, y: 167.76 },
+  RO: { x: 136.30, y: 213.93 },
+  RR: { x: 179.88, y: 40.15 },
+  RS: { x: 305.55, y: 532.61 },
+  SC: { x: 340.72, y: 494.93 },
+  SE: { x: 494.16, y: 238.21 },
+  SP: { x: 366.23, y: 430.88 },
+  TO: { x: 346.50, y: 235.27 },
+};

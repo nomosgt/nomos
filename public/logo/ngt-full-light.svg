@@ -1,0 +1,10 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 216 210" width="216" height="210" role="img" aria-label="NOMOS GT">
+  <title>NOMOS GT</title>
+  
+  <rect x="0" y="0" width="100" height="100" fill="#EAEBEF"></rect>
+  <rect x="106" y="0" width="4" height="100" fill="#EAEBEF"></rect>
+  <text x="166" y="66" text-anchor="middle" font-family="&#39;Bodoni Moda&#39;, &#39;Bodoni 72&#39;, Didot, &#39;Times New Roman&#39;, serif" font-size="48" font-weight="500" letter-spacing="1" fill="#EAEBEF" style="font-feature-settings: &#39;liga&#39;, &#39;kern&#39;;">NGT</text>
+  <rect x="0" y="110" width="100" height="100" fill="#EAEBEF"></rect>
+  <rect x="106" y="110" width="4" height="100" fill="#EAEBEF"></rect>
+  <rect x="116" y="110" width="100" height="100" fill="#EAEBEF"></rect>
+</svg>
