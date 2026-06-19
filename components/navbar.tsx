@@ -65,9 +65,9 @@ export function Navbar() {
 
             <div className="hidden lg:flex items-center gap-5">
               <Link
-                href="/admin/login"
+                href="/acesso"
                 className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)] transition-colors"
-                aria-label="Acessar área restrita"
+                aria-label="Acessar área restrita (admin ou cliente)"
               >
                 ◇ Área restrita
               </Link>
@@ -145,7 +145,7 @@ export function Navbar() {
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
                 <Link
-                  href="/admin/login"
+                  href="/acesso"
                   onClick={() => setOpen(false)}
                   className="block w-full text-center font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)] transition-colors py-2"
                 >

@@ -105,7 +105,7 @@ export function Footer() {
           </div>
           <div className="flex items-center gap-5">
             <Link
-              href="/admin/login"
+              href="/acesso"
               className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)] transition-colors"
             >
               ◇ Área restrita

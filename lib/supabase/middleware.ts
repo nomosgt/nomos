@@ -1,17 +1,9 @@
 import { createServerClient } from "@supabase/ssr";
 import { NextResponse, type NextRequest } from "next/server";
 
-/**
- * Refresh da sessão Supabase a cada request.
- * Chamado pelo middleware.ts da raiz.
- *
- * Também protege rotas /admin/* — redireciona pra /admin/login se não logado.
- * Rotas /admin/login ficam sempre acessíveis.
- */
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  // Sem env vars → não tenta autenticar (build local sem Supabase configurado)
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -40,14 +32,13 @@ export async function updateSession(request: NextRequest) {
     },
   );
 
-  // IMPORTANTE: getUser() força revalidação do JWT.
   const {
     data: { user },
   } = await supabase.auth.getUser();
 
   const path = request.nextUrl.pathname;
 
-  // Proteção do /admin (exceto /admin/login)
+  // /admin/* (exceto login) — só admins
   if (path.startsWith("/admin") && !path.startsWith("/admin/login")) {
     if (!user) {
       const url = request.nextUrl.clone();
@@ -55,14 +46,11 @@ export async function updateSession(request: NextRequest) {
       url.searchParams.set("next", path);
       return NextResponse.redirect(url);
     }
-
-    // Verifica se o user tem perfil de admin
     const { data: profile } = await supabase
       .from("admin_profiles")
       .select("role")
       .eq("user_id", user.id)
       .maybeSingle();
-
     if (!profile) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin/login";
@@ -71,8 +59,29 @@ export async function updateSession(request: NextRequest) {
     }
   }
 
-  // Já logado tentando ir pro /admin/login → redireciona pro dashboard
-  if (path.startsWith("/admin/login") && user) {
+  // /sala/* (exceto login) — só clientes
+  if (path.startsWith("/sala") && !path.startsWith("/sala/login")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/sala/login";
+      url.searchParams.set("next", path);
+      return NextResponse.redirect(url);
+    }
+    const { data: clientProfile } = await supabase
+      .from("client_profiles")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!clientProfile) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/sala/login";
+      url.searchParams.set("erro", "sem_permissao");
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Já logado tentando ir pra tela de login — redireciona pro painel
+  if (path === "/admin/login" && user) {
     const { data: profile } = await supabase
       .from("admin_profiles")
       .select("user_id")
@@ -81,6 +90,19 @@ export async function updateSession(request: NextRequest) {
     if (profile) {
       const url = request.nextUrl.clone();
       url.pathname = "/admin";
+      url.search = "";
+      return NextResponse.redirect(url);
+    }
+  }
+  if (path === "/sala/login" && user) {
+    const { data: clientProfile } = await supabase
+      .from("client_profiles")
+      .select("user_id")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (clientProfile) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/sala";
       url.search = "";
       return NextResponse.redirect(url);
     }

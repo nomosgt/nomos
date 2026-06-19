@@ -27,6 +27,7 @@ export function ContatoForm() {
       empresa: String(fd.get("empresa") || ""),
       cargo: String(fd.get("cargo") || ""),
       mensagem: String(fd.get("mensagem") || ""),
+      resultado_simulacao: String(fd.get("resultado_simulacao") || ""),
       honeypot: String(fd.get("website") || ""), // honeypot field
       origem: "contato",
     };
@@ -131,6 +132,29 @@ export function ContatoForm() {
                       />
                       {fieldErrors.mensagem && (
                         <p className="mt-2 text-[11px] text-red-600">{fieldErrors.mensagem}</p>
+                      )}
+                    </div>
+                  </div>
+
+                  {/* Campo opcional sobre simulação */}
+                  <div className="bg-[color:var(--color-hairline)] border-x border-b border-[color:var(--color-hairline)] p-px">
+                    <div className={`bg-[color:var(--color-background)] p-6 lg:p-8 ${fieldErrors.resultado_simulacao ? "ring-1 ring-red-500/40" : ""}`}>
+                      <label className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-1 block">
+                        Resultado da simulação
+                        <span className="ml-2 text-[color:var(--color-ink-faint)] normal-case tracking-normal">(opcional)</span>
+                      </label>
+                      <p className="text-[12px] text-[color:var(--color-ink-faint)] mb-3 leading-relaxed">
+                        Caso tenha feito a simulação, conte seu resultado — ajuda a gente a entrar na conversa já alinhado.
+                      </p>
+                      <textarea
+                        name="resultado_simulacao"
+                        rows={3}
+                        maxLength={1000}
+                        placeholder="Ex: R$ 12M de potencial estimado · Lucro Real · setor logística"
+                        className="w-full bg-transparent text-[15px] text-[color:var(--color-ink)] placeholder:text-[color:var(--color-ink-faint)] focus:outline-none resize-none"
+                      />
+                      {fieldErrors.resultado_simulacao && (
+                        <p className="mt-2 text-[11px] text-red-600">{fieldErrors.resultado_simulacao}</p>
                       )}
                     </div>
                   </div>

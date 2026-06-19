@@ -44,6 +44,12 @@ export const contatoSchema = z.object({
     .optional()
     .or(z.literal("")),
 
+  resultado_simulacao: z
+    .string()
+    .max(1000, "Resumo muito longo")
+    .optional()
+    .or(z.literal("")),
+
   origem: z.string().max(60).optional(),
 
   // Honeypot anti-bot — deve ficar vazio. Bots automaticos preenchem.

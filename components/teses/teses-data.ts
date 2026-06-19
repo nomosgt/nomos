@@ -7,6 +7,15 @@ export type Status =
 export type Esfera = "federal" | "estadual" | "municipal";
 export type Via = "judicial" | "administrativa";
 export type Risco = "verde" | "amarelo" | "vermelho";
+export type Setor =
+  | "industria"
+  | "comercio"
+  | "servicos"
+  | "logistica"
+  | "agronegocio"
+  | "energia"
+  | "todos";
+export type Regime = "real" | "presumido" | "ambos";
 
 export interface Tese {
   slug: string;
@@ -20,7 +29,32 @@ export interface Tese {
   resumo: string;
   analise: string;
   base: string;
+  /** Setores onde a tese costuma ser mais aplicável */
+  setores?: Setor[];
+  /** Regime tributário típico de aplicabilidade */
+  regimes?: Regime[];
+  /** Flag pra marcar a "tese em destaque" do banco */
+  destaque?: boolean;
 }
+
+export const SETOR_LABEL: Record<Setor, string> = {
+  industria: "Indústria",
+  comercio: "Comércio",
+  servicos: "Serviços",
+  logistica: "Logística",
+  agronegocio: "Agronegócio",
+  energia: "Energia",
+  todos: "Multi-setor",
+};
+
+export const SETORES_LIST: { value: Setor; label: string }[] = [
+  { value: "industria", label: "Indústria" },
+  { value: "comercio", label: "Comércio" },
+  { value: "servicos", label: "Serviços" },
+  { value: "logistica", label: "Logística" },
+  { value: "agronegocio", label: "Agronegócio" },
+  { value: "energia", label: "Energia" },
+];
 
 export const STATUS_LABEL: Record<Status, string> = {
   vigor: "Em vigor",
@@ -71,6 +105,9 @@ export const TESES: Tese[] = [
     via: "judicial",
     risco: "verde",
     ano: 2017,
+    setores: ["todos"],
+    regimes: ["real", "presumido"],
+    destaque: true,
     resumo:
       "A 'tese do século'. O STF firmou que o ICMS, por não compor faturamento, deve ser excluído da base do PIS e da COFINS. Crédito retroativo de 5 anos.",
     analise:
@@ -297,6 +334,7 @@ export const TESES: Tese[] = [
     via: "administrativa",
     risco: "verde",
     ano: 2018,
+    setores: ["industria", "logistica"],
     resumo:
       "STJ adotou o critério de essencialidade e relevância para definir insumos creditáveis de PIS/COFINS — conceito muito mais amplo que o restritivo da Receita.",
     analise:

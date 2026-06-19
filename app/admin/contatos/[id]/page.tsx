@@ -88,6 +88,17 @@ export default async function ContatoDetalhe({
         </div>
       )}
 
+      {contato.resultado_simulacao && (
+        <div className="border border-[color:var(--color-brand)]/30 bg-[color:var(--color-brand)]/5 p-6">
+          <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)] mb-3">
+            Resultado declarado da simulação
+          </div>
+          <p className="text-[14px] leading-relaxed text-[color:var(--color-ink)] whitespace-pre-wrap">
+            {contato.resultado_simulacao}
+          </p>
+        </div>
+      )}
+
       {simulacao && (
         <div className="border border-[color:var(--color-brand)]/30 bg-[color:var(--color-brand)]/5 p-6">
           <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)] mb-3">

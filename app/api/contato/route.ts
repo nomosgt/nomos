@@ -64,6 +64,7 @@ export async function POST(req: Request) {
       cargo: data.cargo || null,
       faturamento_estimado: data.faturamento_estimado || null,
       mensagem: data.mensagem || null,
+      resultado_simulacao: data.resultado_simulacao || null,
       origem: data.origem || "contato",
       user_agent: req.headers.get("user-agent")?.slice(0, 400) || null,
       ip_hash: ipHash,

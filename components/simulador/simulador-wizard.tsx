@@ -7,7 +7,6 @@ import { ArrowRight, ArrowLeft, ArrowUpRight, RotateCcw } from "lucide-react";
 import { Container } from "@/components/ui/section";
 import { formatBRL } from "@/lib/utils";
 import { CountUp } from "@/components/motion/count-up";
-import { DonutBreakdown } from "@/components/simulador/donut-breakdown";
 
 type Setor = "industria" | "comercio" | "servicos" | "logistica" | "tecnologia" | "outros";
 type Regime = "presumido" | "real";
@@ -475,29 +474,53 @@ export function SimuladorWizard() {
                   Potencial estimado de recuperação:
                 </h2>
 
+                {/* Número grande, sem composição, sem explicação — desperta curiosidade */}
                 <div className="mt-10 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] p-8 lg:p-16 grain relative overflow-hidden">
-                  <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/50 mb-3">
-                    Valor estimado
-                  </div>
-                  <div className="font-mono text-[clamp(3rem,10vw,8rem)] tracking-[-0.05em] leading-[0.9]">
-                    <span className="text-[color:var(--color-paper)]/60 text-[0.4em] mr-2 align-top">R$</span>
-                    <CountUp to={result.total} duration={2} separator="." />
+                  {/* Linhas decorativas radiando atrás */}
+                  <div className="absolute inset-0 pointer-events-none flex items-center justify-end pr-[5%] opacity-[0.07]">
+                    <svg className="w-[800px] h-[800px]" viewBox="0 0 800 800" fill="none" aria-hidden>
+                      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
+                        <line
+                          key={deg}
+                          x1="400"
+                          y1="400"
+                          x2={400 + Math.cos((deg * Math.PI) / 180) * 400}
+                          y2={400 + Math.sin((deg * Math.PI) / 180) * 400}
+                          stroke="var(--color-paper)"
+                          strokeWidth="1"
+                        />
+                      ))}
+                    </svg>
                   </div>
 
-                  <div className="mt-12 pt-10 border-t border-[color:var(--color-paper)]/15">
-                    <DonutBreakdown
-                      segments={result.segments}
-                      total={result.total}
-                    />
+                  <div className="relative">
+                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/50 mb-3">
+                      Valor estimado · janela retroativa
+                    </div>
+                    <div className="font-mono text-[clamp(3rem,12vw,9rem)] tracking-[-0.05em] leading-[0.9]">
+                      <span className="text-[color:var(--color-paper)]/60 text-[0.4em] mr-2 align-top">R$</span>
+                      <CountUp to={result.total} duration={2.4} separator="." />
+                    </div>
+
+                    <div className="mt-12 pt-10 border-t border-[color:var(--color-paper)]/15">
+                      <p className="font-serif text-2xl lg:text-3xl leading-[1.3] text-[color:var(--color-paper)]/90 max-w-2xl italic">
+                        Quer entender de onde vem esse número?
+                      </p>
+                      <p className="mt-4 text-[14px] text-[color:var(--color-paper)]/55 max-w-xl leading-relaxed">
+                        Cada empresa tem uma combinação única de teses aplicáveis. Em
+                        uma conversa rápida, mostramos exatamente o que se aplica ao
+                        seu caso — sem custo, sem compromisso.
+                      </p>
+                    </div>
                   </div>
                 </div>
 
                 <div className="mt-12 flex flex-col sm:flex-row gap-3">
                   <Link
                     href="/contato"
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-5 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(14,21,37,0.4)]"
+                    className="group inline-flex items-center justify-center gap-2 px-8 py-5 bg-[color:var(--color-brand)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(30,58,138,0.5)]"
                   >
-                    Quero falar com um especialista
+                    Quero entender meu potencial
                     <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                   </Link>
                   <button
@@ -538,3 +561,4 @@ export function SimuladorWizard() {
     </section>
   );
 }
+// end of SimuladorWizard
