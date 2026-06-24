@@ -1,8 +1,7 @@
 import type { Metadata } from "next";
 import { Inter, Instrument_Serif, JetBrains_Mono, Bodoni_Moda } from "next/font/google";
 import "./globals.css";
-import { Navbar } from "@/components/navbar";
-import { Footer } from "@/components/footer";
+import { ConditionalNavbar, ConditionalFooter } from "@/components/conditional-chrome";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -73,10 +72,10 @@ export default function RootLayout({
       className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${bodoniModa.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased">
-        <Navbar />
+        <ConditionalNavbar />
         <main className="flex-1">{children}</main>
-        <Footer />
+        <ConditionalFooter />
       </body>
-    </html>
+     </html>
   );
 }

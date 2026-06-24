@@ -5,17 +5,25 @@ import { SplitText } from "@/components/motion/split-text";
 import { Marquee } from "@/components/motion/marquee";
 
 const PILLARS = [
-  "Leitura técnica",
+  "Tema 69",
   "✦",
-  "Risco classificado",
+  "R$ 100M+ devolvidos",
   "✦",
-  "Caixa devolvido",
+  "27 estados",
   "✦",
-  "Resultado em contrato",
+  "Pagamento por êxito",
+  "✦",
+  "5 anos retroativos",
   "✦",
   "Sem promessa vazia",
   "✦",
-  "O céu é o limite",
+  "Risco classificado",
+  "✦",
+  "Lucro Real",
+  "✦",
+  "IRPJ / CSLL",
+  "✦",
+  "PIS / COFINS",
 ];
 
 export function Manifesto() {
