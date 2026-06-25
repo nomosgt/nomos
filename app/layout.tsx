@@ -1,28 +1,33 @@
 import type { Metadata } from "next";
-import { Inter, Instrument_Serif, JetBrains_Mono, Bodoni_Moda } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces, Bodoni_Moda } from "next/font/google";
 import "./globals.css";
 import { ConditionalNavbar, ConditionalFooter } from "@/components/conditional-chrome";
 
-const inter = Inter({
+// Geist Sans — UI / body (Vercel). Variable, tracking impecável.
+const geist = Geist({
   subsets: ["latin"],
-  variable: "--font-inter",
+  variable: "--font-geist",
   display: "swap",
 });
 
-const instrumentSerif = Instrument_Serif({
+// Geist Mono — eyebrows técnicos, números, tags.
+const geistMono = Geist_Mono({
   subsets: ["latin"],
-  weight: "400",
-  variable: "--font-instrument-serif",
+  variable: "--font-geist-mono",
   display: "swap",
 });
 
-const jetbrainsMono = JetBrains_Mono({
+// Fraunces — display editorial luxury com optical sizing variável.
+const fraunces = Fraunces({
   subsets: ["latin"],
-  variable: "--font-jetbrains-mono",
+  weight: ["300", "400", "500", "600", "700"],
+  style: ["normal", "italic"],
+  axes: ["SOFT", "WONK", "opsz"],
+  variable: "--font-fraunces",
   display: "swap",
 });
 
-// Bodoni Moda — fonte oficial do wordmark NGT na logo
+// Bodoni Moda — fonte oficial do wordmark NGT na logo (não mexer).
 const bodoniModa = Bodoni_Moda({
   subsets: ["latin"],
   weight: ["400", "500", "600"],
@@ -69,13 +74,13 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${inter.variable} ${instrumentSerif.variable} ${jetbrainsMono.variable} ${bodoniModa.variable}`}
+      className={`${geist.variable} ${geistMono.variable} ${fraunces.variable} ${bodoniModa.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <ConditionalNavbar />
         <main className="flex-1">{children}</main>
         <ConditionalFooter />
       </body>
-     </html>
+    </html>
   );
 }

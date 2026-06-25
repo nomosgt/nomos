@@ -23,9 +23,11 @@
   --color-paper-dim: #B8BAC2;      /* cinza claro acinzentado p/ texto secundário em fundo escuro */
 
   /* Fonts */
-  --font-sans: var(--font-inter), ui-sans-serif, system-ui, -apple-system, sans-serif;
-  --font-serif: var(--font-instrument-serif), Georgia, "Times New Roman", serif;
-  --font-mono: var(--font-jetbrains-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  --font-serif: var(--font-fraunces), "Bodoni Moda", Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  /* Fraunces optical sizing — body 14, displays 96 */
+  font-optical-sizing: auto;
 
   /* Type scale (display) */
   --text-display-2xl: clamp(4.5rem, 11vw, 11rem);

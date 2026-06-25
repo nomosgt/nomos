@@ -42,7 +42,7 @@ export function Time() {
                 </h3>
                 <p className="text-[13px] text-[color:var(--color-ink-muted)] leading-relaxed">
                   Advogado tributarista. Bacharel em Direito (USF). Pós em
-                  Direito Tributário (FAVI). OAB/SP — em breve.
+                  Direito Tributário (FAVI).
                 </p>
               </div>
 
