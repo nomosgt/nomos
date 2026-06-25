@@ -65,7 +65,15 @@ export function BlogGrid({ posts }: { posts: BlogPost[] }) {
             >
               <div className="grid grid-cols-1 lg:grid-cols-2">
                 <div className="relative aspect-[4/3] lg:aspect-auto bg-[color:var(--color-ink)] overflow-hidden">
-                  <PostCover number={featured.cover} large />
+                  {featured.cover_url ? (
+                    <img
+                      src={featured.cover_url}
+                      alt={featured.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <PostCover number={featured.cover} large />
+                  )}
                 </div>
                 <div className="p-8 lg:p-12 flex flex-col justify-between">
                   <div>
@@ -107,7 +115,15 @@ export function BlogGrid({ posts }: { posts: BlogPost[] }) {
                 className="group block bg-[color:var(--color-background)] p-7 lg:p-8 h-full hover:bg-[color:var(--color-surface)] transition-colors duration-500"
               >
                 <div className="relative aspect-[5/3] bg-[color:var(--color-ink)] overflow-hidden mb-7">
-                  <PostCover number={post.cover} />
+                  {post.cover_url ? (
+                    <img
+                      src={post.cover_url}
+                      alt={post.title}
+                      className="absolute inset-0 w-full h-full object-cover"
+                    />
+                  ) : (
+                    <PostCover number={post.cover} />
+                  )}
                 </div>
                 <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)] mb-4">
                   {post.categoria}

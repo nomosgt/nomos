@@ -11,7 +11,6 @@ export function SimuladorTeaser() {
     <section className="relative py-28 lg:py-40 overflow-hidden">
       <Container>
         <div className="relative border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-10 md:p-16 lg:p-24 grain overflow-hidden">
-          {/* Accent corner mark */}
           <div className="absolute top-0 right-0 font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] border-b border-l border-[color:var(--color-hairline)] py-2 px-4">
             ✦ Ferramenta proprietária
           </div>
@@ -21,16 +20,16 @@ export function SimuladorTeaser() {
               <Eyebrow>Simulador NOMOS</Eyebrow>
               <Reveal>
                 <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
-                  Descubra <span className="italic text-[color:var(--color-brand)]">quanto</span><br />
-                  sua empresa<br />
-                  pode recuperar.
+                  Estime o <span className="italic text-[color:var(--color-brand)]">potencial</span><br />
+                  de recuperação<br />
+                  da sua empresa.
                 </h2>
               </Reveal>
               <Reveal delay={0.15}>
                 <p className="mt-8 max-w-lg text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)]">
-                  Em 30 segundos, com base no faturamento, setor e regime
-                  tributário da sua empresa, mostramos uma estimativa do
-                  potencial de crédito recuperável.
+                  A partir de faturamento, setor de atuação e regime tributário,
+                  o simulador apresenta uma estimativa preliminar de crédito
+                  recuperável, sujeita a confirmação por análise documental.
                 </p>
               </Reveal>
               <Reveal delay={0.25} className="mt-10">
@@ -38,13 +37,12 @@ export function SimuladorTeaser() {
                   href="/simulador"
                   className="group inline-flex items-center gap-2 px-6 py-4 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(14,21,37,0.4)]"
                 >
-                  Simular agora
+                  Acessar o simulador
                   <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
                 </Link>
               </Reveal>
             </div>
 
-            {/* Mock simulator preview */}
             <Reveal delay={0.3}>
               <div className="relative bg-[color:var(--color-ink)] text-[color:var(--color-paper)] p-8 lg:p-10">
                 <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/40 mb-6">
@@ -80,8 +78,9 @@ export function SimuladorTeaser() {
                   ))}
                 </div>
                 <div className="mt-8 text-[11px] text-[color:var(--color-paper)]/40 leading-relaxed">
-                  * Exemplo ilustrativo. A estimativa real depende da
-                  análise documental da sua operação.
+                  * Exemplo ilustrativo, sem valor vinculante. A estimativa
+                  apresentada depende de confirmação por análise documental
+                  da operação.
                 </div>
               </div>
             </Reveal>

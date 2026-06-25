@@ -10,7 +10,6 @@ import { HeroArt } from "@/components/motion/hero-art";
 export function Hero() {
   return (
     <section className="relative min-h-screen pt-24 lg:pt-32 pb-16 flex flex-col grain overflow-hidden">
-      {/* Background subtle radial — azul NGT */}
       <div
         aria-hidden
         className="absolute inset-0 pointer-events-none"
@@ -20,11 +19,9 @@ export function Hero() {
         }}
       />
 
-      {/* Arte SVG cinemática — linhas radiais, círculos, grid, tags fiscais */}
       <HeroArt />
 
       <Container className="relative flex-1 flex flex-col">
-        {/* Eyebrow row */}
         <motion.div
           initial={{ opacity: 0, y: 8 }}
           animate={{ opacity: 1, y: 0 }}
@@ -40,7 +37,6 @@ export function Hero() {
           </div>
         </motion.div>
 
-        {/* Massive headline */}
         <div className="flex-1 flex flex-col justify-center py-20 lg:py-32">
           <div className="max-w-[1100px]">
             <SplitText
@@ -67,9 +63,13 @@ export function Hero() {
             className="mt-12 lg:mt-16 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-20 items-end"
           >
             <p className="max-w-xl text-[17px] lg:text-[19px] leading-[1.55] text-[color:var(--color-ink-muted)]">
-              Gestão tributária técnica para empresas que entendem que cada
-              real importa. Devolvemos caixa que estava parado na Receita —
-              com a leitura jurídica certa, sem promessa vazia.
+              A combinação entre segurança jurídica e inteligência tributária
+              que protege, fortalece e destaca sua empresa no mercado. Atuação
+              técnica em consultoria, contencioso e administrativo, para
+              empresas que buscam segurança jurídica antes de agir:
+              identificamos o crédito, construímos a tese e conduzimos a
+              recuperação do início ao fim, ajustando a operação para que a
+              empresa pague menos no futuro.
             </p>
 
             <div className="flex flex-col sm:flex-row items-start gap-3 lg:justify-end">
@@ -77,21 +77,20 @@ export function Hero() {
                 href="/contato"
                 className="group inline-flex items-center gap-2 px-6 py-4 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(14,21,37,0.4)]"
               >
-                Agendar conversa
+                Agendar diagnóstico
                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
               <Link
                 href="/simulador"
                 className="group inline-flex items-center gap-2 px-6 py-4 border border-[color:var(--color-ink)] text-[color:var(--color-ink)] text-[13px] font-medium transition-all duration-300 hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)] hover:-translate-y-0.5"
               >
-                Calcular potencial
+                Estimar potencial de recuperação
                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
           </motion.div>
         </div>
 
-        {/* Bottom row: scroll indicator + meta */}
         <motion.div
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}

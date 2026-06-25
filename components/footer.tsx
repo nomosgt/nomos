@@ -34,7 +34,7 @@ export function Footer() {
   return (
     <footer className="relative border-t border-[color:var(--color-hairline)] bg-[color:var(--color-background)]">
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12 py-16 lg:py-24">
-        {/* Logo NGT gigante (símbolo + wordmark) */}
+        {/* Logo NGT gigante */}
         <div className="flex items-end justify-between gap-10 flex-wrap mb-16">
           <Link href="/" className="block group" aria-label="NGT — voltar à home">
             <Logo
@@ -50,7 +50,7 @@ export function Footer() {
             href="/contato"
             className="group inline-flex items-center gap-2 px-5 py-3 border border-[color:var(--color-ink)] text-[13px] font-medium hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)] transition-all duration-300"
           >
-            Falar com a NOMOS
+            Falar com a NOMOS GT
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
@@ -59,11 +59,12 @@ export function Footer() {
           {/* Manifesto */}
           <div className="col-span-2 md:col-span-2 max-w-md">
             <p className="font-serif text-xl lg:text-2xl leading-tight text-[color:var(--color-ink)]">
-              Tributário não é custo. É oportunidade mal lida.
+              Tributário não é apenas custo. É leitura técnica.
             </p>
             <p className="mt-6 text-[13px] leading-relaxed text-[color:var(--color-ink-muted)]">
-              Consultoria fiscal-tributária para empresas que entendem que cada
-              real importa. Atuação técnica, discreta e mensurável.
+              Consultoria tributária para empresas que reconhecem o impacto da
+              gestão fiscal sobre a operação. Atuação técnica, conduzida com
+              discrição e parâmetros mensuráveis.
             </p>
           </div>
 
@@ -100,7 +101,12 @@ export function Footer() {
               © {new Date().getFullYear()} NOMOS GT · Todos os direitos reservados
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)]">
-              OAB/SP — em breve · Éverton Vicente
+              Éverton Vicente · Responsável técnico
+            </div>
+            <div className="text-[10px] leading-relaxed text-[color:var(--color-ink-faint)] max-w-md mt-3">
+              Conteúdo institucional de caráter exclusivamente informativo, em
+              conformidade com o Provimento nº 205/2021 da OAB. Não constitui
+              oferta de serviços advocatícios nem captação de clientela.
             </div>
           </div>
           <div className="flex items-center gap-5">
@@ -125,4 +131,3 @@ export function Footer() {
     </footer>
   );
 }
-// end of Footer

@@ -15,7 +15,7 @@ export function ClosingCTA() {
         <div className="mt-12 grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-12 lg:gap-20 items-end">
           <SplitText
             as="h2"
-            text="Vamos olhar sua operação tributária."
+            text="Conheça em detalhe a sua operação tributária."
             className="font-serif text-display-md lg:text-display-xl leading-[0.95] tracking-tight"
             stagger={0.035}
             splitBy="word"
@@ -23,8 +23,9 @@ export function ClosingCTA() {
 
           <Reveal delay={0.3}>
             <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md">
-              Uma primeira conversa, sem custo, para entender a operação e
-              identificar — com honestidade — se faz sentido seguir.
+              Uma conversa inicial, sem compromisso, para compreender o cenário
+              da empresa e avaliar, de forma transparente, a pertinência de
+              prosseguir com um diagnóstico técnico.
             </p>
           </Reveal>
         </div>
@@ -40,7 +41,7 @@ export function ClosingCTA() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-serif text-2xl lg:text-3xl">
-                  Agendar uma conversa
+                  Agendar diagnóstico
                 </span>
                 <ArrowUpRight className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
               </div>

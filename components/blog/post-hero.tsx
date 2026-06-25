@@ -19,6 +19,17 @@ const formatDate = (date: string | null | undefined) =>
 export function PostHero({ post }: { post: BlogPost }) {
   return (
     <section className="relative pt-32 lg:pt-40 pb-16 lg:pb-24 grain overflow-hidden">
+      {post.cover_url && (
+        <div className="absolute inset-0 -z-10 opacity-20 pointer-events-none">
+          <img
+            src={post.cover_url}
+            alt=""
+            aria-hidden
+            className="w-full h-full object-cover blur-3xl"
+          />
+          <div className="absolute inset-0 bg-[color:var(--color-background)]/85" />
+        </div>
+      )}
       <Container>
         <motion.div
           initial={{ opacity: 0, y: 8 }}

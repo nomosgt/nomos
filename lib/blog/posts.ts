@@ -20,6 +20,7 @@ function fallbackPosts(): BlogPost[] {
     read_time: p.readTime,
     author: p.author,
     cover: p.cover,
+    cover_url: null,
     status: "publicado" as const,
     published_at: new Date(p.date).toISOString(),
     created_at: new Date(p.date).toISOString(),

@@ -7,15 +7,15 @@ import { Marquee } from "@/components/motion/marquee";
 const PILLARS = [
   "Tema 69",
   "✦",
-  "R$ 100M+ devolvidos",
+  "R$ 100M+ recuperados",
   "✦",
   "27 estados",
   "✦",
-  "Pagamento por êxito",
+  "Honorários por êxito",
   "✦",
   "5 anos retroativos",
   "✦",
-  "Sem promessa vazia",
+  "Análise técnica prévia",
   "✦",
   "Risco classificado",
   "✦",
@@ -37,14 +37,14 @@ export function Manifesto() {
           </div>
           <SplitText
             as="h2"
-            text="Tributário não é custo. É oportunidade mal lida."
+            text="Tributário não é apenas custo. É leitura técnica."
             className="font-serif text-display-md lg:text-display-xl leading-[0.95] tracking-tight text-[color:var(--color-paper)]"
             stagger={0.04}
             splitBy="word"
           />
           <SplitText
             as="p"
-            text="A diferença entre quem paga mais imposto do que deveria e quem recupera está em uma única coisa: leitura técnica. O resto é consequência."
+            text="A diferença entre uma empresa que paga mais do que deveria e outra que recupera está na qualidade da análise. O restante é consequência de método."
             className="block mt-12 font-serif italic text-2xl lg:text-3xl leading-[1.35] text-[color:var(--color-paper)]/70 max-w-3xl"
             stagger={0.015}
             splitBy="word"
@@ -53,7 +53,6 @@ export function Manifesto() {
         </div>
       </Container>
 
-      {/* Marquee at bottom */}
       <div className="mt-24 lg:mt-32 border-t border-[color:var(--color-paper)]/10 py-8">
         <Marquee>
           {PILLARS.map((p, i) => (

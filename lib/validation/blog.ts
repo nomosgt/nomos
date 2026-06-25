@@ -26,6 +26,7 @@ export const blogPostSchema = z.object({
   read_time: z.number().int().min(1).max(60).default(5),
   author: z.string().min(2).max(80).default("Éverton Vicente"),
   cover: z.string().min(1).max(40).default("01"),
+  cover_url: z.string().url("URL inválida").max(2000).nullable().optional().or(z.literal("")),
   status: z.enum(STATUS_POST).default("rascunho"),
   published_at: z.string().datetime().nullable().optional(),
 });
@@ -38,9 +39,6 @@ export interface BlogPost extends BlogPostInput {
   updated_at: string;
 }
 
-/**
- * Gera slug a partir do título — remove acentos, troca espaços por hífens, lower-case.
- */
 export function slugify(title: string): string {
   return title
     .normalize("NFD")

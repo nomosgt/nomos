@@ -12,23 +12,23 @@ const PILARES = [
     tag: "Pilar I",
     title: "Consultoria Tributária",
     description:
-      "Diagnóstico contínuo + transação tributária federal. Mapeia risco antes de virar autuação.",
+      "Consultoria desenvolvida conforme a realidade e as necessidades específicas de cada empresa — segurança jurídica, eficiência fiscal e suporte estratégico à tomada de decisão.",
     href: "/servicos#consultoria",
   },
   {
     icon: Gavel,
     tag: "Pilar II",
-    title: "Ações Judiciais de Recuperação",
+    title: "Recuperação de Créditos",
     description:
-      "Teses STF/STJ aplicáveis à sua operação — recuperação retroativa de até 5 anos.",
+      "Identificação e recuperação de tributos pagos indevidamente ou em valor superior ao devido, fortalecendo o fluxo de caixa da operação.",
     href: "/servicos#judicial",
   },
   {
     icon: FileSearch,
     tag: "Pilar III",
-    title: "Recuperação Administrativa",
+    title: "Regularização Fiscal",
     description:
-      "PER/DCOMP, monofásico, LC 160/2017, Tema 779. Devolução direta, sem judicialização.",
+      "Suporte especializado para regularizar pendências e manter a empresa em conformidade com a legislação — com segurança.",
     href: "/servicos#administrativa",
   },
 ];
@@ -41,14 +41,12 @@ export function AreasSection() {
           <div>
             <Eyebrow>Pilares NGT</Eyebrow>
             <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
-              Três frentes.<br />
-              <span className="italic text-[color:var(--color-brand)]">Uma só leitura técnica.</span>
+              Três frentes de atuação,<br />
+              <span className="italic text-[color:var(--color-brand)]">um único objetivo.</span>
             </h2>
           </div>
           <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md lg:justify-self-end">
-            Três caminhos para chegar ao mesmo destino: caixa de volta para
-            quem produz. O ponto de partida depende do estágio da sua
-            operação.
+            Tornar sua operação fiscal mais eficiente e segura.
           </p>
         </div>
 

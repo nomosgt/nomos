@@ -75,7 +75,7 @@ export function Navbar() {
                 href="/contato"
                 className="group inline-flex items-center gap-1.5 px-4 py-2 text-[13px] font-medium border border-[color:var(--color-ink)] text-[color:var(--color-ink)] hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)] transition-all duration-300 hover:-translate-y-0.5"
               >
-                Agendar conversa
+                Agendar diagnóstico
                 <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
@@ -141,7 +141,7 @@ export function Navbar() {
                   onClick={() => setOpen(false)}
                   className="group inline-flex items-center justify-center gap-2 w-full px-6 py-4 text-sm font-medium bg-[color:var(--color-ink)] text-[color:var(--color-paper)]"
                 >
-                  Agendar conversa
+                  Agendar diagnóstico
                   <ArrowUpRight className="w-4 h-4" />
                 </Link>
                 <Link

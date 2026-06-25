@@ -96,14 +96,15 @@ export function MapaBrasil() {
             <h2 className="font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight text-[color:var(--color-paper)]">
               Sede em São Paulo.<br />
               <span className="italic text-[color:var(--color-brand-soft)]">
-                Operação em todo o Brasil.
+                Atuação em todo o território nacional.
               </span>
             </h2>
           </div>
           <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-paper)]/65 max-w-md lg:justify-self-end">
-            Recuperações administrativas integralmente remotas. Ações judiciais
-            em qualquer vara federal ou estadual via parceria local quando
-            necessário. CFOs em SP têm reuniões presenciais.
+            Procedimentos administrativos conduzidos de forma remota. Ações
+            judiciais ajuizadas em qualquer vara federal ou estadual, com apoio
+            de correspondentes locais quando necessário. Reuniões presenciais
+            em São Paulo, mediante agendamento.
           </p>
         </div>
 

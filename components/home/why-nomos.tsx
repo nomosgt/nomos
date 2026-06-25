@@ -9,25 +9,25 @@ const DIFERENCIAIS = [
     n: "01",
     title: "Pagamento por resultado",
     body:
-      "Você só paga se o caixa chegar. Sem retainer fixo, sem letra miúda, sem honorário antecipado em tese que ainda não voltou para sua operação.",
+      "Os honorários são devidos somente sobre o valor efetivamente recuperado. Não há retainer fixo nem honorário antecipado sobre tese ainda não confirmada.",
   },
   {
     n: "02",
-    title: "Diagnóstico antes da venda",
+    title: "Diagnóstico antes da contratação",
     body:
-      "Mostramos o potencial estimado, o risco classificado de cada frente e o cronograma — antes de qualquer contrato. Se não fizer sentido, dizemos.",
+      "O potencial estimado, a classificação de risco de cada frente e o cronograma são apresentados antes da assinatura de qualquer contrato. Quando a análise não justifica a continuidade, isso é comunicado de forma direta.",
   },
   {
     n: "03",
-    title: "Sem terceirização interna",
+    title: "Execução sem intermediação",
     body:
-      "O técnico que diagnostica é o mesmo que executa. Sem repasse, sem júnior assinando o que sócio prometeu, sem perder o fio da operação.",
+      "O profissional responsável pelo diagnóstico é o mesmo que conduz a execução do caso, do início ao fim, sem repasse a terceiros.",
   },
   {
     n: "04",
     title: "Acompanhamento contínuo",
     body:
-      "Após o primeiro ciclo, monitoramos jurisprudência, mudanças legislativas e novos créditos da sua operação — sem você ter que pedir.",
+      "Após a conclusão do primeiro ciclo, a equipe monitora jurisprudência, alterações legislativas e novas oportunidades de crédito aplicáveis à operação, de forma proativa.",
   },
 ];
 
@@ -37,17 +37,16 @@ export function WhyNomos() {
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-24">
           <div className="lg:sticky lg:top-32 lg:self-start">
-            <Eyebrow>O que muda com a NGT</Eyebrow>
+            <Eyebrow>Compromissos contratuais</Eyebrow>
             <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
-              Quatro promessas<br />
+              Quatro condições<br />
               <span className="italic text-[color:var(--color-brand)]">
-                que entregamos
+                formalizadas
               </span><br />
-              em contrato.
+              antes do início.
             </h2>
             <p className="mt-8 text-[15px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-sm">
-              O mercado tributário é cheio de promessa. Aqui, cada compromisso
-              vai por escrito antes da gente começar.
+              Cada item abaixo consta em contrato, não apenas em proposta comercial.
             </p>
           </div>
 
@@ -77,4 +76,3 @@ export function WhyNomos() {
     </section>
   );
 }
-// end of WhyNomos

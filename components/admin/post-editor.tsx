@@ -1,9 +1,19 @@
 "use client";
 
-import { useState, useTransition } from "react";
+import { useState, useTransition, useRef } from "react";
 import Link from "next/link";
 import { useRouter } from "next/navigation";
-import { ArrowLeft, Save, Trash2, Eye, AlertCircle, Check } from "lucide-react";
+import {
+  ArrowLeft,
+  Save,
+  Trash2,
+  Eye,
+  AlertCircle,
+  Check,
+  ImageIcon,
+  Upload,
+  X,
+} from "lucide-react";
 import {
   blogPostSchema,
   CATEGORIAS,
@@ -24,6 +34,11 @@ export function PostEditor({ mode, id, initial }: Props) {
   const [error, setError] = useState<string | null>(null);
   const [fieldErrors, setFieldErrors] = useState<Record<string, string>>({});
   const [saved, setSaved] = useState(false);
+  const [uploading, setUploading] = useState<"cover" | "body" | null>(null);
+
+  const bodyRef = useRef<HTMLTextAreaElement>(null);
+  const coverFileRef = useRef<HTMLInputElement>(null);
+  const bodyFileRef = useRef<HTMLInputElement>(null);
 
   const [form, setForm] = useState({
     title: initial?.title || "",
@@ -34,6 +49,7 @@ export function PostEditor({ mode, id, initial }: Props) {
     read_time: initial?.read_time || 5,
     author: initial?.author || "Éverton Vicente",
     cover: initial?.cover || "01",
+    cover_url: initial?.cover_url || "",
     status: (initial?.status || "rascunho") as (typeof STATUS_POST)[number],
   });
 
@@ -41,7 +57,7 @@ export function PostEditor({ mode, id, initial }: Props) {
     setForm((f) => ({ ...f, [k]: v }));
     setFieldErrors((fe) => {
       if (!(k in fe)) return fe;
-      const { [k as string]: _, ...rest } = fe;
+      const { [k as string]: _drop, ...rest } = fe;
       return rest;
     });
   }
@@ -54,6 +70,66 @@ export function PostEditor({ mode, id, initial }: Props) {
     }));
   }
 
+  async function uploadFile(file: File, target: "cover" | "body") {
+    setError(null);
+    setUploading(target);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const res = await fetch("/api/admin/upload-image", {
+        method: "POST",
+        body: fd,
+      });
+      const json = await res.json();
+      if (!res.ok) {
+        setError(json.error || "Falha no upload");
+        return null;
+      }
+      return json.url as string;
+    } catch (err) {
+      setError(err instanceof Error ? err.message : "Erro de rede");
+      return null;
+    } finally {
+      setUploading(null);
+    }
+  }
+
+  async function onCoverPick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadFile(file, "cover");
+    if (url) setField("cover_url", url);
+    e.target.value = "";
+  }
+
+  async function onBodyImagePick(e: React.ChangeEvent<HTMLInputElement>) {
+    const file = e.target.files?.[0];
+    if (!file) return;
+    const url = await uploadFile(file, "body");
+    if (url) insertAtCursor(`![${file.name.replace(/\.[^.]+$/, "")}](${url})`);
+    e.target.value = "";
+  }
+
+  function insertAtCursor(text: string) {
+    const ta = bodyRef.current;
+    if (!ta) {
+      setForm((f) => ({ ...f, body: f.body + "\n\n" + text + "\n\n" }));
+      return;
+    }
+    const start = ta.selectionStart;
+    const end = ta.selectionEnd;
+    const before = form.body.slice(0, start);
+    const after = form.body.slice(end);
+    const insert = (before.endsWith("\n\n") || before === "" ? "" : "\n\n") + text + "\n\n";
+    const newBody = before + insert + after;
+    setForm((f) => ({ ...f, body: newBody }));
+    requestAnimationFrame(() => {
+      const pos = (before + insert).length;
+      ta.focus();
+      ta.setSelectionRange(pos, pos);
+    });
+  }
+
   async function save() {
     setError(null);
     setFieldErrors({});
@@ -62,6 +138,7 @@ export function PostEditor({ mode, id, initial }: Props) {
     const payload = {
       ...form,
       read_time: Number(form.read_time),
+      cover_url: form.cover_url || null,
     };
     const parsed = blogPostSchema.safeParse(payload);
     if (!parsed.success) {
@@ -179,6 +256,7 @@ export function PostEditor({ mode, id, initial }: Props) {
       )}
 
       <div className="grid grid-cols-1 lg:grid-cols-[2fr_1fr] gap-6">
+        {/* COLUNA ESQUERDA — conteúdo */}
         <div className="space-y-4">
           <Field label="Título" error={fieldErrors.title}>
             <input
@@ -217,21 +295,65 @@ export function PostEditor({ mode, id, initial }: Props) {
             </div>
           </Field>
 
-          <Field label="Corpo (markdown — parágrafos separados por linha em branco)" error={fieldErrors.body}>
+          {/* Corpo — markdown + toolbar */}
+          <div>
+            <div className="flex items-center justify-between mb-2">
+              <label className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-muted)]">
+                Corpo (markdown)
+              </label>
+              <div className="flex items-center gap-2">
+                <button
+                  type="button"
+                  onClick={() => bodyFileRef.current?.click()}
+                  disabled={uploading === "body"}
+                  className="inline-flex items-center gap-1.5 px-3 py-1.5 text-[11px] font-mono uppercase tracking-[0.15em] border border-[color:var(--color-hairline)] hover:border-[color:var(--color-ink)] disabled:opacity-60"
+                >
+                  {uploading === "body" ? (
+                    <Upload className="w-3 h-3 animate-pulse" />
+                  ) : (
+                    <ImageIcon className="w-3 h-3" />
+                  )}
+                  {uploading === "body" ? "Enviando…" : "Inserir imagem"}
+                </button>
+                <input
+                  ref={bodyFileRef}
+                  type="file"
+                  accept="image/*"
+                  className="hidden"
+                  onChange={onBodyImagePick}
+                />
+              </div>
+            </div>
             <textarea
+              ref={bodyRef}
               value={form.body}
               onChange={(e) => setField("body", e.target.value)}
-              rows={20}
+              rows={22}
               className="w-full bg-[color:var(--color-paper)] border border-[color:var(--color-hairline)] focus:border-[color:var(--color-ink)] p-4 text-[14px] font-mono leading-relaxed text-[color:var(--color-ink)] focus:outline-none resize-y"
-              placeholder="Primeiro parágrafo do post (vai aparecer em destaque serif).
+              placeholder={`Primeiro parágrafo (aparece em destaque).
 
-Segundo parágrafo. Para criar quebra de parágrafo, deixa uma linha em branco entre eles.
+Outro parágrafo. Separe por linha em branco.
 
-Terceiro parágrafo…"
+## Subtítulo
+**Negrito** e *itálico* funcionam.
+
+- Item de lista
+- Outro item
+
+[Texto do link](https://exemplo.com)
+
+![Descrição da imagem](https://...)`}
             />
-          </Field>
+            {fieldErrors.body && (
+              <p className="mt-1 text-[11px] text-red-600">{fieldErrors.body}</p>
+            )}
+            <div className="mt-2 text-[11px] text-[color:var(--color-ink-faint)] font-mono">
+              Suporta markdown: # ## ### títulos · **negrito** · *itálico* · - listas · [link](url) · ![imagem](url)
+            </div>
+          </div>
         </div>
 
+        {/* COLUNA DIREITA — sidebar */}
         <div className="space-y-4">
           <Card title="Publicação">
             <Field label="Status" error={fieldErrors.status} compact>
@@ -258,6 +380,78 @@ Terceiro parágrafo…"
             </Field>
           </Card>
 
+          <Card title="Capa">
+            {form.cover_url ? (
+              <div className="space-y-2">
+                <div className="relative aspect-[16/9] bg-[color:var(--color-ink)] overflow-hidden">
+                  <img
+                    src={form.cover_url}
+                    alt="Capa"
+                    className="w-full h-full object-cover"
+                  />
+                  <button
+                    type="button"
+                    onClick={() => setField("cover_url", "")}
+                    className="absolute top-2 right-2 p-1.5 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] hover:bg-red-600 transition-colors"
+                    title="Remover capa"
+                  >
+                    <X className="w-3.5 h-3.5" />
+                  </button>
+                </div>
+                <button
+                  type="button"
+                  onClick={() => coverFileRef.current?.click()}
+                  disabled={uploading === "cover"}
+                  className="w-full inline-flex items-center justify-center gap-1.5 px-3 py-2 text-[11px] font-mono uppercase tracking-[0.15em] border border-[color:var(--color-hairline)] hover:border-[color:var(--color-ink)] disabled:opacity-60"
+                >
+                  <Upload className="w-3 h-3" />
+                  {uploading === "cover" ? "Enviando…" : "Trocar capa"}
+                </button>
+              </div>
+            ) : (
+              <button
+                type="button"
+                onClick={() => coverFileRef.current?.click()}
+                disabled={uploading === "cover"}
+                className="w-full aspect-[16/9] border-2 border-dashed border-[color:var(--color-hairline)] hover:border-[color:var(--color-ink)] flex flex-col items-center justify-center gap-2 text-[11px] font-mono uppercase tracking-[0.15em] text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-ink)] transition-colors disabled:opacity-60"
+              >
+                {uploading === "cover" ? (
+                  <>
+                    <Upload className="w-5 h-5 animate-pulse" />
+                    Enviando…
+                  </>
+                ) : (
+                  <>
+                    <ImageIcon className="w-5 h-5" />
+                    Upload capa
+                  </>
+                )}
+              </button>
+            )}
+            <input
+              ref={coverFileRef}
+              type="file"
+              accept="image/*"
+              className="hidden"
+              onChange={onCoverPick}
+            />
+            <div className="pt-3 border-t border-[color:var(--color-hairline)]">
+              <Field label="Ou capa numérica (fallback)" compact>
+                <input
+                  type="text"
+                  value={form.cover}
+                  onChange={(e) => setField("cover", e.target.value)}
+                  maxLength={4}
+                  className="w-full bg-[color:var(--color-paper)] border border-[color:var(--color-hairline)] p-2.5 text-[13px] font-mono focus:outline-none focus:border-[color:var(--color-ink)]"
+                  placeholder="01"
+                />
+                <div className="text-[10px] text-[color:var(--color-ink-faint)] mt-1">
+                  Usado se não houver imagem custom. 01-06.
+                </div>
+              </Field>
+            </div>
+          </Card>
+
           <Card title="Metadados">
             <Field label="Tempo de leitura (min)" error={fieldErrors.read_time} compact>
               <input
@@ -276,19 +470,6 @@ Terceiro parágrafo…"
                 onChange={(e) => setField("author", e.target.value)}
                 className="w-full bg-[color:var(--color-paper)] border border-[color:var(--color-hairline)] p-2.5 text-[13px] focus:outline-none focus:border-[color:var(--color-ink)]"
               />
-            </Field>
-            <Field label="Capa (01-06)" error={fieldErrors.cover} compact>
-              <input
-                type="text"
-                value={form.cover}
-                onChange={(e) => setField("cover", e.target.value)}
-                maxLength={4}
-                className="w-full bg-[color:var(--color-paper)] border border-[color:var(--color-hairline)] p-2.5 text-[13px] font-mono focus:outline-none focus:border-[color:var(--color-ink)]"
-                placeholder="01"
-              />
-              <div className="text-[10px] text-[color:var(--color-ink-faint)] mt-1">
-                Número da capa visual (aparece no card).
-              </div>
             </Field>
           </Card>
         </div>

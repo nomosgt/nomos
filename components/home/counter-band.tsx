@@ -12,7 +12,6 @@ export function CounterBand() {
 
   return (
     <section className="relative bg-[color:var(--color-ink)] text-[color:var(--color-paper)] overflow-hidden">
-      {/* Sliver azul brand passando como transição cinematic */}
       <motion.div
         aria-hidden
         initial={{ scaleX: 0 }}
@@ -22,7 +21,6 @@ export function CounterBand() {
         className="absolute top-0 left-0 right-0 h-px bg-[color:var(--color-brand)] origin-left z-10"
       />
 
-      {/* Linhas radiando do número (decorativas, opacity baixa) */}
       <div className="absolute inset-0 pointer-events-none flex items-center justify-end pr-[5%] overflow-hidden">
         <svg
           className="w-[900px] h-[900px] opacity-[0.08]"
@@ -56,14 +54,15 @@ export function CounterBand() {
           <div>
             <Eyebrow className="text-[color:var(--color-paper)]/60 [&_span]:bg-[color:var(--color-paper)]/15">
               <span className="text-[color:var(--color-paper)]/70">
-                Resultado acumulado · time NGT
+                Resultados acumulados · NOMOS GT
               </span>
             </Eyebrow>
             <Reveal>
               <p className="mt-8 font-serif text-2xl lg:text-3xl leading-tight text-[color:var(--color-paper)]/85 max-w-md">
-                Caixa que estava parado na conta da Receita —{" "}
+                Valores reconhecidos e recuperados em processos administrativos
+                e judiciais conduzidos pela{" "}
                 <span className="italic text-[color:var(--color-brand-soft)]">
-                  e voltou para a operação.
+                  equipe técnica.
                 </span>
               </p>
             </Reveal>
@@ -71,9 +70,8 @@ export function CounterBand() {
 
           <div className="text-right">
             <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/40 mb-6">
-              + Em créditos recuperados
+              + Em créditos tributários recuperados
             </div>
-            {/* Número com efeito de PESO: scale-in com spring + slight rotation */}
             <motion.div
               ref={numRef}
               initial={{ opacity: 0, scale: 0.55, rotateX: -25 }}
@@ -95,18 +93,17 @@ export function CounterBand() {
             <div className="mt-4 flex items-center justify-end gap-3">
               <span className="h-px w-12 bg-[color:var(--color-paper)]/20" />
               <span className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/50">
-                Devolvidos a quem produz
+                Reintegrados ao caixa de empresas em operação
               </span>
             </div>
           </div>
         </div>
 
-        {/* Sub-stats — 3 indicadores complementares (sem repetir o número gigante acima) */}
         <div className="mt-24 lg:mt-32 grid grid-cols-1 md:grid-cols-3 gap-px bg-[color:var(--color-paper)]/10">
           {[
-            { value: 95, suffix: "%", label: "Das empresas pagam mais tributo do que deveriam" },
-            { value: 5, suffix: " anos", label: "De retroatividade na recuperação de créditos" },
-            { value: 7, suffix: "", label: "Etapas de segurança e validação, da análise inicial ao êxito da operação" },
+            { value: 95, suffix: "%", label: "Das empresas analisadas apresentam tributos pagos a maior" },
+            { value: 5, suffix: " anos", label: "De retroatividade legal para recuperação de créditos" },
+            { value: 7, suffix: "", label: "Etapas de validação técnica, da análise documental ao trânsito em julgado ou homologação" },
           ].map((stat, i) => (
             <motion.div
               key={i}
@@ -130,4 +127,3 @@ export function CounterBand() {
     </section>
   );
 }
-// end of CounterBand
