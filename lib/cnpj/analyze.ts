@@ -109,9 +109,14 @@ ${JSON.stringify(empresa, null, 2)}
 
 Use a ferramenta "registrar_analise" para devolver a análise estruturada.`;
 
+  // Timeout de 15s — se Claude demorar, devolve null e segue sem análise IA
+  const ctrl = new AbortController();
+  const t = setTimeout(() => ctrl.abort(), 15000);
+
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
       method: "POST",
+      signal: ctrl.signal,
       headers: {
         "x-api-key": apiKey,
         "anthropic-version": "2023-06-01",
@@ -143,12 +148,14 @@ Use a ferramenta "registrar_analise" para devolver a análise estruturada.`;
 
     const parsed = analiseSchema.safeParse(toolUse.input);
     if (!parsed.success) {
-      console.error("[cnpj] Claude output não bate com schema:", parsed.error);
+      console.error("[cnpj] Claude output nao bate com schema:", parsed.error);
       return null;
     }
     return parsed.data;
   } catch (err) {
-    console.error("[cnpj] exceção chamando Claude:", err);
+    console.error("[cnpj] excecao chamando Claude:", err);
     return null;
+  } finally {
+    clearTimeout(t);
   }
 }

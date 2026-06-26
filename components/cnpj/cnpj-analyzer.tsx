@@ -52,21 +52,40 @@ export function CnpjAnalyzer() {
     setError(null);
     setResult(null);
     setLoading(true);
+
+    // Safety net — 25s. Sem isso, se o servidor cair mid-request a UI fica travada.
+    const ctrl = new AbortController();
+    const timeoutId = setTimeout(() => ctrl.abort(), 25000);
+
     try {
       const res = await fetch("/api/cnpj", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ cnpj }),
+        signal: ctrl.signal,
       });
-      const json = await res.json();
+      let json: { error?: string } & Partial<CnpjResponse> = {};
+      try {
+        json = await res.json();
+      } catch {
+        // resposta sem JSON (502/504, etc.)
+      }
       if (!res.ok) {
-        setError(json.error || "Não foi possível consultar esse CNPJ.");
+        setError(
+          json.error ||
+            `Consulta falhou (HTTP ${res.status}). Tente novamente em instantes.`,
+        );
         return;
       }
       setResult(json as CnpjResponse);
-    } catch {
-      setError("Erro de conexão. Tente novamente.");
+    } catch (err) {
+      if (err instanceof Error && err.name === "AbortError") {
+        setError("A consulta demorou demais. Tente novamente.");
+      } else {
+        setError("Erro de conexão. Tente novamente.");
+      }
     } finally {
+      clearTimeout(timeoutId);
       setLoading(false);
     }
   }
@@ -366,4 +385,3 @@ function Card({
     </div>
   );
 }
-// end of CnpjAnalyzer

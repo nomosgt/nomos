@@ -71,32 +71,36 @@ export async function POST(req: Request) {
   if (brasil) fonte.push("brasilapi");
   if (receita) fonte.push("receitaws");
 
-  // Persist no Supabase (se configurado, fire-and-forget)
+  // Persist no Supabase — REAL fire-and-forget (sem await, não bloqueia)
   if (isSupabaseConfigured()) {
     try {
       const supabase = createAdminClient();
-      await supabase.from("cnpj_lookups").insert({
-        cnpj,
-        razao_social: empresa.razao_social,
-        nome_fantasia: empresa.nome_fantasia,
-        cnae_principal: empresa.cnae_principal,
-        cnae_descricao: empresa.cnae_descricao,
-        porte: empresa.porte,
-        capital_social: empresa.capital_social,
-        situacao_cadastral: empresa.situacao_cadastral,
-        municipio: empresa.municipio,
-        uf: empresa.uf,
-        analise: analise || null,
-        perfil_tributario_sugerido: analise?.perfil_tributario || null,
-        raw_brasilapi: brasil?.data || null,
-        raw_receitaws: receita?.data || null,
-        user_agent: req.headers.get("user-agent")?.slice(0, 400) || null,
-        ip_hash: ipHash,
-        referrer: req.headers.get("referer")?.slice(0, 400) || null,
-      });
+      void supabase
+        .from("cnpj_lookups")
+        .insert({
+          cnpj,
+          razao_social: empresa.razao_social,
+          nome_fantasia: empresa.nome_fantasia,
+          cnae_principal: empresa.cnae_principal,
+          cnae_descricao: empresa.cnae_descricao,
+          porte: empresa.porte,
+          capital_social: empresa.capital_social,
+          situacao_cadastral: empresa.situacao_cadastral,
+          municipio: empresa.municipio,
+          uf: empresa.uf,
+          analise: analise || null,
+          perfil_tributario_sugerido: analise?.perfil_tributario || null,
+          raw_brasilapi: brasil?.data || null,
+          raw_receitaws: receita?.data || null,
+          user_agent: req.headers.get("user-agent")?.slice(0, 400) || null,
+          ip_hash: ipHash,
+          referrer: req.headers.get("referer")?.slice(0, 400) || null,
+        })
+        .then((r) => {
+          if (r.error) console.warn("[api/cnpj] persist err:", r.error.message);
+        });
     } catch (e) {
-      // Falha silenciosa — não bloqueia resposta ao cliente
-      console.warn("[api/cnpj] falha ao persistir:", e);
+      console.warn("[api/cnpj] falha ao instanciar Supabase:", e);
     }
   }
 
