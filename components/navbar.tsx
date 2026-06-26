@@ -12,7 +12,6 @@ const NAV_LINKS = [
   { href: "/servicos", label: "Serviços" },
   { href: "/cnpj", label: "Análise CNPJ" },
   { href: "/simulador", label: "Simulador" },
-  { href: "/banco-de-teses", label: "Banco de Teses" },
   { href: "/blog", label: "Blog" },
   { href: "/contato", label: "Contato" },
 ];
@@ -56,7 +55,7 @@ export function Navbar() {
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="link-underline text-[13px] font-medium tracking-wide text-[color:var(--color-ink)] hover:text-[color:var(--color-ink)]"
+                  className="link-underline text-[15px] font-medium tracking-wide text-[color:var(--color-ink)] hover:text-[color:var(--color-ink)]"
                 >
                   {link.label}
                 </Link>

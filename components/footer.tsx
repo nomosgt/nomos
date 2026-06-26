@@ -8,7 +8,6 @@ const FOOTER_LINKS = {
     { href: "/servicos", label: "Serviços" },
     { href: "/cnpj", label: "Análise CNPJ" },
     { href: "/simulador", label: "Simulador" },
-    { href: "/banco-de-teses", label: "Banco de Teses" },
     { href: "/blog", label: "Blog" },
     { href: "/contato", label: "Contato" },
   ],

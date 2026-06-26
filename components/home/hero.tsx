@@ -38,19 +38,19 @@ export function Hero() {
         </motion.div>
 
         <div className="flex-1 flex flex-col justify-center py-20 lg:py-32">
-          <div className="max-w-[1100px]">
+          <div className="max-w-[1200px]">
             <SplitText
               as="h1"
-              text="Até onde sua empresa"
-              className="font-serif text-[clamp(3rem,8.5vw,8.5rem)] leading-[0.95] tracking-[-0.035em] text-[color:var(--color-ink)]"
+              text="Conheça a NOMOS GT."
+              className="font-serif text-[clamp(2.75rem,7vw,7rem)] leading-[0.95] tracking-[-0.035em] text-[color:var(--color-ink)]"
               stagger={0.04}
               splitBy="word"
             />
             <SplitText
-              as="h1"
-              text="pode crescer?"
-              className="font-serif italic text-[clamp(3rem,8.5vw,8.5rem)] leading-[0.95] tracking-[-0.035em] text-[color:var(--color-brand)] block mt-2"
-              stagger={0.04}
+              as="p"
+              text="A união entre segurança jurídica e inteligência tributária que protege, fortalece e posiciona sua empresa com mais competitividade no mercado."
+              className="font-serif italic text-[clamp(1.5rem,3.2vw,3rem)] leading-[1.15] tracking-tight text-[color:var(--color-brand)] block mt-6 lg:mt-8 max-w-[1100px]"
+              stagger={0.018}
               splitBy="word"
               delay={0.5}
             />
@@ -63,10 +63,8 @@ export function Hero() {
             className="mt-12 lg:mt-16 grid grid-cols-1 lg:grid-cols-[1.4fr_1fr] gap-10 lg:gap-20 items-end"
           >
             <p className="max-w-xl text-[17px] lg:text-[19px] leading-[1.55] text-[color:var(--color-ink-muted)]">
-              A combinação entre segurança jurídica e inteligência tributária
-              que protege, fortalece e destaca sua empresa no mercado. Atuação
-              técnica em consultoria, contencioso e administrativo, para
-              empresas que buscam segurança jurídica antes de agir:
+              Atuação técnica em consultoria, contencioso e administrativo,
+              para empresas que buscam segurança jurídica antes de agir:
               identificamos o crédito, construímos a tese e conduzimos a
               recuperação do início ao fim, ajustando a operação para que a
               empresa pague menos no futuro.

@@ -89,27 +89,7 @@ export function HeroArt() {
         />
       </svg>
 
-      {/* Números fiscais flutuando — tags discretas */}
-      <div className="absolute inset-0">
-        {[
-          { text: "Tema 69", top: "18%", right: "8%", delay: 1.8 },
-          { text: "ICMS", top: "32%", right: "18%", delay: 2.0 },
-          { text: "PIS/COFINS", top: "62%", right: "6%", delay: 2.2 },
-          { text: "STF", top: "78%", right: "22%", delay: 2.4 },
-        ].map((t) => (
-          <motion.div
-            key={t.text}
-            className="absolute font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] opacity-0"
-            style={{ top: t.top, right: t.right }}
-            initial={{ opacity: 0, y: 8 }}
-            animate={{ opacity: 0.45, y: 0 }}
-            transition={{ duration: 1.2, delay: t.delay, ease: [0.22, 1, 0.36, 1] }}
-          >
-            <span className="text-[color:var(--color-brand)] mr-2">◇</span>
-            {t.text}
-          </motion.div>
-        ))}
-      </div>
+      {/* Tags fiscais removidas a pedido — manter apenas a arte gráfica */}
     </div>
   );
 }

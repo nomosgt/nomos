@@ -306,4 +306,3 @@ export function MapaBrasil() {
     </section>
   );
 }
-// end of MapaBrasil

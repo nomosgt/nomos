@@ -100,4 +100,4 @@ export function PostHero({ post }: { post: BlogPost }) {
     </section>
   );
 }
-// end of PostHero
+// end of Post
