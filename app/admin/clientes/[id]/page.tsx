@@ -57,7 +57,7 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
 
       <div className="flex items-center gap-3 pt-4 border-t border-[color:var(--color-hairline)]">
         <Link
-          href={`https://wa.me/${cliente.telefone?.replace(/\D/g, "") || "5519995619838"}`}
+          href={`https://wa.me/${cliente.telefone?.replace(/\D/g, "") || "5511933333841"}`}
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 px-4 py-2 text-[12px] font-mono uppercase tracking-[0.2em] bg-[#25D366] text-white hover:-translate-y-0.5 transition-transform"

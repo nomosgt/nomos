@@ -86,7 +86,7 @@ export function SalaLoginForm() {
           Ainda não tem acesso? Fale com o time NGT.
         </p>
         <Link
-          href="https://wa.me/5519995619838"
+          href="https://wa.me/5511933333841"
           target="_blank"
           rel="noopener noreferrer"
           className="inline-flex items-center gap-2 text-[12px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-brand-soft)] hover:text-[color:var(--color-paper)]"

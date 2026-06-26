@@ -13,12 +13,12 @@ const FOOTER_LINKS = {
   ],
   Contato: [
     {
-      href: "mailto:nomosgtorg@gmail.com",
-      label: "nomosgtorg@gmail.com",
+      href: "mailto:contato@nomosgt.com.br",
+      label: "contato@nomosgt.com.br",
     },
     {
-      href: "https://wa.me/5519995619838",
-      label: "+55 19 99561-9838",
+      href: "https://wa.me/5511933333841",
+      label: "+55 11 93333-3841",
       external: true,
     },
     {

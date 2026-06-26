@@ -48,19 +48,19 @@ export function ClosingCTA() {
             </Link>
 
             <Link
-              href="mailto:nomosgtorg@gmail.com"
+              href="mailto:contato@nomosgt.com.br"
               className="group bg-[color:var(--color-background)] p-8 lg:p-10 hover:bg-[color:var(--color-surface)] transition-all duration-500"
             >
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] opacity-50 mb-4 flex items-center gap-2">
                 <Mail className="w-3 h-3" /> Email
               </div>
               <div className="font-serif text-xl lg:text-2xl">
-                nomosgtorg@gmail.com
+                contato@nomosgt.com.br
               </div>
             </Link>
 
             <Link
-              href="https://wa.me/5519995619838"
+              href="https://wa.me/5511933333841"
               target="_blank"
               rel="noopener noreferrer"
               className="group bg-[color:var(--color-background)] p-8 lg:p-10 hover:bg-[color:var(--color-surface)] transition-all duration-500"
@@ -69,7 +69,7 @@ export function ClosingCTA() {
                 <Phone className="w-3 h-3" /> WhatsApp
               </div>
               <div className="font-serif text-xl lg:text-2xl">
-                +55 19 99561-9838
+                +55 11 93333-3841
               </div>
             </Link>
           </div>

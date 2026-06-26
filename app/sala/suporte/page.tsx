@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MessageCircle, Mail, Clock, ShieldCheck } from "lucide-react";
 
-const WPP_URL = "https://wa.me/5519995619838?text=Ol%C3%A1%2C%20sou%20cliente%20NGT%20e%20preciso%20de%20suporte";
+const WPP_URL = "https://wa.me/5511933333841?text=Ol%C3%A1%2C%20sou%20cliente%20NGT%20e%20preciso%20de%20suporte";
 
 export default function Suporte() {
   return (
@@ -35,7 +35,7 @@ export default function Suporte() {
           poucos minutos em horário comercial.
         </p>
         <div className="mt-6 font-mono text-[12px] uppercase tracking-[0.25em] opacity-90">
-          +55 19 99561-9838 →
+          +55 11 93333-3841 →
         </div>
       </Link>
 
@@ -43,10 +43,10 @@ export default function Suporte() {
         <InfoCard icon={Mail} title="E-mail">
           Para tickets com anexo grande ou que exigem registro.
           <Link
-            href="mailto:nomosgtorg@gmail.com"
+            href="mailto:contato@nomosgt.com.br"
             className="block mt-2 text-[color:var(--color-brand)] hover:underline"
           >
-            nomosgtorg@gmail.com
+            contato@nomosgt.com.br
           </Link>
         </InfoCard>
         <InfoCard icon={Clock} title="Horário de atendimento">

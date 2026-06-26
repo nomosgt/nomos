@@ -232,17 +232,17 @@ export function ContatoForm() {
             <ContactCard
               icon={MessageCircle}
               label="WhatsApp"
-              href="https://wa.me/5519995619838"
+              href="https://wa.me/5511933333841"
               external
-              value="+55 19 99561-9838"
+              value="+55 11 93333-3841"
               cta="Abrir WhatsApp"
               highlight
             />
             <ContactCard
               icon={Mail}
               label="Email"
-              href="mailto:nomosgtorg@gmail.com"
-              value="nomosgtorg@gmail.com"
+              href="mailto:contato@nomosgt.com.br"
+              value="contato@nomosgt.com.br"
               cta="Enviar email"
             />
             <ContactCard
