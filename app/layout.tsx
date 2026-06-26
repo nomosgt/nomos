@@ -20,9 +20,7 @@ const geistMono = Geist_Mono({
 // Fraunces — display editorial luxury com optical sizing variável.
 const fraunces = Fraunces({
   subsets: ["latin"],
-  weight: ["300", "400", "500", "600", "700"],
   style: ["normal", "italic"],
-  axes: ["SOFT", "WONK", "opsz"],
   variable: "--font-fraunces",
   display: "swap",
 });
