@@ -41,7 +41,7 @@ export function Hero() {
           <div className="max-w-[1200px]">
             <SplitText
               as="h1"
-              text="Conheça a NOMOS GT."
+              text="Conheça a NOMOS GT"
               className="font-serif text-[clamp(2.75rem,7vw,7rem)] leading-[0.95] tracking-[-0.035em] text-[color:var(--color-ink)]"
               stagger={0.04}
               splitBy="word"

@@ -22,10 +22,10 @@
   --color-paper: #EAEBEF;          /* off-white levemente azulado — texto em fundo escuro (não conflita com shadcn) */
   --color-paper-dim: #B8BAC2;      /* cinza claro acinzentado p/ texto secundário em fundo escuro */
 
-  /* Fonts */
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, sans-serif;
+  /* Fonts — Fraunces unificada em 100% do site (sans, serif e mono) */
+  --font-sans: var(--font-fraunces), "Bodoni Moda", Georgia, "Times New Roman", serif;
   --font-serif: var(--font-fraunces), "Bodoni Moda", Georgia, "Times New Roman", serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  --font-mono: var(--font-fraunces), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Type scale (display) */
   --text-display-2xl: clamp(4.5rem, 11vw, 11rem);
@@ -284,6 +284,4 @@
   --sidebar-primary-foreground: oklch(0.985 0 0);
   --sidebar-accent: oklch(0.269 0 0);
   --sidebar-accent-foreground: oklch(0.985 0 0);
-  --sidebar-border: oklch(1 0 0 / 10%);
-  --sidebar-ring: oklch(0.556 0 0);
-}
+  --sidebar-bord
