@@ -114,7 +114,7 @@ export function MapaBrasil() {
               <svg
                 viewBox="0 0 560 620"
                 className="w-full h-auto"
-                aria-label="Mapa do Brasil com 27 capitais"
+                aria-label="Mapa do Brasil com 26 estados e Distrito Federal"
               >
                 <defs>
                   <pattern id="mapGrid" x="0" y="0" width="40" height="40" patternUnits="userSpaceOnUse">

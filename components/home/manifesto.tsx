@@ -9,7 +9,7 @@ const PILLARS = [
   "✦",
   "R$ 100M+ recuperados",
   "✦",
-  "27 estados",
+  "26 estados",
   "✦",
   "Honorários por êxito",
   "✦",

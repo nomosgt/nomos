@@ -81,7 +81,7 @@ export function FotoEmCampo() {
               <div className="grid grid-cols-3 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
                 {[
                   { num: "60", label: "Meses analisados em cada cliente" },
-                  { num: "27", label: "Estados onde executamos teses" },
+                  { num: "26", label: "Estados onde executamos teses" },
                   { num: "12", label: "Setores com cases recentes" },
                 ].map((s) => (
                   <div
