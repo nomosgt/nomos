@@ -324,10 +324,20 @@ export function CnpjAnalyzer() {
                     </Card>
                   </>
                 ) : (
-                  <div className="p-6 border border-amber-200 bg-amber-50 text-[13px] text-amber-900 leading-relaxed">
-                    <strong>Análise IA indisponível.</strong> Dados da empresa
-                    carregaram, mas a análise tributária automática não pôde ser
-                    gerada agora. Entre em contato para uma análise manual.
+                  <div className="p-6 border border-amber-200 bg-amber-50 text-[13px] text-amber-900 leading-relaxed space-y-2">
+                    <p>
+                      <strong>Análise IA indisponível.</strong> Dados da empresa
+                      carregaram, mas a análise tributária automática não pôde ser
+                      gerada agora. Entre em contato para uma análise manual.
+                    </p>
+                    {(result as CnpjResponse & { analise_debug?: string })
+                      .analise_debug && (
+                      <p className="font-mono text-[11px] text-amber-700 break-all border-t border-amber-200 pt-2 mt-2">
+                        <strong>Debug:</strong>{" "}
+                        {(result as CnpjResponse & { analise_debug?: string })
+                          .analise_debug}
+                      </p>
+                    )}
                   </div>
                 )}
 

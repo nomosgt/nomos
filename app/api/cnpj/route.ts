@@ -4,7 +4,6 @@ import {
   fetchBrasilApi,
   fetchReceitaWs,
   normalize,
-  type CnpjRaw,
 } from "@/lib/cnpj/fetchers";
 import { analisarComClaude } from "@/lib/cnpj/analyze";
 import { createAdminClient } from "@/lib/supabase/admin";
@@ -30,20 +29,19 @@ export async function POST(req: Request) {
   try {
     body = await req.json();
   } catch {
-    return NextResponse.json({ error: "JSON inválido" }, { status: 400 });
+    return NextResponse.json({ error: "JSON invalido" }, { status: 400 });
   }
 
   const parsed = cnpjRequestSchema.safeParse(body);
   if (!parsed.success) {
     const fe = parsed.error.flatten().fieldErrors;
     return NextResponse.json(
-      { error: fe.cnpj?.[0] || "CNPJ inválido", issues: fe },
+      { error: fe.cnpj?.[0] || "CNPJ invalido", issues: fe },
       { status: 422 },
     );
   }
   const { cnpj } = parsed.data;
 
-  // Busca em paralelo nas 2 fontes — se uma falhar, segue com a outra
   const [brasil, receita] = await Promise.all([
     fetchBrasilApi(cnpj),
     fetchReceitaWs(cnpj).catch(() => null),
@@ -53,7 +51,7 @@ export async function POST(req: Request) {
     return NextResponse.json(
       {
         error:
-          "Não consegui consultar esse CNPJ nas fontes públicas. Verifique se está correto ou tente novamente em alguns minutos.",
+          "Nao consegui consultar esse CNPJ nas fontes publicas. Verifique se esta correto ou tente novamente em alguns minutos.",
       },
       { status: 502 },
     );
@@ -61,17 +59,20 @@ export async function POST(req: Request) {
 
   const empresa = normalize(brasil, receita);
 
-  // Análise via Claude (silencioso se ANTHROPIC_API_KEY ausente)
-  const analise = await analisarComClaude({ cnpj, ...empresa }).catch((e) => {
-    console.error("[api/cnpj] erro Claude:", e);
-    return null;
-  });
+  const analiseResult = await analisarComClaude({ cnpj, ...empresa }).catch(
+    (e) => {
+      const msg = e instanceof Error ? e.message : String(e);
+      console.error("[api/cnpj] erro Claude:", msg);
+      return { analise: null, debug: `Excecao geral: ${msg}` };
+    },
+  );
+  const analise = analiseResult.analise;
+  const analiseDebug = analiseResult.debug;
 
   const fonte: ("brasilapi" | "receitaws")[] = [];
   if (brasil) fonte.push("brasilapi");
   if (receita) fonte.push("receitaws");
 
-  // Persist no Supabase — REAL fire-and-forget (sem await, não bloqueia)
   if (isSupabaseConfigured()) {
     try {
       const supabase = createAdminClient();
@@ -104,11 +105,12 @@ export async function POST(req: Request) {
     }
   }
 
-  const response: CnpjResponse = {
+  const response: CnpjResponse & { analise_debug?: string } = {
     cnpj,
     empresa,
     analise,
     fonte,
+    ...(analiseDebug ? { analise_debug: analiseDebug } : {}),
   };
   return NextResponse.json(response, { status: 200 });
 }

@@ -1,63 +1,38 @@
 import { analiseSchema, type Analise } from "@/lib/validation/cnpj";
 
-/**
- * Manda os dados da empresa pra Claude e pede análise tributária estruturada.
- *
- * Sem ANTHROPIC_API_KEY: retorna null (a UI mostra apenas dados da empresa,
- * sem a parte de análise).
- */
+const SYSTEM_PROMPT = `Voce e um consultor tributario senior da NOMOS GT — uma butique brasileira especializada em recuperacao de creditos tributarios para CFOs de medio e grande porte.
 
-const SYSTEM_PROMPT = `Você é um consultor tributário sênior da NOMOS GT — uma butique brasileira especializada em recuperação de créditos tributários para CFOs de médio e grande porte.
+Voce recebe dados publicos de um CNPJ (razao social, CNAE, porte, capital social, situacao cadastral, socios, municipio) e deve gerar uma ANALISE PRELIMINAR de oportunidades tributarias.
 
-Você recebe dados públicos de um CNPJ (razão social, CNAE, porte, capital social, situação cadastral, sócios, município) e deve gerar uma ANÁLISE PRELIMINAR de oportunidades tributárias.
-
-Princípios:
+Principios:
 1. Honesto. Se faltar dado, diga "inconclusivo". Nunca invente.
-2. Específico ao setor (use o CNAE para inferir). Indústria, comércio, serviços e logística têm perfis bem distintos.
-3. Conservador no perfil tributário. Empresas com porte "DEMAIS" ou capital alto provavelmente são Lucro Real; portes menores tendem a Presumido; ME/EPP costumam ser Simples Nacional — mas o CNAE também influencia.
-4. Foco nas 6 teses NGT principais:
-   - PIS/COFINS sobre base própria (Tema 69 — exclusão ICMS da base)
-   - Exclusão ISS da base PIS/COFINS (relevante pra prestadoras de serviço)
-   - Créditos IRPJ/CSLL (Lucro Real — Selic, subvenções estaduais, etc.)
-   - Créditos PIS/COFINS administrativo (insumos, monofásico, ST)
-   - Créditos ICMS (energia, ST, bonificações)
-   - Créditos ICMS Comércio (recuperações setoriais específicas)
-5. Inglês NÃO. Português técnico.
+2. Especifico ao setor (use o CNAE para inferir).
+3. Conservador no perfil tributario. Empresas grandes tendem a Lucro Real; medias a Presumido; ME/EPP a Simples Nacional.
+4. Foco nas teses NGT: Tema 69, ISS, IRPJ/CSLL, PIS/COFINS admin, ICMS energia/ST, ICMS Comercio.
+5. Portugues tecnico, conciso.
 
-Retorne SEMPRE JSON válido seguindo o schema fornecido.`;
+Retorne SEMPRE JSON valido seguindo o schema fornecido.`;
 
 const TOOL_SCHEMA = {
   name: "registrar_analise",
-  description: "Registra a análise tributária estruturada da empresa.",
+  description: "Registra a analise tributaria estruturada da empresa.",
   input_schema: {
     type: "object",
     properties: {
       perfil_tributario: {
         type: "string",
         enum: ["lucro_real", "lucro_presumido", "simples", "inconclusivo"],
-        description:
-          "Perfil tributário provável da empresa baseado em porte, capital e CNAE.",
       },
-      justificativa_perfil: {
-        type: "string",
-        description:
-          "Por que esse perfil foi inferido. 1-2 frases curtas.",
-      },
+      justificativa_perfil: { type: "string" },
       oportunidades: {
         type: "array",
         maxItems: 6,
         items: {
           type: "object",
           properties: {
-            nome: { type: "string", description: "Nome da tese." },
-            aplicabilidade: {
-              type: "string",
-              enum: ["alta", "media", "baixa"],
-            },
-            justificativa: {
-              type: "string",
-              description: "Por que essa tese se aplica (ou não) ao caso.",
-            },
+            nome: { type: "string" },
+            aplicabilidade: { type: "string", enum: ["alta", "media", "baixa"] },
+            justificativa: { type: "string" },
           },
           required: ["nome", "aplicabilidade", "justificativa"],
         },
@@ -74,11 +49,7 @@ const TOOL_SCHEMA = {
           required: ["ponto", "descricao"],
         },
       },
-      proxima_acao: {
-        type: "string",
-        description:
-          "Próxima ação concreta recomendada (uma frase). Ex: 'Agendar diagnóstico de 30 minutos pra revisar PIS/COFINS retroativo dos últimos 60 meses.'",
-      },
+      proxima_acao: { type: "string" },
     },
     required: [
       "perfil_tributario",
@@ -90,26 +61,31 @@ const TOOL_SCHEMA = {
   },
 };
 
+export interface AnalyzeResult {
+  analise: Analise | null;
+  debug?: string;
+}
+
 export async function analisarComClaude(
   empresa: Record<string, unknown>,
-): Promise<Analise | null> {
+): Promise<AnalyzeResult> {
   const apiKey = process.env.ANTHROPIC_API_KEY;
   if (!apiKey) {
-    console.warn("[cnpj] ANTHROPIC_API_KEY ausente — pulando análise IA.");
-    return null;
+    const msg = "ANTHROPIC_API_KEY ausente nas env vars do Vercel.";
+    console.warn("[cnpj]", msg);
+    return { analise: null, debug: msg };
   }
 
-  const model = process.env.ANTHROPIC_MODEL || "claude-sonnet-4-6";
+  const model = process.env.ANTHROPIC_MODEL || "claude-haiku-4-5-20251001";
 
-  const userMessage = `Analise essa empresa para qualificação tributária preliminar:
+  const userMessage = `Analise essa empresa para qualificacao tributaria preliminar:
 
 \`\`\`json
 ${JSON.stringify(empresa, null, 2)}
 \`\`\`
 
-Use a ferramenta "registrar_analise" para devolver a análise estruturada.`;
+Use a ferramenta "registrar_analise" para devolver a analise estruturada.`;
 
-  // Timeout de 15s — se Claude demorar, devolve null e segue sem análise IA
   const ctrl = new AbortController();
   const t = setTimeout(() => ctrl.abort(), 15000);
 
@@ -134,8 +110,9 @@ Use a ferramenta "registrar_analise" para devolver a análise estruturada.`;
 
     if (!res.ok) {
       const text = await res.text();
-      console.error("[cnpj] Anthropic error:", res.status, text);
-      return null;
+      const msg = `Anthropic HTTP ${res.status} — ${text.slice(0, 300)}`;
+      console.error("[cnpj]", msg);
+      return { analise: null, debug: msg };
     }
 
     const json = (await res.json()) as {
@@ -144,17 +121,24 @@ Use a ferramenta "registrar_analise" para devolver a análise estruturada.`;
     const toolUse = json.content.find(
       (c) => c.type === "tool_use" && c.name === "registrar_analise",
     );
-    if (!toolUse?.input) return null;
+    if (!toolUse?.input) {
+      return {
+        analise: null,
+        debug: "Claude nao usou a ferramenta registrar_analise.",
+      };
+    }
 
     const parsed = analiseSchema.safeParse(toolUse.input);
     if (!parsed.success) {
-      console.error("[cnpj] Claude output nao bate com schema:", parsed.error);
-      return null;
+      const msg = `Output Claude nao bate com schema: ${parsed.error.message.slice(0, 200)}`;
+      console.error("[cnpj]", msg);
+      return { analise: null, debug: msg };
     }
-    return parsed.data;
+    return { analise: parsed.data };
   } catch (err) {
-    console.error("[cnpj] excecao chamando Claude:", err);
-    return null;
+    const msg = err instanceof Error ? err.message : String(err);
+    console.error("[cnpj] excecao chamando Claude:", msg);
+    return { analise: null, debug: `Excecao: ${msg}` };
   } finally {
     clearTimeout(t);
   }
