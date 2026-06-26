@@ -77,27 +77,6 @@ export function FotoEmCampo() {
               </p>
             </Reveal>
 
-            <Reveal delay={0.2}>
-              <div className="grid grid-cols-3 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
-                {[
-                  { num: "60", label: "Meses analisados em cada cliente" },
-                  { num: "26", label: "Estados onde executamos teses" },
-                  { num: "12", label: "Setores com cases recentes" },
-                ].map((s) => (
-                  <div
-                    key={s.num}
-                    className="bg-[color:var(--color-background)] p-5 lg:p-6"
-                  >
-                    <div className="font-mono text-3xl lg:text-4xl tracking-tight text-[color:var(--color-ink)] leading-none">
-                      {s.num}
-                    </div>
-                    <div className="mt-3 text-[12px] leading-snug text-[color:var(--color-ink-muted)]">
-                      {s.label}
-                    </div>
-                  </div>
-                ))}
-              </div>
-            </Reveal>
           </div>
         </div>
       </Container>
