@@ -186,7 +186,7 @@ export function SimuladorWizard() {
     setCnpjError(null);
     setCnpjLoading(true);
     const ctrl = new AbortController();
-    const tid = setTimeout(() => ctrl.abort(), 25000);
+    const tid = setTimeout(() => ctrl.abort(), 32000);
     try {
       const res = await fetch("/api/cnpj", {
         method: "POST",

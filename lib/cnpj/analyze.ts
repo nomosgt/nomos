@@ -86,8 +86,9 @@ ${JSON.stringify(empresa, null, 2)}
 
 Use a ferramenta "registrar_analise" para devolver a analise estruturada.`;
 
+  // Timeout 28s — Vercel maxDuration eh 30s
   const ctrl = new AbortController();
-  const t = setTimeout(() => ctrl.abort(), 15000);
+  const t = setTimeout(() => ctrl.abort(), 28000);
 
   try {
     const res = await fetch("https://api.anthropic.com/v1/messages", {
@@ -100,7 +101,7 @@ Use a ferramenta "registrar_analise" para devolver a analise estruturada.`;
       },
       body: JSON.stringify({
         model,
-        max_tokens: 2000,
+        max_tokens: 1200,
         system: SYSTEM_PROMPT,
         tools: [TOOL_SCHEMA],
         tool_choice: { type: "tool", name: "registrar_analise" },
