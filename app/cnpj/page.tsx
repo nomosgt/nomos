@@ -1,18 +1,9 @@
-import type { Metadata } from "next";
-import { CnpjHero } from "@/components/cnpj/cnpj-hero";
-import { CnpjAnalyzer } from "@/components/cnpj/cnpj-analyzer";
+import { redirect } from "next/navigation";
 
-export const metadata: Metadata = {
-  title: "Análise CNPJ · NOMOS GT",
-  description:
-    "Cole o CNPJ da sua empresa e receba uma leitura tributária preliminar — perfil provável, teses aplicáveis e próxima ação concreta. Sem custo.",
-};
-
+/**
+ * Pagina /cnpj redireciona para /simulador.
+ * A analise de CNPJ agora vive como Etapa 1 do simulador unificado.
+ */
 export default function CnpjPage() {
-  return (
-    <>
-      <CnpjHero />
-      <CnpjAnalyzer />
-    </>
-  );
+  redirect("/simulador");
 }

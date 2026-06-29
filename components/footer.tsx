@@ -6,7 +6,6 @@ const FOOTER_LINKS = {
   Site: [
     { href: "/sobre", label: "Sobre" },
     { href: "/servicos", label: "Serviços" },
-    { href: "/cnpj", label: "Análise CNPJ" },
     { href: "/simulador", label: "Simulador" },
     { href: "/blog", label: "Blog" },
     { href: "/contato", label: "Contato" },
