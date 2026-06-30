@@ -60,7 +60,7 @@ export function DonutChart({ segments, total, size = 280, strokeWidth = 36 }: Pr
             strokeWidth={strokeWidth}
             opacity="0.4"
           />
-          {/* Segmentos animados */}
+          {/* Segmentos animados — anima strokeDasharray (length cresce de 0 ate arc.length) */}
           {arcs.map((arc) => (
             <motion.circle
               key={arc.label}
@@ -70,11 +70,16 @@ export function DonutChart({ segments, total, size = 280, strokeWidth = 36 }: Pr
               fill="none"
               stroke={arc.color}
               strokeWidth={strokeWidth}
-              strokeDasharray={`${arc.length} ${circumference}`}
               strokeDashoffset={-circumference + arc.offset}
               strokeLinecap="butt"
-              initial={{ pathLength: 0, opacity: 0 }}
-              whileInView={{ pathLength: 1, opacity: 1 }}
+              initial={{
+                strokeDasharray: `0 ${circumference}`,
+                opacity: 0,
+              }}
+              whileInView={{
+                strokeDasharray: `${arc.length} ${circumference}`,
+                opacity: 1,
+              }}
               viewport={{ once: true }}
               transition={{
                 duration: 1.4,
