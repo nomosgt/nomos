@@ -1,7 +1,7 @@
 "use client";
 
 import { useEffect, useRef, useState } from "react";
-import { useInView, useMotionValue, animate } from "framer-motion";
+import { useMotionValue, animate } from "framer-motion";
 
 interface CountUpProps {
   to: number;
@@ -23,19 +23,50 @@ export function CountUp({
   className,
 }: CountUpProps) {
   const ref = useRef<HTMLSpanElement>(null);
-  const inView = useInView(ref, { once: true, margin: "-10%" });
   const [display, setDisplay] = useState(from);
   const mv = useMotionValue(from);
+  const startedRef = useRef(false);
 
   useEffect(() => {
-    if (!inView) return;
-    const controls = animate(mv, to, {
-      duration,
-      ease: [0.22, 1, 0.36, 1],
-      onUpdate: (v) => setDisplay(Math.round(v)),
-    });
-    return () => controls.stop();
-  }, [inView, mv, to, duration]);
+    const startAnimation = () => {
+      if (startedRef.current) return;
+      startedRef.current = true;
+      animate(mv, to, {
+        duration,
+        ease: [0.22, 1, 0.36, 1],
+        onUpdate: (v) => setDisplay(Math.round(v)),
+      });
+    };
+
+    const node = ref.current;
+
+    if (typeof IntersectionObserver === "undefined" || !node) {
+      startAnimation();
+      return;
+    }
+
+    const hardFallback = setTimeout(startAnimation, 1500);
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        for (const entry of entries) {
+          if (entry.isIntersecting && entry.intersectionRatio > 0) {
+            clearTimeout(hardFallback);
+            startAnimation();
+            observer.disconnect();
+          }
+        }
+      },
+      { threshold: [0, 0.01, 0.1, 0.5] },
+    );
+
+    observer.observe(node);
+
+    return () => {
+      clearTimeout(hardFallback);
+      observer.disconnect();
+    };
+  }, [mv, to, duration]);
 
   const formatted = display
     .toString()

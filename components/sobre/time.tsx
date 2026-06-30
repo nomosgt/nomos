@@ -23,7 +23,7 @@ export function Time() {
           </div>
 
           <Reveal>
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
+            <div className="border border-[color:var(--color-hairline)] max-w-sm">
               <div className="bg-[color:var(--color-background)] p-8 lg:p-10">
                 <div className="aspect-square bg-[color:var(--color-ink)] mb-6 relative overflow-hidden">
                   <Image
@@ -46,28 +46,6 @@ export function Time() {
                 </p>
               </div>
 
-              <div className="bg-[color:var(--color-background)] p-8 lg:p-10 flex flex-col">
-                <div className="aspect-square bg-[color:var(--color-surface)] mb-6 relative overflow-hidden flex items-center justify-center">
-                  <div className="text-center">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-2">
-                      Em breve
-                    </div>
-                    <div className="font-serif text-5xl text-[color:var(--color-ink)]/20">
-                      ✦
-                    </div>
-                  </div>
-                </div>
-                <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-2">
-                  Time NGT
-                </div>
-                <h3 className="font-serif text-2xl text-[color:var(--color-ink-faint)] mb-2">
-                  Em expansão
-                </h3>
-                <p className="text-[13px] text-[color:var(--color-ink-muted)] leading-relaxed">
-                  Equipe técnica em estruturação. Anunciaremos os novos
-                  integrantes conforme as posições forem confirmadas.
-                </p>
-              </div>
             </div>
           </Reveal>
         </div>
