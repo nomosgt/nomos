@@ -28,13 +28,18 @@ export const teseSchema = z.object({
 export type Tese = z.infer<typeof teseSchema>;
 
 export const analiseSchema = z.object({
-  perfil_tributario: perfilTributarioSchema,
-  justificativa_perfil: z.string(),
-  oportunidades: z.array(teseSchema).max(8),
+  perfil_tributario: perfilTributarioSchema.default("inconclusivo"),
+  justificativa_perfil: z.string().default("Sem justificativa fornecida."),
+  oportunidades: z.array(teseSchema).max(8).default([]),
   riscos: z
     .array(z.object({ ponto: z.string(), descricao: z.string() }))
-    .max(5),
-  proxima_acao: z.string(),
+    .max(5)
+    .default([]),
+  proxima_acao: z
+    .string()
+    .default(
+      "Agende um diagnóstico técnico de 30 minutos com nossa equipe para detalhar o potencial específico do seu caso.",
+    ),
 });
 export type Analise = z.infer<typeof analiseSchema>;
 

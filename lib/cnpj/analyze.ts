@@ -10,6 +10,7 @@ Principios:
 3. Conservador no perfil tributario. Empresas grandes tendem a Lucro Real; medias a Presumido; ME/EPP a Simples Nacional.
 4. Foco nas teses NGT: Tema 69, ISS, IRPJ/CSLL, PIS/COFINS admin, ICMS energia/ST, ICMS Comercio.
 5. Portugues tecnico, conciso.
+6. SEMPRE preencha TODOS os campos do schema, inclusive 'proxima_acao'. Nunca omita campos.
 
 Retorne SEMPRE JSON valido seguindo o schema fornecido.`;
 
