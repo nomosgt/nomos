@@ -45,6 +45,7 @@ interface Props {
   faturamento: number;
   setor: string;
   cnpjData: (CnpjResponse & { analise_debug?: string }) | null;
+  janelaAnos: number;
   onReset: () => void;
 }
 
@@ -54,13 +55,16 @@ export function ResultExtended({
   faturamento,
   setor,
   cnpjData,
+  janelaAnos,
   onReset,
 }: Props) {
-  const empresaPct = (total / 5 / faturamento) * 100; // recuperação anualizada
+  const empresaPct = (total / janelaAnos / faturamento) * 100; // recuperação anualizada
   const benchmark = getSectorBenchmark(setor);
   const analise = cnpjData?.analise;
   const prazoMeses = analise?.prazo_estimado_meses || benchmark.prazo_medio_meses;
   const score = analise?.score_aderencia ?? 65;
+  const janelaMeses = Math.round(janelaAnos * 12);
+  const empresaJovem = janelaAnos < 4.5;
 
   return (
     <motion.div
@@ -99,7 +103,7 @@ export function ResultExtended({
 
           <div className="relative">
             <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/50 mb-3">
-              Valor estimado · janela retroativa
+              Valor estimado · janela efetiva {janelaMeses} meses
             </div>
             <div className="font-mono text-[clamp(3rem,12vw,9rem)] tracking-[-0.05em] leading-[0.9]">
               <span className="text-[color:var(--color-paper)]/60 text-[0.4em] mr-2 align-top">
@@ -110,6 +114,28 @@ export function ResultExtended({
           </div>
         </div>
       </div>
+
+      {/* Aviso de empresa jovem — janela reduzida */}
+      {empresaJovem && cnpjData?.empresa?.data_abertura && (
+        <motion.div
+          initial={{ opacity: 0, y: 8 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          className="border border-amber-200 bg-amber-50 p-5 lg:p-6 flex flex-col md:flex-row gap-4 md:items-center"
+        >
+          <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-amber-700">
+            <AlertTriangle className="w-4 h-4" />
+            Janela reduzida
+          </div>
+          <p className="text-[13px] leading-relaxed text-amber-900 flex-1">
+            <strong>Empresa aberta em {cnpjData.empresa.data_abertura}.</strong>{" "}
+            A janela efetiva de retroatividade é de aproximadamente{" "}
+            <strong>{janelaMeses} meses</strong> (não os 60 meses máximos
+            permitidos por lei). A estimativa abaixo já considera essa limitação
+            cronológica.
+          </p>
+        </motion.div>
+      )}
 
       {/* Disclaimer institucional */}
       <DisclaimerCard setor={benchmark.setor} />
@@ -139,7 +165,7 @@ export function ResultExtended({
           setorPct={benchmark.recuperacao_media_pct}
           setorLabel={benchmark.setor}
         />
-        <TimelineRetroativa prazoMeses={prazoMeses} />
+        <TimelineRetroativa prazoMeses={prazoMeses} janelaMeses={janelaMeses} />
       </div>
 
       {/* Análise IA */}
@@ -267,7 +293,7 @@ export function ResultExtended({
           href="/contato"
           className="group inline-flex items-center justify-center gap-2 px-8 py-5 bg-[color:var(--color-brand)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(30,58,138,0.5)]"
         >
-          Agendar diagnóstico técnico
+          Agendar diagnostico tecnico
           <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
         </Link>
         <button
@@ -275,7 +301,7 @@ export function ResultExtended({
           className="group inline-flex items-center justify-center gap-2 px-8 py-5 border border-[color:var(--color-ink)] text-[color:var(--color-ink)] text-[13px] font-medium transition-all duration-300 hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)]"
         >
           <RotateCcw className="w-3.5 h-3.5" />
-          Simular outro cenário
+          Simular outro cenario
         </button>
       </div>
     </motion.div>

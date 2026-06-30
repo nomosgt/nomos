@@ -11,6 +11,7 @@ Principios:
 4. Foco nas teses NGT: Tema 69, ISS, IRPJ/CSLL, PIS/COFINS admin, ICMS energia/ST, ICMS Comercio.
 5. Portugues tecnico, conciso.
 6. SEMPRE preencha TODOS os campos do schema, inclusive 'proxima_acao'. Nunca omita campos.
+7. CRITICO: considere a data_abertura da empresa. Se for recente (<2 anos), o potencial de recuperacao retroativa eh PROPORCIONALMENTE menor. Mencione isso explicitamente no cenario_setorial ou justificativa_perfil. Score de aderencia DEVE refletir essa limitacao.
 
 Retorne SEMPRE JSON valido seguindo o schema fornecido.`;
 

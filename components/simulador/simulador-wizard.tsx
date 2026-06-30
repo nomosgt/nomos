@@ -57,21 +57,50 @@ const MAX = 500_000_000;
 const MIN_DI = 100_000;
 const MAX_DI = 200_000_000;
 
-function calcular(rb: number, di: number, setor: Setor, regime: Regime) {
+/**
+ * Calcula idade da empresa em anos (capada em 5 — limite legal de retroatividade).
+ * Aceita formato "YYYY-MM-DD" (BrasilAPI) ou "DD/MM/YYYY" (ReceitaWS).
+ * Sem data: assume 5 anos (cenario maduro).
+ */
+function calcularIdadeAnos(dataAbertura: string | null | undefined): number {
+  if (!dataAbertura) return 5;
+  let d: Date | null = null;
+  const isoMatch = dataAbertura.match(/^(\d{4})-(\d{2})-(\d{2})/);
+  const brMatch = dataAbertura.match(/^(\d{2})\/(\d{2})\/(\d{4})/);
+  if (isoMatch) {
+    d = new Date(Number(isoMatch[1]), Number(isoMatch[2]) - 1, Number(isoMatch[3]));
+  } else if (brMatch) {
+    d = new Date(Number(brMatch[3]), Number(brMatch[2]) - 1, Number(brMatch[1]));
+  }
+  if (!d || isNaN(d.getTime())) return 5;
+  const hoje = new Date();
+  const diffMs = hoje.getTime() - d.getTime();
+  const anos = diffMs / (1000 * 60 * 60 * 24 * 365.25);
+  return Math.max(0.1, Math.min(5, anos));
+}
+
+function calcular(
+  rb: number,
+  di: number,
+  setor: Setor,
+  regime: Regime,
+  janelaAnos: number = 5,
+) {
   const segments: { label: string; value: number; color: string; description: string }[] = [];
-  const judicial = Math.round((0.08 * rb + 0.03 * rb) * 5);
+  const j = janelaAnos;
+  const judicial = Math.round((0.08 * rb + 0.03 * rb) * j);
   segments.push({ label: "Tese Judicial", value: judicial, color: "#163A8A", description: "" });
   const administrativa =
     regime === "real"
-      ? Math.round((0.08 * rb + 0.15 * di + 0.03 * rb) * 5)
-      : Math.round(0.15 * di * 5);
+      ? Math.round((0.08 * rb + 0.15 * di + 0.03 * rb) * j)
+      : Math.round(0.15 * di * j);
   segments.push({ label: "Tese Administrativa", value: administrativa, color: "#8C6F3F", description: "" });
   if (setor === "comercio") {
-    const icmsComercio = Math.round(0.15 * di * 5);
+    const icmsComercio = Math.round(0.15 * di * j);
     segments.push({ label: "Créditos ICMS — Comércio", value: icmsComercio, color: "#8FA8D6", description: "" });
   }
   const total = segments.reduce((s, seg) => s + seg.value, 0);
-  return { total, segments, regime };
+  return { total, segments, regime, janelaAnos: j };
 }
 
 function valueToSlider(value: number) {
@@ -153,10 +182,15 @@ export function SimuladorWizard() {
   const [leadError, setLeadError] = useState<string | null>(null);
   const [leadSent, setLeadSent] = useState(false);
 
+  const janelaAnos = useMemo(
+    () => calcularIdadeAnos(cnpjData?.empresa?.data_abertura),
+    [cnpjData?.empresa?.data_abertura],
+  );
+
   const result = useMemo(() => {
     if (!setor || !regime) return null;
-    return calcular(faturamento, despesa, setor, regime);
-  }, [faturamento, despesa, setor, regime]);
+    return calcular(faturamento, despesa, setor, regime, janelaAnos);
+  }, [faturamento, despesa, setor, regime, janelaAnos]);
 
   const canNext =
     (step === 1) || // CNPJ opcional
@@ -655,6 +689,7 @@ export function SimuladorWizard() {
                 faturamento={faturamento}
                 setor={setor}
                 cnpjData={cnpjData}
+                janelaAnos={result.janelaAnos}
                 onReset={reset}
               />
             )}
@@ -794,12 +829,11 @@ export function SimuladorWizard() {
               </form>
 
               <p className="mt-6 text-[10px] text-[color:var(--color-ink-faint)] leading-relaxed">
-                Seus dados ficam em sigilo. Não compartilhamos com terceiros.
+                Seus dados ficam em sigilo. Nao compartilhamos com terceiros.
                 Consulta gratuita, sem compromisso.
               </p>
             </motion.div>
           </motion.div>
-      
         )}
       </AnimatePresence>
     </section>

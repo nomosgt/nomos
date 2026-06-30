@@ -4,12 +4,13 @@ import { motion } from "framer-motion";
 
 interface Props {
   prazoMeses: number;
+  janelaMeses?: number; // default 60 (5 anos)
 }
 
 /**
- * Timeline horizontal mostrando janela retroativa de 5 anos + prazo até primeira recuperação.
+ * Timeline horizontal mostrando janela retroativa real + prazo até primeira recuperação.
  */
-export function TimelineRetroativa({ prazoMeses }: Props) {
+export function TimelineRetroativa({ prazoMeses, janelaMeses = 60 }: Props) {
   const currentYear = new Date().getFullYear();
   const startYear = currentYear - 5;
 
@@ -84,10 +85,10 @@ export function TimelineRetroativa({ prazoMeses }: Props) {
       >
         <div>
           <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/50 mb-2">
-            Período retroativo
+            Janela efetiva
           </div>
           <div className="font-mono text-2xl lg:text-3xl tracking-tight text-[color:var(--color-paper)]">
-            60 meses
+            {janelaMeses} meses
           </div>
         </div>
         <div>
@@ -95,6 +96,7 @@ export function TimelineRetroativa({ prazoMeses }: Props) {
             Prazo estimado · 1ª recuperação
           </div>
           <div className="font-mono text-2xl lg:text-3xl tracking-tight text-[color:var(--color-brand-soft)]">
+            ~{prazoMeses} meses
             ~{prazoMeses} meses
           </div>
         </div>
