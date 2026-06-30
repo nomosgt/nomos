@@ -52,7 +52,7 @@ const PERFIL_LABEL: Record<string, string> = {
   inconclusivo: "Inconclusivo",
 };
 
-const MIN = 1_000_000;
+const MIN = 500_000;
 const MAX = 500_000_000;
 const MIN_DI = 100_000;
 const MAX_DI = 200_000_000;
@@ -111,6 +111,7 @@ function sliderToValue(t: number) {
   if (v >= 100_000_000) return Math.round(v / 5_000_000) * 5_000_000;
   if (v >= 10_000_000) return Math.round(v / 500_000) * 500_000;
   if (v >= 1_000_000) return Math.round(v / 100_000) * 100_000;
+  if (v >= 500_000) return Math.round(v / 50_000) * 50_000;
   return Math.round(v / 10_000) * 10_000;
 }
 
@@ -510,11 +511,11 @@ export function SimuladorWizard() {
                     className="w-full h-1 appearance-none bg-[color:var(--color-hairline)] cursor-pointer [&::-webkit-slider-thumb]:appearance-none [&::-webkit-slider-thumb]:w-5 [&::-webkit-slider-thumb]:h-5 [&::-webkit-slider-thumb]:bg-[color:var(--color-ink)] [&::-webkit-slider-thumb]:rounded-full"
                   />
                   <div className="mt-4 flex justify-between font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)]">
-                    <span>R$ 1M</span>
+                    <span>R$ 500k</span>
                     <span>R$ 500M</span>
                   </div>
                   <div className="mt-8 flex flex-wrap gap-2">
-                    {[5_000_000, 25_000_000, 100_000_000, 250_000_000].map((preset) => (
+                    {[500_000, 2_000_000, 10_000_000, 50_000_000].map((preset) => (
                       <button
                         key={preset}
                         onClick={() => setFaturamento(preset)}
@@ -834,7 +835,7 @@ export function SimuladorWizard() {
               </p>
             </motion.div>
           </motion.div>
-        )}
+           )}
       </AnimatePresence>
     </section>
   );
