@@ -51,6 +51,26 @@ const TOOL_SCHEMA = {
         },
       },
       proxima_acao: { type: "string" },
+      score_aderencia: {
+        type: "number",
+        minimum: 0,
+        maximum: 100,
+        description: "0-100 quao aderente o perfil esta as teses NGT",
+      },
+      complexidade: {
+        type: "string",
+        enum: ["baixa", "media", "alta"],
+      },
+      prazo_estimado_meses: {
+        type: "number",
+        minimum: 3,
+        maximum: 36,
+        description: "Prazo estimado em meses ate a primeira recuperacao",
+      },
+      cenario_setorial: {
+        type: "string",
+        description: "1-2 frases sobre o cenario tributario do setor",
+      },
     },
     required: [
       "perfil_tributario",
@@ -58,6 +78,10 @@ const TOOL_SCHEMA = {
       "oportunidades",
       "riscos",
       "proxima_acao",
+      "score_aderencia",
+      "complexidade",
+      "prazo_estimado_meses",
+      "cenario_setorial",
     ],
   },
 };
@@ -102,7 +126,7 @@ Use a ferramenta "registrar_analise" para devolver a analise estruturada.`;
       },
       body: JSON.stringify({
         model,
-        max_tokens: 1200,
+        max_tokens: 1800,
         system: SYSTEM_PROMPT,
         tools: [TOOL_SCHEMA],
         tool_choice: { type: "tool", name: "registrar_analise" },

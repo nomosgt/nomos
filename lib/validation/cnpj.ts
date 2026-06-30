@@ -40,6 +40,29 @@ export const analiseSchema = z.object({
     .default(
       "Agende um diagnóstico técnico de 30 minutos com nossa equipe para detalhar o potencial específico do seu caso.",
     ),
+  // ===== Novos campos pra análise encorpada =====
+  score_aderencia: z
+    .number()
+    .min(0)
+    .max(100)
+    .default(60)
+    .describe("0-100 quão aderente o perfil é às teses recuperatórias da NGT"),
+  complexidade: z
+    .enum(["baixa", "media", "alta"])
+    .default("media")
+    .describe("Complexidade técnica esperada do caso"),
+  prazo_estimado_meses: z
+    .number()
+    .min(1)
+    .max(60)
+    .default(18)
+    .describe("Prazo estimado em meses até primeira recuperação"),
+  cenario_setorial: z
+    .string()
+    .default(
+      "O setor apresenta perfil tributário típico de empresas com oportunidades de revisão fiscal.",
+    )
+    .describe("Análise de 1-2 frases sobre o cenário do setor"),
 });
 export type Analise = z.infer<typeof analiseSchema>;
 

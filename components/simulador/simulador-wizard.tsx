@@ -20,6 +20,7 @@ import { Container } from "@/components/ui/section";
 import { formatBRL } from "@/lib/utils";
 import { CountUp } from "@/components/motion/count-up";
 import type { CnpjResponse } from "@/lib/validation/cnpj";
+import { ResultExtended } from "./result-extended";
 
 type Setor = "industria" | "comercio" | "servicos" | "logistica" | "tecnologia" | "outros";
 type Regime = "presumido" | "real";
@@ -646,137 +647,16 @@ export function SimuladorWizard() {
               </motion.div>
             )}
 
-            {step === 6 && result && (
-              <motion.div
-                key="step6-result"
-                initial={{ opacity: 0, y: 16 }}
-                animate={{ opacity: 1, y: 0 }}
-                transition={{ duration: 0.8, ease: [0.22, 1, 0.36, 1] }}
-              >
-                <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-brand)] mb-6">
-                  ✦ Estimativa preliminar
-                </div>
-                <h2 className="font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight mb-4 max-w-4xl">
-                  Potencial estimado de recuperação:
-                </h2>
 
-                <div className="mt-10 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] p-8 lg:p-16 grain relative overflow-hidden">
-                  <div className="absolute inset-0 pointer-events-none flex items-center justify-end pr-[5%] opacity-[0.07]">
-                    <svg className="w-[800px] h-[800px]" viewBox="0 0 800 800" fill="none" aria-hidden>
-                      {[0, 30, 60, 90, 120, 150, 180, 210, 240, 270, 300, 330].map((deg) => (
-                        <line key={deg} x1="400" y1="400" x2={400 + Math.cos((deg * Math.PI) / 180) * 400} y2={400 + Math.sin((deg * Math.PI) / 180) * 400} stroke="var(--color-paper)" strokeWidth="1" />
-                      ))}
-                    </svg>
-                  </div>
-                  <div className="relative">
-                    <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/50 mb-3">
-                      Valor estimado · janela retroativa
-                    </div>
-                    <div className="font-mono text-[clamp(3rem,12vw,9rem)] tracking-[-0.05em] leading-[0.9]">
-                      <span className="text-[color:var(--color-paper)]/60 text-[0.4em] mr-2 align-top">R$</span>
-                      <CountUp to={result.total} duration={2.4} separator="." />
-                    </div>
-                  </div>
-                </div>
-
-                {/* Analise IA do CNPJ se disponivel */}
-                {cnpjData?.analise && (
-                  <motion.div
-                    initial={{ opacity: 0, y: 12 }}
-                    animate={{ opacity: 1, y: 0 }}
-                    transition={{ delay: 0.3 }}
-                    className="mt-12 space-y-8"
-                  >
-                    <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-brand)] flex items-center gap-2">
-                      <Building2 className="w-3.5 h-3.5" />
-                      Análise técnica · {cnpjData.empresa.razao_social || "Empresa"}
-                    </div>
-
-                    <div>
-                      <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-3">
-                        Perfil tributário provável
-                      </div>
-                      <div className="font-serif text-3xl lg:text-4xl tracking-tight text-[color:var(--color-brand)] mb-2">
-                        {PERFIL_LABEL[cnpjData.analise.perfil_tributario] || cnpjData.analise.perfil_tributario}
-                      </div>
-                      <p className="text-[15px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-2xl">
-                        {cnpjData.analise.justificativa_perfil}
-                      </p>
-                    </div>
-
-                    {cnpjData.analise.oportunidades.length > 0 && (
-                      <div>
-                        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-4 flex items-center gap-2">
-                          <TrendingUp className="w-3.5 h-3.5" />
-                          Teses aplicáveis
-                        </div>
-                        <div className="space-y-3">
-                          {cnpjData.analise.oportunidades.map((o, i) => (
-                            <div key={i} className="grid grid-cols-1 md:grid-cols-[auto_1fr] gap-4 items-start p-5 border border-[color:var(--color-hairline)] bg-[color:var(--color-surface)]">
-                              <div className="md:w-40">
-                                <div className="font-serif text-lg text-[color:var(--color-ink)] mb-1">{o.nome}</div>
-                                <span className={`inline-block px-2 py-0.5 text-[10px] font-mono uppercase tracking-wider border ${APLICAB_COLOR[o.aplicabilidade] || ""}`}>
-                                  {o.aplicabilidade}
-                                </span>
-                              </div>
-                              <p className="text-[14px] leading-relaxed text-[color:var(--color-ink-muted)]">
-                                {o.justificativa}
-                              </p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-
-                    {cnpjData.analise.riscos.length > 0 && (
-                      <div>
-                        <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] mb-4 flex items-center gap-2">
-                          <AlertTriangle className="w-3.5 h-3.5" />
-                          Pontos de atenção
-                        </div>
-                        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
-                          {cnpjData.analise.riscos.map((r, i) => (
-                            <div key={i} className="bg-[color:var(--color-background)] p-5">
-                              <div className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-700 mb-2">{r.ponto}</div>
-                              <p className="text-[13px] leading-relaxed text-[color:var(--color-ink-muted)]">{r.descricao}</p>
-                            </div>
-                          ))}
-                        </div>
-                      </div>
-                    )}
-                  </motion.div>
-                )}
-
-                {cnpjData && !cnpjData.analise && (
-                  <div className="mt-10 p-6 border border-amber-200 bg-amber-50 text-[13px] text-amber-900 leading-relaxed space-y-2">
-                    <p>
-                      <strong>Análise IA indisponível.</strong> Os dados públicos da empresa carregaram, mas a análise tributária automática não pôde ser gerada agora.
-                    </p>
-                    {(cnpjData as CnpjResponse & { analise_debug?: string }).analise_debug && (
-                      <p className="font-mono text-[11px] text-amber-700 break-all border-t border-amber-200 pt-2 mt-2">
-                        <strong>Debug:</strong> {(cnpjData as CnpjResponse & { analise_debug?: string }).analise_debug}
-                      </p>
-                    )}
-                  </div>
-                )}
-
-                <div className="mt-12 flex flex-col sm:flex-row gap-3">
-                  <Link
-                    href="/contato"
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-5 bg-[color:var(--color-brand)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(30,58,138,0.5)]"
-                  >
-                    Agendar diagnóstico
-                    <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
-                  </Link>
-                  <button
-                    onClick={reset}
-                    className="group inline-flex items-center justify-center gap-2 px-8 py-5 border border-[color:var(--color-ink)] text-[color:var(--color-ink)] text-[13px] font-medium transition-all duration-300 hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)]"
-                  >
-                    <RotateCcw className="w-3.5 h-3.5" />
-                    Simular outro cenário
-                  </button>
-                </div>
-              </motion.div>
+            {step === 6 && result && setor && (
+              <ResultExtended
+                total={result.total}
+                segments={result.segments}
+                faturamento={faturamento}
+                setor={setor}
+                cnpjData={cnpjData}
+                onReset={reset}
+              />
             )}
           </AnimatePresence>
         </div>
@@ -919,6 +799,7 @@ export function SimuladorWizard() {
               </p>
             </motion.div>
           </motion.div>
+      
         )}
       </AnimatePresence>
     </section>
