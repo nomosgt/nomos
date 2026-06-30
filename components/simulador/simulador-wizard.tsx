@@ -60,15 +60,15 @@ const MAX_DI = 200_000_000;
 function calcular(rb: number, di: number, setor: Setor, regime: Regime) {
   const segments: { label: string; value: number; color: string; description: string }[] = [];
   const judicial = Math.round((0.08 * rb + 0.03 * rb) * 5);
-  segments.push({ label: "Tese Judicial", value: judicial, color: "var(--color-brand)", description: "" });
+  segments.push({ label: "Tese Judicial", value: judicial, color: "#163A8A", description: "" });
   const administrativa =
     regime === "real"
       ? Math.round((0.08 * rb + 0.15 * di + 0.03 * rb) * 5)
       : Math.round(0.15 * di * 5);
-  segments.push({ label: "Tese Administrativa", value: administrativa, color: "var(--color-brand-soft)", description: "" });
+  segments.push({ label: "Tese Administrativa", value: administrativa, color: "#8C6F3F", description: "" });
   if (setor === "comercio") {
     const icmsComercio = Math.round(0.15 * di * 5);
-    segments.push({ label: "Créditos ICMS — Comércio", value: icmsComercio, color: "var(--color-brand-dim)", description: "" });
+    segments.push({ label: "Créditos ICMS — Comércio", value: icmsComercio, color: "#8FA8D6", description: "" });
   }
   const total = segments.reduce((s, seg) => s + seg.value, 0);
   return { total, segments, regime };
