@@ -2,7 +2,6 @@
 
 import { motion } from "framer-motion";
 import { Database, Shield } from "lucide-react";
-import { TOTAL_CASES } from "@/lib/cnpj/sector-benchmarks";
 
 interface Props {
   setor: string;
@@ -27,17 +26,14 @@ export function DisclaimerCard({ setor }: Props) {
             NGT Insights
           </span>
         </div>
-        <div className="hidden md:block font-mono text-[11px] text-[color:var(--color-ink-muted)]">
-          {TOTAL_CASES}+ casos analisados
-        </div>
       </div>
 
       <div className="text-[13px] leading-relaxed text-[color:var(--color-ink-muted)] space-y-2">
         <p>
           <strong className="text-[color:var(--color-ink)]">Análise comparativa.</strong>{" "}
-          A estimativa combina os dados públicos da Receita Federal com benchmarks
-          construídos a partir do nosso banco interno de casos atendidos no mesmo
-          segmento ({setor}) e porte equivalente.
+          Estimativa construída a partir dos dados públicos da Receita Federal
+          e de comparativos com clientes do mesmo segmento ({setor}) atendidos
+          pelo nosso banco de dados.
         </p>
         <p className="text-[11px] text-[color:var(--color-ink-faint)] flex items-start gap-1.5 leading-snug">
           <Shield className="w-3 h-3 mt-0.5 flex-shrink-0" />
