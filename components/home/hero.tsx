@@ -33,7 +33,7 @@ export function Hero() {
             Gestão Tributária · São Paulo
           </div>
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)]">
-            Est. 2025
+            Est. 2026
           </div>
         </motion.div>
 

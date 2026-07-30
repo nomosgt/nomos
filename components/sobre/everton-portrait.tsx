@@ -50,7 +50,7 @@ export function EvertonPortrait() {
 
         {/* Metadata superior */}
         <div className="absolute top-6 left-6 z-[5] font-mono text-[9px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/90 leading-relaxed">
-          <div>REG · EV-001/2025</div>
+          <div>REG · EV-001/2026</div>
           <div className="opacity-70">São Paulo · BR</div>
         </div>
 
@@ -63,7 +63,7 @@ export function EvertonPortrait() {
 
       <div className="mt-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)]">
         <span>◇ Retrato</span>
-        <span>NGT · 2025</span>
+        <span>NGT · 2026</span>
       </div>
     </div>
   );
