@@ -21,6 +21,7 @@ import { formatBRL } from "@/lib/utils";
 import { CountUp } from "@/components/motion/count-up";
 import type { CnpjResponse } from "@/lib/validation/cnpj";
 import { ResultExtended } from "./result-extended";
+import { calcularSimulacaoV2 } from "@/lib/simulador/scenarios";
 
 type Setor = "industria" | "comercio" | "servicos" | "logistica" | "tecnologia" | "outros";
 type Regime = "presumido" | "real";
@@ -188,6 +189,19 @@ export function SimuladorWizard() {
     [cnpjData?.empresa?.data_abertura],
   );
 
+  const simulacaoV2 = useMemo(() => {
+    if (!setor || !regime) return null;
+    return calcularSimulacaoV2({
+      rb: faturamento,
+      di: despesa,
+      setor,
+      regime,
+      janelaAnos,
+      confiabilidade: cnpjData ? "media" : "baixa",
+    });
+  }, [faturamento, despesa, setor, regime, janelaAnos, cnpjData]);
+
+  // Legacy result (usado ainda pra o useEffect que salva no Supabase)
   const result = useMemo(() => {
     if (!setor || !regime) return null;
     return calcular(faturamento, despesa, setor, regime, janelaAnos);
@@ -683,14 +697,12 @@ export function SimuladorWizard() {
             )}
 
 
-            {step === 6 && result && setor && (
+            {step === 6 && simulacaoV2 && setor && (
               <ResultExtended
-                total={result.total}
-                segments={result.segments}
+                simulacao={simulacaoV2}
                 faturamento={faturamento}
                 setor={setor}
                 cnpjData={cnpjData}
-                janelaAnos={result.janelaAnos}
                 onReset={reset}
               />
             )}
@@ -827,7 +839,7 @@ export function SimuladorWizard() {
                     </>
                   )}
                 </button>
-              </form>
+                </form>
 
               <p className="mt-6 text-[10px] text-[color:var(--color-ink-faint)] leading-relaxed">
                 Seus dados ficam em sigilo. Nao compartilhamos com terceiros.
@@ -835,7 +847,7 @@ export function SimuladorWizard() {
               </p>
             </motion.div>
           </motion.div>
-           )}
+        )}
       </AnimatePresence>
     </section>
   );

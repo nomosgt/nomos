@@ -7,7 +7,7 @@ import { Reveal } from "@/components/motion/reveal";
 import { ESTADOS_PATHS } from "./estados-paths";
 
 /**
- * MAPA DO BRASIL — 27 estados (paths reais @svg-maps/brazil reprojetados)
+ * MAPA DO BRASIL — 26 estados + DF (paths reais @svg-maps/brazil reprojetados)
  * + 27 capitais nas coordenadas IBGE oficiais.
  * X = equirectangular (longitude linear).
  * Y = Mercator — projeção do SVG original. Sem isso, capitais ao sul
