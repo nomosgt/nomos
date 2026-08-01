@@ -13,6 +13,7 @@ function isRestrictedArea(pathname: string | null): boolean {
   return (
     pathname.startsWith("/admin") ||
     pathname.startsWith("/sala") ||
+    pathname.startsWith("/parceiros") ||
     pathname === "/acesso"
   );
 }

@@ -4,6 +4,19 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
+  // ===== Portal de Parceiros — cookie proprio (nao depende do Supabase) =====
+  {
+    const path = request.nextUrl.pathname;
+    if (path.startsWith("/parceiros") && !path.startsWith("/parceiros/login")) {
+      const tok = request.cookies.get("ngt_parceiros")?.value || "";
+      if (!tok || tok.length !== 40) {
+        const url = request.nextUrl.clone();
+        url.pathname = "/parceiros/login";
+        return NextResponse.redirect(url);
+      }
+    }
+  }
+
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY

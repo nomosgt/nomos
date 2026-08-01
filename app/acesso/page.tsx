@@ -1,6 +1,6 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { Shield, Users, ArrowUpRight } from "lucide-react";
+import { Shield, Users, Handshake, ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
   title: "Acesso · NOMOS GT",
@@ -10,7 +10,7 @@ export const metadata: Metadata = {
 export default function AcessoPage() {
   return (
     <div className="min-h-screen bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-3xl">
+      <div className="w-full max-w-5xl">
         <div className="text-center mb-12 lg:mb-16">
           <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/50 mb-4">
             NGT · Acesso restrito
@@ -20,13 +20,20 @@ export default function AcessoPage() {
           </h1>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
           <Card
             href="/sala/login"
             icon={Users}
             tag="Cliente"
             title="Sala NGT"
             description="Acompanhe seu caso, mensagens, documentos e suporte direto."
+          />
+          <Card
+            href="/parceiros/login"
+            icon={Handshake}
+            tag="Parceiro"
+            title="Portal de Parceiros"
+            description="Projetos, prazos, trabalhos em aprovação e comissões da sua parceria."
           />
           <Card
             href="/admin/login"
