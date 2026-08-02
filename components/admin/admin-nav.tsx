@@ -9,6 +9,7 @@ const ITEMS = [
   { href: "/admin/simulacoes", label: "Simulações" },
   { href: "/admin/cnpj", label: "CNPJ" },
   { href: "/admin/clientes", label: "Clientes" },
+  { href: "/admin/colaboradores", label: "Colaboradores" },
   { href: "/admin/blog", label: "Blog" },
 ];
 

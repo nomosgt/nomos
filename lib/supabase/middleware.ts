@@ -4,19 +4,6 @@ import { NextResponse, type NextRequest } from "next/server";
 export async function updateSession(request: NextRequest) {
   let response = NextResponse.next({ request });
 
-  // ===== Portal de Parceiros — cookie proprio (nao depende do Supabase) =====
-  {
-    const path = request.nextUrl.pathname;
-    if (path.startsWith("/parceiros") && !path.startsWith("/parceiros/login")) {
-      const tok = request.cookies.get("ngt_parceiros")?.value || "";
-      if (!tok || tok.length !== 40) {
-        const url = request.nextUrl.clone();
-        url.pathname = "/parceiros/login";
-        return NextResponse.redirect(url);
-      }
-    }
-  }
-
   if (
     !process.env.NEXT_PUBLIC_SUPABASE_URL ||
     !process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY
@@ -89,6 +76,41 @@ export async function updateSession(request: NextRequest) {
       const url = request.nextUrl.clone();
       url.pathname = "/sala/login";
       url.searchParams.set("erro", "sem_permissao");
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // /parceiros/* (exceto login) — só parceiros ativos
+  if (path.startsWith("/parceiros") && !path.startsWith("/parceiros/login")) {
+    if (!user) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/parceiros/login";
+      return NextResponse.redirect(url);
+    }
+    const { data: parceiroProfile } = await supabase
+      .from("parceiros_profiles")
+      .select("user_id, ativo")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (!parceiroProfile || !parceiroProfile.ativo) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/parceiros/login";
+      url.searchParams.set("erro", "sem_permissao");
+      return NextResponse.redirect(url);
+    }
+  }
+
+  // Parceiro já logado indo pro login — manda pro portal
+  if (path === "/parceiros/login" && user) {
+    const { data: parceiroProfile } = await supabase
+      .from("parceiros_profiles")
+      .select("user_id, ativo")
+      .eq("user_id", user.id)
+      .maybeSingle();
+    if (parceiroProfile?.ativo) {
+      const url = request.nextUrl.clone();
+      url.pathname = "/parceiros";
+      url.search = "";
       return NextResponse.redirect(url);
     }
   }

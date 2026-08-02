@@ -6,9 +6,11 @@ import Link from "next/link";
 import { motion } from "framer-motion";
 import { Lock, Loader2, ArrowRight, ArrowLeft } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
+import { createClient } from "@/lib/supabase/client";
 
 export default function ParceirosLoginPage() {
   const router = useRouter();
+  const [email, setEmail] = useState("");
   const [senha, setSenha] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -18,14 +20,13 @@ export default function ParceirosLoginPage() {
     setError(null);
     setLoading(true);
     try {
-      const res = await fetch("/api/parceiros/auth", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ senha }),
+      const supabase = createClient();
+      const { error: signInError } = await supabase.auth.signInWithPassword({
+        email: email.trim(),
+        password: senha,
       });
-      const json = await res.json();
-      if (!res.ok) {
-        setError(json.error || "Falha na autenticacao.");
+      if (signInError) {
+        setError("E-mail ou senha incorretos.");
         return;
       }
       router.push("/parceiros");
@@ -78,19 +79,35 @@ export default function ParceirosLoginPage() {
             só lugar.
           </p>
 
-          <form onSubmit={handleSubmit} className="space-y-6">
+          <form onSubmit={handleSubmit} className="space-y-5">
             <div>
               <label className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] block mb-2">
-                Código de acesso *
+                E-mail *
+              </label>
+              <input
+                type="email"
+                required
+                autoComplete="email"
+                value={email}
+                onChange={(e) => setEmail(e.target.value)}
+                placeholder="voce@empresa.com.br"
+                disabled={loading}
+                className="w-full bg-transparent border-b-2 border-[color:var(--color-ink)] pb-2.5 text-[16px] text-[color:var(--color-ink)] placeholder:text-[color:var(--color-ink-faint)] focus:outline-none focus:border-[color:var(--color-brand)]"
+              />
+            </div>
+            <div>
+              <label className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] block mb-2">
+                Senha *
               </label>
               <input
                 type="password"
                 required
+                autoComplete="current-password"
                 value={senha}
                 onChange={(e) => setSenha(e.target.value)}
                 placeholder="••••••••••"
                 disabled={loading}
-                className="w-full bg-transparent border-b-2 border-[color:var(--color-ink)] pb-3 text-xl font-mono tracking-wide text-[color:var(--color-ink)] placeholder:text-[color:var(--color-ink-faint)] focus:outline-none focus:border-[color:var(--color-brand)]"
+                className="w-full bg-transparent border-b-2 border-[color:var(--color-ink)] pb-2.5 text-[16px] font-mono text-[color:var(--color-ink)] placeholder:text-[color:var(--color-ink-faint)] focus:outline-none focus:border-[color:var(--color-brand)]"
               />
             </div>
 
@@ -98,7 +115,7 @@ export default function ParceirosLoginPage() {
 
             <button
               type="submit"
-              disabled={loading || !senha}
+              disabled={loading || !email || !senha}
               className="w-full inline-flex items-center justify-center gap-2 px-6 py-4 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 disabled:opacity-50 disabled:pointer-events-none"
             >
               {loading ? (
@@ -116,7 +133,7 @@ export default function ParceirosLoginPage() {
           </form>
 
           <p className="mt-6 text-[11px] text-[color:var(--color-ink-faint)] leading-relaxed">
-            Não possui código? Fale com a equipe NGT pelo email{" "}
+            Não possui acesso? Fale com a equipe NGT pelo email{" "}
             <a href="mailto:contato@nomosgt.com.br" className="underline hover:text-[color:var(--color-brand)]">
               contato@nomosgt.com.br
             </a>
