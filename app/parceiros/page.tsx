@@ -14,7 +14,6 @@ import {
   Search, Menu, X,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
-import { createClient } from "@/lib/supabase/client";
 import {
   loadDB, saveDB, uid, fmtBRL, fmtDate, diffDays, urgencia, exportCSV,
   type DB, type Cliente, type Projeto, type Trabalho, type Comissao,
@@ -58,8 +57,7 @@ export default function ParceirosPage() {
   }, []);
 
   async function logout() {
-    const supabase = createClient();
-    await supabase.auth.signOut().catch(() => {});
+    await fetch("/api/parceiros/auth", { method: "DELETE" }).catch(() => {});
     router.push("/parceiros/login");
     router.refresh();
   }
