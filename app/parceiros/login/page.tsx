@@ -71,7 +71,7 @@ export default function ParceirosLoginPage() {
         <div className="bg-[color:var(--color-background)] text-[color:var(--color-ink)] p-8 lg:p-10">
           <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-brand)] mb-4">
             <Lock className="w-3 h-3" />
-            Portal de Parceiros
+            Central do Parceiro
           </div>
           <h1 className="font-serif text-2xl lg:text-3xl leading-tight mb-2">
             Acesso exclusivo
@@ -115,7 +115,7 @@ export default function ParceirosLoginPage() {
                 </>
               ) : (
                 <>
-                  Entrar no portal
+                  Entrar na central
                   <ArrowRight className="w-4 h-4" />
                 </>
               )}

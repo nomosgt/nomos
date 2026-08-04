@@ -252,7 +252,7 @@ function NovoCodigoForm({ onCreated }: { onCreated: (c: { codigo: string; nome: 
   return (
     <form onSubmit={submit} className="border border-[color:var(--color-hairline)] bg-[color:var(--color-surface)] p-6 grid grid-cols-1 md:grid-cols-3 gap-4">
       <div className="md:col-span-3 font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-brand)]">
-        Novo codigo — o colaborador entra no portal so com ele
+        Novo codigo — o colaborador entra na central so com ele
       </div>
       <div className="md:col-span-2">
         <label className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] block mb-1.5">Nome do colaborador *</label>
@@ -283,7 +283,7 @@ function NovoCodigoForm({ onCreated }: { onCreated: (c: { codigo: string; nome: 
 
 function CodigoCard({ data, onClose }: { data: { codigo: string; nome: string }; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const texto = `Portal de Parceiros NGT\nAcesse: https://nomosgt.com.br/parceiros/login\nSeu codigo: ${data.codigo}`;
+  const texto = `Central do Parceiro NGT\nAcesse: https://nomosgt.com.br/parceiros/login\nSeu codigo: ${data.codigo}`;
 
   function copiar() {
     navigator.clipboard.writeText(texto).then(() => {
@@ -301,7 +301,7 @@ function CodigoCard({ data, onClose }: { data: { codigo: string; nome: string };
         {data.codigo}
       </div>
       <p className="text-[12px] text-[color:var(--color-ink-muted)] mb-4">
-        Envie ao colaborador — ele acessa o portal apenas com esse codigo.
+        Envie ao colaborador — ele acessa a central apenas com esse codigo.
       </p>
       <div className="flex gap-2">
         <button

@@ -32,8 +32,8 @@ export default function AcessoPage() {
             href="/parceiros/login"
             icon={Handshake}
             tag="Parceiro"
-            title="Portal de Parceiros"
-            description="Projetos, prazos, trabalhos em aprovação e comissões da sua parceria."
+            title="Central do Parceiro"
+            description="Projetos, demandas, financeiro e documentos da sua parceria."
           />
           <Card
             href="/admin/login"

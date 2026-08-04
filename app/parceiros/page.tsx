@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Portal de Parceiros NGT — SPA com módulos em tabs.
+ * Central do Parceiro NGT — SPA com módulos em tabs.
  * v1: dados em localStorage (repository em lib/parceiros/store.ts).
  */
 
@@ -27,11 +27,11 @@ import {
 type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "comissoes" | "documentos" | "relatorios";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
-  { id: "painel", label: "Painel", icon: LayoutDashboard },
-  { id: "clientes", label: "Clientes", icon: Users },
-  { id: "projetos", label: "Projetos e prazos", icon: FolderKanban },
-  { id: "trabalhos", label: "Trabalhos", icon: ClipboardCheck },
-  { id: "comissoes", label: "Comissões", icon: Percent },
+  { id: "painel", label: "Dashboard", icon: LayoutDashboard },
+  { id: "clientes", label: "Carteira", icon: Users },
+  { id: "projetos", label: "Projetos", icon: FolderKanban },
+  { id: "trabalhos", label: "Demandas", icon: ClipboardCheck },
+  { id: "comissoes", label: "Financeiro", icon: Percent },
   { id: "documentos", label: "Documentos", icon: FileText },
   { id: "relatorios", label: "Relatórios", icon: ScrollText },
 ];
@@ -66,7 +66,7 @@ export default function ParceirosPage() {
     return (
       <div className="min-h-screen bg-[color:var(--color-surface)] flex items-center justify-center">
         <div className="font-mono text-[11px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)] animate-pulse">
-          Carregando portal…
+          Carregando central…
         </div>
       </div>
     );
@@ -130,7 +130,7 @@ function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) =>
       <div className="mb-10">
         <Logo variant="full" className="h-10 w-auto text-[color:var(--color-paper)]" />
         <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/45">
-          Portal de Parceiros
+          Central do Parceiro
         </div>
       </div>
 
@@ -156,7 +156,7 @@ function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) =>
         className="mt-8 flex items-center gap-3 px-3 py-2.5 text-[13px] text-[color:var(--color-paper)]/50 hover:text-[color:var(--color-paper)] transition-colors"
       >
         <LogOut className="w-4 h-4" />
-        Sair do portal
+        Sair da central
       </button>
     </>
   );
@@ -174,7 +174,7 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
 
   return (
     <div>
-      <Header title="Painel geral" sub="Visão consolidada da sua parceria com a NGT" />
+      <Header title="Dashboard" sub="Visão consolidada da sua parceria com a NGT" />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <Metric label="Projetos ativos" value={String(ativos.length)} onClick={() => setTab("projetos")} />
@@ -295,7 +295,7 @@ function Clientes({ db, mutate, busca, setBusca }: { db: DB; mutate: (fn: (d: DB
   return (
     <div>
       <Header
-        title="Clientes"
+        title="Carteira"
         sub={`${db.clientes.length} cadastrado(s)`}
         actions={
           <>
@@ -405,7 +405,7 @@ function Projetos({ db, mutate, busca, setBusca }: { db: DB; mutate: (fn: (d: DB
   return (
     <div>
       <Header
-        title="Projetos e prazos"
+        title="Projetos"
         sub={`${db.projetos.length} projeto(s)`}
         actions={
           <>
@@ -557,13 +557,13 @@ function Trabalhos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void
   return (
     <div>
       <Header
-        title="Trabalhos para aprovação"
-        sub="Submeta trabalhos executados para validação da equipe NGT"
-        actions={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Novo trabalho</button>}
+        title="Demandas"
+        sub="Submeta demandas executadas para validação da equipe NGT"
+        actions={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Nova demanda</button>}
       />
 
       {db.trabalhos.length === 0 ? (
-        <EmptyState title="Nenhum trabalho submetido" body="Registre o primeiro trabalho executado para aprovação." action={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Novo trabalho</button>} />
+        <EmptyState title="Nenhuma demanda submetida" body="Registre a primeira demanda executada para aprovação." action={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Nova demanda</button>} />
       ) : (
         <div className="space-y-2">
           {db.trabalhos.map((t) => (
@@ -587,7 +587,7 @@ function Trabalhos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void
         </div>
       )}
 
-      <Modal open={novo || !!modal} title={modal ? "Editar trabalho" : "Novo trabalho"} onClose={() => { setModal(null); setNovo(false); }} wide>
+      <Modal open={novo || !!modal} title={modal ? "Editar demanda" : "Nova demanda"} onClose={() => { setModal(null); setNovo(false); }} wide>
         <TrabalhoForm existing={modal} projetos={db.projetos} onSave={salvar} onSetStatus={setStatus} />
       </Modal>
     </div>
@@ -605,7 +605,7 @@ function TrabalhoForm({
   const [f, setF] = useState<Partial<Trabalho>>(existing || {});
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(f, existing); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Field label="Trabalho executado *" span2>
+      <Field label="Demanda executada *" span2>
         <input required className={inputCls} value={f.titulo || ""} onChange={(e) => setF({ ...f, titulo: e.target.value })} />
       </Field>
       <Field label="Projeto vinculado" span2>
@@ -674,7 +674,7 @@ function Comissoes({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void
   return (
     <div>
       <Header
-        title="Comissões"
+        title="Financeiro"
         sub={`Pagas: ${fmtBRL(totalPago)} · A receber: ${fmtBRL(totalPend)}`}
         actions={
           <>

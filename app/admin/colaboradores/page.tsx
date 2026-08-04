@@ -13,7 +13,7 @@ export default function ColaboradoresPage() {
           Colaboradores
         </h1>
         <p className="mt-1 text-[13px] text-[color:var(--color-ink-muted)]">
-          Parceiros com acesso ao Portal — percentuais, status e credenciais.
+          Parceiros com acesso a Central — percentuais, status e credenciais.
         </p>
       </div>
       <ColaboradoresPainel />

@@ -1,7 +1,7 @@
 import type { Metadata } from "next";
 
 export const metadata: Metadata = {
-  title: "Portal de Parceiros — NOMOS GT",
+  title: "Central do Parceiro — NOMOS GT",
   robots: { index: false, follow: false },
 };
 
