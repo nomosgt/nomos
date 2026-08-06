@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { SetupNotice } from "@/components/admin/setup-notice";
 import { SalaNav } from "@/components/sala/sala-nav";
+import { AssistenteChat } from "@/components/sala/assistente-chat";
 
 export const metadata: Metadata = {
   title: "Sala NGT",
@@ -79,6 +80,7 @@ export default async function SalaLayout({
       <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
         {children}
       </main>
+      <AssistenteChat />
     </div>
   );
 }

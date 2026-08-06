@@ -23,6 +23,7 @@ import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
 } from "@/components/parceiros/ui";
+import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
 type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "comissoes" | "documentos" | "relatorios";
 
@@ -175,6 +176,8 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
   return (
     <div>
       <Header title="Dashboard" sub="Visão consolidada da sua parceria com a NGT" />
+
+      <InsightsWidget db={db} />
 
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-3 mb-10">
         <Metric label="Projetos ativos" value={String(ativos.length)} onClick={() => setTab("projetos")} />

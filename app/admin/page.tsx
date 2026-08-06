@@ -2,6 +2,7 @@ import Link from "next/link";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/utils";
 import { StatusBadge } from "@/components/admin/status-badge";
+import { CopilotoWidget } from "@/components/admin/copiloto-widget";
 
 export const dynamic = "force-dynamic";
 
@@ -34,6 +35,8 @@ export default async function AdminDashboard() {
           Snapshot do que está entrando no NGT.
         </p>
       </div>
+
+      <CopilotoWidget />
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">

@@ -89,7 +89,7 @@ export async function POST(req: Request) {
       .filter(Boolean)
       .join("\n");
 
-    await supabase.from("contatos").insert({
+    const { error: insErr } = await supabase.from("contact_submissions").insert({
       nome: data.razao_social || "Lead simulador",
       email: data.email,
       telefone: data.telefone,
@@ -99,6 +99,7 @@ export async function POST(req: Request) {
       status: "novo",
       ip_hash: ipHash,
     });
+    if (insErr) throw new Error(insErr.message);
   } catch (e) {
     // Persist falhou — ainda retorna OK pra UI nao bloquear o usuario
     console.warn("[lead-simulador] persist err:", e);

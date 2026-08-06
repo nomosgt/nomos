@@ -5,6 +5,7 @@ import { createClient } from "@/lib/supabase/server";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { StatusUpdater } from "@/components/admin/status-updater";
 import { NotasInternas } from "@/components/admin/notas-internas";
+import { AnalisarLeadWidget } from "@/components/admin/analisar-lead-widget";
 import { formatBRL } from "@/lib/utils";
 
 export const dynamic = "force-dynamic";
@@ -45,6 +46,8 @@ export default async function ContatoDetalhe({
         <ArrowLeft className="w-3 h-3" />
         Todos os contatos
       </Link>
+
+      <AnalisarLeadWidget contatoId={contato.id} />
 
       <div className="flex items-start justify-between gap-6 flex-wrap">
         <div>
