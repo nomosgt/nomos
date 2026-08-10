@@ -77,12 +77,18 @@ export function ResultExtended({
       simulacao.teses
         .filter((t) => t.categoria === cat)
         .reduce((s, t) => s + t.valor_base, 0);
-    return [
+    const brutos = [
       { label: "Adm · Retroativa", value: somaPor("administrativa_retroativa"), color: "#163A8A" },
       { label: "Adm · Recorrente", value: somaPor("administrativa_recorrente"), color: "#8FA8D6" },
       { label: "Judicial · Retroativa", value: somaPor("judicial_retroativa"), color: "#8C6F3F" },
       { label: "Judicial · Recorrente", value: somaPor("judicial_recorrente"), color: "#5D4A2A" },
     ].filter((s) => s.value > 0);
+    // Escala os valores pra soma bater com o total ajustado (pos-redutores/caps),
+    // mantendo legenda, arcos e centro do donut consistentes entre si.
+    const somaBruta = brutos.reduce((s, x) => s + x.value, 0);
+    if (somaBruta <= 0) return brutos;
+    const fator = cenarioBase.total_ajustado / somaBruta;
+    return brutos.map((s) => ({ ...s, value: Math.round(s.value * fator) }));
   })();
 
   const empresaPct = (cenarioBase.total_final / simulacao.janela_anos / faturamento) * 100;

@@ -25,9 +25,12 @@ export function DonutChart({ segments, total, size = 280, strokeWidth = 36 }: Pr
   const cx = size / 2;
   const cy = size / 2;
 
+  // Percentuais/arcos sempre normalizados pela soma dos segmentos (soma 100%),
+  // independente do "total" exibido no centro (que pode ser pos-redutores).
+  const somaSegmentos = segments.reduce((s, seg) => s + seg.value, 0) || 1;
   let cumulative = 0;
   const arcs = segments.map((seg, i) => {
-    const pct = seg.value / total;
+    const pct = seg.value / somaSegmentos;
     const length = circumference * pct;
     const offset = circumference * (1 - cumulative);
     cumulative += pct;

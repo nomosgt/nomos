@@ -138,7 +138,12 @@ function maskFone(value: string): string {
  */
 function inferirSetor(cnae: string | null): Setor | null {
   if (!cnae) return null;
-  const c = cnae.replace(/\D/g, "").slice(0, 2);
+  // BrasilAPI devolve cnae_fiscal como numero — subclasses iniciadas em 0
+  // (agro 01-03, extrativas 05-09) perdem o zero a esquerda (0600001 -> 600001).
+  // Subclasse CNAE tem 7 digitos: com 6, repoe o zero antes de ler a divisao.
+  const digits = cnae.replace(/\D/g, "");
+  const norm = digits.length === 6 ? "0" + digits : digits;
+  const c = norm.slice(0, 2);
   const n = parseInt(c, 10);
   if (isNaN(n)) return null;
   if (n >= 10 && n <= 33) return "industria";
