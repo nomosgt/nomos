@@ -260,11 +260,7 @@ export function MapaBrasil() {
           </Reveal>
 
           <div className="lg:sticky lg:top-32 space-y-8">
-            <div className="grid grid-cols-2 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
-              <div className="bg-[color:var(--color-ink)] p-6">
-                <div className="font-mono text-4xl lg:text-5xl tracking-tight text-[color:var(--color-paper)] leading-none">27</div>
-                <div className="mt-3 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/55">Estados cobertos</div>
-              </div>
+            <div className="grid grid-cols-1 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
               <div className="bg-[color:var(--color-ink)] p-6">
                 <div className="font-mono text-4xl lg:text-5xl tracking-tight text-[color:var(--color-paper)] leading-none">
                   100<span className="text-[color:var(--color-brand-soft)]">%</span>
