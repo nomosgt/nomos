@@ -7,7 +7,7 @@ import { AdminNav } from "@/components/admin/admin-nav";
 import { SetupNotice } from "@/components/admin/setup-notice";
 
 export const metadata: Metadata = {
-  title: "Admin · NOMOS GT",
+  title: "Admin · Arché",
   robots: { index: false, follow: false },
 };
 
@@ -53,7 +53,7 @@ export default async function AdminLayout({
               href="/admin"
               className="font-mono text-[13px] tracking-tight text-[color:var(--color-ink)] hover:text-[color:var(--color-brand)]"
             >
-              NGT · Admin
+              ARCHÉ · Admin
             </Link>
             <AdminNav />
           </div>

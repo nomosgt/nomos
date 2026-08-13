@@ -72,10 +72,10 @@ export function AssistenteChat() {
       <button
         onClick={() => setOpen(true)}
         className={`fixed bottom-6 right-6 z-[90] inline-flex items-center gap-2 px-5 py-3.5 bg-[color:var(--color-brand)] text-white text-[13px] font-medium shadow-[0_12px_40px_-8px_rgba(22,58,138,0.5)] transition-all hover:-translate-y-0.5 ${open ? "opacity-0 pointer-events-none" : ""}`}
-        aria-label="Abrir Assistente NGT"
+        aria-label="Abrir Assistente Arché"
       >
         <Sparkles className="w-4 h-4" />
-        Assistente NGT
+        Assistente Arché
       </button>
 
       <AnimatePresence>
@@ -93,7 +93,7 @@ export function AssistenteChat() {
               <div className="flex items-center gap-2">
                 <Sparkles className="w-4 h-4 text-[color:var(--color-brand-soft)]" />
                 <div>
-                  <div className="text-[13px] font-medium">Assistente NGT</div>
+                  <div className="text-[13px] font-medium">Assistente Arché</div>
                   <div className="font-mono text-[9px] uppercase tracking-[0.25em] text-[color:var(--color-paper)]/50">
                     IA · responde sobre seu caso
                   </div>
@@ -113,7 +113,7 @@ export function AssistenteChat() {
               {msgs.length === 0 && (
                 <div className="space-y-3">
                   <p className="text-[13px] leading-relaxed text-[color:var(--color-ink-muted)]">
-                    Olá! Sou o Assistente NGT. Posso responder sobre o andamento
+                    Olá! Sou o Assistente Arché. Posso responder sobre o andamento
                     do seu caso, conceitos tributários e uso da plataforma.
                   </p>
                   <div className="space-y-2">
@@ -176,7 +176,7 @@ export function AssistenteChat() {
 
             <div className="px-4 pb-3 text-[9px] text-[color:var(--color-ink-faint)] leading-snug">
               Assistente informativo — não substitui orientação jurídica da
-              equipe NGT.
+              equipe Arché.
             </div>
           </motion.div>
         )}

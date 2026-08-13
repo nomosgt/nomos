@@ -29,7 +29,7 @@ export default async function MensagensPage() {
           Mensagens
         </h1>
         <p className="text-[14px] text-[color:var(--color-ink-muted)]">
-          Histórico de conversa com o time NGT.
+          Histórico de conversa com o time Arché.
         </p>
       </div>
       <MensagensChat initial={msgs || []} />

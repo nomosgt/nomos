@@ -17,7 +17,7 @@ export function SalaLoginForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(
     initialError === "sem_permissao"
-      ? "Esta conta não tem acesso à Sala NGT."
+      ? "Esta conta não tem acesso à Sala Arché."
       : null,
   );
 
@@ -83,7 +83,7 @@ export function SalaLoginForm() {
 
       <div className="pt-6 border-t border-[color:var(--color-paper)]/10 text-center space-y-3">
         <p className="text-[12px] text-[color:var(--color-paper)]/50">
-          Ainda não tem acesso? Fale com o time NGT.
+          Ainda não tem acesso? Fale com o time Arché.
         </p>
         <Link
           href="https://wa.me/5511933333841"
@@ -92,7 +92,7 @@ export function SalaLoginForm() {
           className="inline-flex items-center gap-2 text-[12px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-brand-soft)] hover:text-[color:var(--color-paper)]"
         >
           <MessageCircle className="w-3.5 h-3.5" />
-          Falar com a NGT
+          Falar com a Arché
         </Link>
       </div>
     </form>

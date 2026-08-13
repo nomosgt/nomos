@@ -2,7 +2,7 @@ import type { Metadata } from "next";
 import { ColaboradoresPainel } from "@/components/admin/colaboradores-painel";
 
 export const metadata: Metadata = {
-  title: "Colaboradores · Admin NGT",
+  title: "Colaboradores · Admin Arché",
 };
 
 export default function ColaboradoresPage() {

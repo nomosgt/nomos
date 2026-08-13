@@ -191,7 +191,7 @@ export function PostBody({ post }: { post: BlogPost; related?: BlogPost[] }) {
                 Sobre o autor
               </div>
               <p className="text-[14px] leading-relaxed text-[color:var(--color-ink-muted)]">
-                Éverton Vicente é fundador da NOMOS GT e atua em direito
+                Éverton Vicente é fundador da Arché e atua em direito
                 tributário há mais de uma década. Recuperou mais de R$ 100
                 milhões em créditos para clientes.
               </p>

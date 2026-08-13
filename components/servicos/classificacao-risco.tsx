@@ -124,7 +124,7 @@ export function ClassificacaoRisco() {
 
         <Reveal delay={0.4}>
           <p className="mt-12 max-w-2xl text-[13px] leading-relaxed text-[color:var(--color-ink-faint)]">
-            Cada operação que entra na NGT passa por essa classificação antes de
+            Cada operação que entra na Arché passa por essa classificação antes de
             qualquer movimento. É como devolvemos previsibilidade pra uma
             decisão que normalmente é tratada no escuro.
           </p>

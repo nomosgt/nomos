@@ -24,9 +24,9 @@ export async function generateStaticParams() {
 export async function generateMetadata({ params }: PageProps): Promise<Metadata> {
   const { slug } = await params;
   const post = await getPostBySlug(slug);
-  if (!post) return { title: "Post · NOMOS GT" };
+  if (!post) return { title: "Post · Arché" };
   return {
-    title: `${post.title} · NOMOS GT`,
+    title: `${post.title} · Arché`,
     description: post.excerpt || undefined,
   };
 }

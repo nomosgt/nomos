@@ -91,7 +91,7 @@ export function PostHero({ post }: { post: BlogPost }) {
             <div>
               <div className="text-[13px] text-[color:var(--color-ink)]">{post.author}</div>
               <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)]">
-                CEO e Fundador · NOMOS GT
+                CEO e Fundador · Arché
               </div>
             </div>
           </motion.div>

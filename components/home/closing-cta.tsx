@@ -48,14 +48,14 @@ export function ClosingCTA() {
             </Link>
 
             <Link
-              href="mailto:contato@nomosgt.com.br"
+              href="mailto:contato@archebrasil.com.br"
               className="group bg-[color:var(--color-background)] p-8 lg:p-10 hover:bg-[color:var(--color-surface)] transition-all duration-500"
             >
               <div className="font-mono text-[10px] uppercase tracking-[0.3em] opacity-50 mb-4 flex items-center gap-2">
                 <Mail className="w-3 h-3" /> Email
               </div>
               <div className="font-serif text-xl lg:text-2xl">
-                contato@nomosgt.com.br
+                contato@archebrasil.com.br
               </div>
             </Link>
 

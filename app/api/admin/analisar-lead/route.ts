@@ -62,7 +62,7 @@ export async function POST(req: Request) {
   if (!contato) return NextResponse.json({ error: "Contato nao encontrado" }, { status: 404 });
 
   const result = await callClaude({
-    system: `Voce e o estrategista comercial da NOMOS GT (consultoria tributaria brasileira, recuperacao de creditos, honorarios por exito).
+    system: `Voce e o estrategista comercial da Arché (consultoria tributaria brasileira, recuperacao de creditos, honorarios por exito).
 
 Analise o lead e produza qualificacao + estrategia de abordagem.
 

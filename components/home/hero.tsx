@@ -30,7 +30,7 @@ export function Hero() {
         >
           <div className="flex items-center gap-3 font-mono text-[10px] uppercase tracking-[0.35em] text-[color:var(--color-ink-muted)]">
             <span className="h-px w-8 bg-[color:var(--color-brand)]" />
-            Gestão Tributária · São Paulo
+            Inteligência Empresarial · São Paulo
           </div>
           <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)]">
             Est. 2026
@@ -41,7 +41,7 @@ export function Hero() {
           <div className="max-w-[1200px]">
             <SplitText
               as="h1"
-              text="Conheça a NOMOS GT"
+              text="Conheça a Arché"
               className="font-serif text-[clamp(2.75rem,7vw,7rem)] leading-[0.95] tracking-[-0.035em] text-[color:var(--color-ink)]"
               stagger={0.04}
               splitBy="word"

@@ -6,7 +6,7 @@ import { Resend } from "resend";
  */
 
 const apiKey = process.env.RESEND_API_KEY;
-const FROM = process.env.EMAIL_FROM || "NOMOS GT <noreply@nomos.gt>";
+const FROM = process.env.EMAIL_FROM || "Arché <noreply@archebrasil.com.br>";
 const TO_NOTIF = process.env.EMAIL_NOTIF_TO || "";
 
 const resend = apiKey ? new Resend(apiKey) : null;
@@ -66,7 +66,7 @@ export function novoContatoTemplate(data: {
 
   return `
   <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fafafa;padding:32px;">
-    <h2 style="margin:0 0 4px;font-size:20px;color:#0e1525;">Novo contato — NOMOS GT</h2>
+    <h2 style="margin:0 0 4px;font-size:20px;color:#0e1525;">Novo contato — Arché</h2>
     <p style="margin:0 0 24px;color:#666;font-size:13px;">Origem: ${escape(data.origem || "contato")}</p>
     <table style="width:100%;background:white;border-collapse:collapse;">
       ${row("Nome", data.nome)}

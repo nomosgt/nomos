@@ -1,5 +1,5 @@
 /**
- * Catálogo de teses tributárias NGT com pesos específicos por setor.
+ * Catálogo de teses tributárias Arché com pesos específicos por setor.
  * Cada tese é avaliada em 3 cenários (pessimista/base/otimista) via percentual
  * aplicado sobre a base de cálculo definida.
  */
@@ -31,7 +31,7 @@ export interface TeseTemplate {
 }
 
 /**
- * As teses seguem convenção NGT — números conservadores.
+ * As teses seguem convenção Arché — números conservadores.
  * Todas as bases são anualizadas: o cálculo final multiplica por janelaAnos.
  */
 export const TESES_CATALOG: TeseTemplate[] = [

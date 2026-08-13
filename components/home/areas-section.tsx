@@ -39,7 +39,7 @@ export function AreasSection() {
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 items-end mb-20 lg:mb-28">
           <div>
-            <Eyebrow>Pilares NGT</Eyebrow>
+            <Eyebrow>Pilares Arché</Eyebrow>
             <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
               Três frentes de atuação,<br />
               <span className="italic text-[color:var(--color-brand)]">um único objetivo.</span>

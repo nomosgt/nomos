@@ -1,7 +1,7 @@
 import Link from "next/link";
 import { MessageCircle, Mail, Clock, ShieldCheck } from "lucide-react";
 
-const WPP_URL = "https://wa.me/5511933333841?text=Ol%C3%A1%2C%20sou%20cliente%20NGT%20e%20preciso%20de%20suporte";
+const WPP_URL = "https://wa.me/5511933333841?text=Ol%C3%A1%2C%20sou%20cliente%20Arch%C3%A9%20e%20preciso%20de%20suporte";
 
 export default function Suporte() {
   return (
@@ -11,7 +11,7 @@ export default function Suporte() {
           Suporte direto
         </h1>
         <p className="text-[14px] text-[color:var(--color-ink-muted)]">
-          Atendimento humano pela equipe NGT — segunda a sexta, 9h às 19h.
+          Atendimento humano pela equipe Arché — segunda a sexta, 9h às 19h.
         </p>
       </div>
 
@@ -31,7 +31,7 @@ export default function Suporte() {
           Abrir WhatsApp
         </h2>
         <p className="text-[14px] leading-relaxed opacity-90 max-w-md">
-          Toque pra falar com o time NGT no WhatsApp. Resposta normalmente em
+          Toque pra falar com o time Arché no WhatsApp. Resposta normalmente em
           poucos minutos em horário comercial.
         </p>
         <div className="mt-6 font-mono text-[12px] uppercase tracking-[0.25em] opacity-90">
@@ -43,10 +43,10 @@ export default function Suporte() {
         <InfoCard icon={Mail} title="E-mail">
           Para tickets com anexo grande ou que exigem registro.
           <Link
-            href="mailto:contato@nomosgt.com.br"
+            href="mailto:contato@archebrasil.com.br"
             className="block mt-2 text-[color:var(--color-brand)] hover:underline"
           >
-            contato@nomosgt.com.br
+            contato@archebrasil.com.br
           </Link>
         </InfoCard>
         <InfoCard icon={Clock} title="Horário de atendimento">

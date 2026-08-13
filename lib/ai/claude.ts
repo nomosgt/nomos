@@ -1,5 +1,5 @@
 /**
- * Helper unificado de chamadas Claude — usado por toda a plataforma NGT.
+ * Helper unificado de chamadas Claude — usado por toda a plataforma Arché.
  * Timeout, retry leve e suporte a tool_use estruturado.
  */
 

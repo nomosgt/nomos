@@ -170,7 +170,7 @@ function PostCover({ number, large = false }: { number: string; large?: boolean 
           {number}
         </div>
         <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/40 self-start">
-          NOMOS · Editorial
+          ARCHÉ · Editorial
         </div>
       </div>
     </div>

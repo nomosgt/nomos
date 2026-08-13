@@ -67,7 +67,7 @@ export function CasesSection() {
             </h2>
           </div>
           <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md lg:justify-self-end">
-            Três operações conduzidas pelo time NGT — anonimizadas por sigilo,
+            Três operações conduzidas pelo time Arché — anonimizadas por sigilo,
             mas todos os números, teses e prazos correspondem a execuções
             reais nos últimos 12 meses.
           </p>

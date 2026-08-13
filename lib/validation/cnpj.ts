@@ -46,7 +46,7 @@ export const analiseSchema = z.object({
     .min(0)
     .max(100)
     .default(60)
-    .describe("0-100 quão aderente o perfil é às teses recuperatórias da NGT"),
+    .describe("0-100 quão aderente o perfil é às teses recuperatórias da Arché"),
   complexidade: z
     .enum(["baixa", "media", "alta"])
     .default("media")

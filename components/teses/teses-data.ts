@@ -111,7 +111,7 @@ export const TESES: Tese[] = [
     resumo:
       "A 'tese do século'. O STF firmou que o ICMS, por não compor faturamento, deve ser excluído da base do PIS e da COFINS. Crédito retroativo de 5 anos.",
     analise:
-      "Decidida favoravelmente pelo STF em 15/03/2017 (RE 574.706/PR), com modulação de efeitos confirmada em 13/05/2021. O entendimento é que o ICMS, sendo receita repassada ao Estado, não integra o faturamento empresarial — base de cálculo do PIS e da COFINS. Aplicável a empresas do Lucro Real e Lucro Presumido. Permite recuperação retroativa dos últimos 5 anos para quem ajuizou antes de 15/03/2017, e a partir desta data para os demais. A NGT acompanha cada caso considerando o critério temporal, o regime tributário e o tipo de receita.",
+      "Decidida favoravelmente pelo STF em 15/03/2017 (RE 574.706/PR), com modulação de efeitos confirmada em 13/05/2021. O entendimento é que o ICMS, sendo receita repassada ao Estado, não integra o faturamento empresarial — base de cálculo do PIS e da COFINS. Aplicável a empresas do Lucro Real e Lucro Presumido. Permite recuperação retroativa dos últimos 5 anos para quem ajuizou antes de 15/03/2017, e a partir desta data para os demais. A Arché acompanha cada caso considerando o critério temporal, o regime tributário e o tipo de receita.",
   },
   {
     slug: "iss-pis-cofins-tema-118",
@@ -171,7 +171,7 @@ export const TESES: Tese[] = [
     resumo:
       "Discussão sobre inclusão dos tributos indiretos na base de cálculo do IRPJ e CSLL no regime do Lucro Presumido. Repetitivo no STJ.",
     analise:
-      "O Recurso Repetitivo nº 1.008 do STJ trata da inclusão do ICMS e ISS na base do IRPJ e CSLL no Lucro Presumido. A análise é caso a caso e depende do perfil da operação. A NGT identifica aplicabilidade no diagnóstico inicial.",
+      "O Recurso Repetitivo nº 1.008 do STJ trata da inclusão do ICMS e ISS na base do IRPJ e CSLL no Lucro Presumido. A análise é caso a caso e depende do perfil da operação. A Arché identifica aplicabilidade no diagnóstico inicial.",
   },
   {
     slug: "icms-tust-tusd-986",
@@ -307,7 +307,7 @@ export const TESES: Tese[] = [
     resumo:
       "Aproveitamento dos benefícios da LC 160/2017, que reclassificou créditos presumidos de ICMS como subvenção para investimento — fora da base do IRPJ/CSLL.",
     analise:
-      "A LC 160/2017 trouxe segurança jurídica ao tratamento dos créditos presumidos de ICMS como subvenção para investimento, afastando sua incidência na base do IRPJ e CSLL. A NGT auxilia na correta apuração e aproveitamento desses créditos, com potencial significativo para indústrias instaladas em estados com benefícios fiscais.",
+      "A LC 160/2017 trouxe segurança jurídica ao tratamento dos créditos presumidos de ICMS como subvenção para investimento, afastando sua incidência na base do IRPJ e CSLL. A Arché auxilia na correta apuração e aproveitamento desses créditos, com potencial significativo para indústrias instaladas em estados com benefícios fiscais.",
   },
   {
     slug: "sistema-apuracao",

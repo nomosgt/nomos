@@ -30,7 +30,7 @@ export function SobreHero() {
             />
             <SplitText
               as="h1"
-              text="A leitura técnica por trás da NOMOS."
+              text="A leitura técnica por trás da Arché."
               className="block mt-3 font-serif italic text-display-md lg:text-display-lg leading-[0.95] tracking-tight text-[color:var(--color-brand)]"
               splitBy="word"
               stagger={0.04}

@@ -1,9 +1,9 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces, Bodoni_Moda } from "next/font/google";
+import { Geist, Geist_Mono, Fraunces } from "next/font/google";
 import "./globals.css";
 import { ConditionalNavbar, ConditionalFooter } from "@/components/conditional-chrome";
 
-// Geist Sans — UI / body (Vercel). Variable, tracking impecável.
+// Geist Sans — corpo e UI (padrão big-4: sans limpa e neutra).
 const geist = Geist({
   subsets: ["latin"],
   variable: "--font-geist",
@@ -17,7 +17,7 @@ const geistMono = Geist_Mono({
   display: "swap",
 });
 
-// Fraunces — display editorial luxury com optical sizing variável.
+// Fraunces — serif editorial dos títulos e do wordmark ARCHÉ.
 const fraunces = Fraunces({
   subsets: ["latin"],
   style: ["normal", "italic"],
@@ -25,39 +25,31 @@ const fraunces = Fraunces({
   display: "swap",
 });
 
-// Bodoni Moda — fonte oficial do wordmark NGT na logo (não mexer).
-const bodoniModa = Bodoni_Moda({
-  subsets: ["latin"],
-  weight: ["400", "500", "600"],
-  variable: "--font-bodoni",
-  display: "swap",
-});
-
 export const metadata: Metadata = {
-  title: "NOMOS GT — Gestão Tributária",
+  title: "Arché — Inteligência Empresarial",
   description:
-    "Menos complexidade, mais segurança, mais oportunidade. Levamos soluções tributárias estratégicas — que antes estavam ao alcance de poucos — para empresas de todos os portes. +R$ 100 milhões em créditos recuperados pelo time NGT.",
-  metadataBase: new URL("https://nomosgt.com.br"),
+    "Estratégia, inteligência e execução para gerar valor, fortalecer negócios e construir resultados sustentáveis. Núcleo Tributário e Núcleo Empresarial. +R$ 100 milhões em créditos recuperados pelo time Arché.",
+  metadataBase: new URL("https://archebrasil.com.br"),
   openGraph: {
-    title: "NOMOS GT — Até onde sua empresa pode crescer?",
+    title: "Arché — Até onde sua empresa pode crescer?",
     description:
-      "+R$ 100 milhões em créditos recuperados pelo time NGT. Transformamos tributos em valor, crescimento e resultado.",
+      "+R$ 100 milhões em créditos recuperados pelo time Arché. Inteligência tributária e empresarial para transformar tributos em valor e crescimento.",
     type: "website",
     locale: "pt_BR",
-    url: "https://nomosgt.com.br",
-    siteName: "NOMOS GT",
+    url: "https://archebrasil.com.br",
+    siteName: "Arché",
     images: [
       {
         url: "/og/og-default.png",
         width: 1200,
         height: 630,
-        alt: "NOMOS GT — Até onde sua empresa pode crescer?",
+        alt: "Arché — Até onde sua empresa pode crescer?",
       },
     ],
   },
   twitter: {
     card: "summary_large_image",
-    title: "NOMOS GT — Gestão Tributária",
+    title: "Arché — Inteligência Empresarial",
     description:
       "Até onde sua empresa pode crescer? +R$ 100 milhões em créditos recuperados.",
     images: ["/og/og-default.png"],
@@ -72,7 +64,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geist.variable} ${geistMono.variable} ${fraunces.variable} ${bodoniModa.variable}`}
+      className={`${geist.variable} ${geistMono.variable} ${fraunces.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <ConditionalNavbar />

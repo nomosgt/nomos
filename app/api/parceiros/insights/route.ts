@@ -22,7 +22,7 @@ const schema = z.object({
 
 const TOOL = {
   name: "insights_parceiro",
-  description: "Insights acionaveis para o parceiro NGT",
+  description: "Insights acionaveis para o parceiro Arché",
   input_schema: {
     type: "object" as const,
     properties: {
@@ -67,7 +67,7 @@ export async function POST(req: Request) {
   const snap = parsed.data.snapshot;
 
   const result = await callClaude({
-    system: `Voce e o assistente de operacoes da Central do Parceiro NGT (consultoria tributaria). Analise o snapshot do parceiro e gere insights ACIONAVEIS.
+    system: `Voce e o assistente de operacoes da Central do Parceiro Arché (consultoria tributaria). Analise o snapshot do parceiro e gere insights ACIONAVEIS.
 
 Regras:
 - Priorize: prazos vencidos/proximos, demandas pendentes ha muito tempo, comissoes previstas sem movimento.

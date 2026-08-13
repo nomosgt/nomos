@@ -3,7 +3,7 @@ import Link from "next/link";
 import { Shield, Users, Handshake, ArrowUpRight } from "lucide-react";
 
 export const metadata: Metadata = {
-  title: "Acesso · NOMOS GT",
+  title: "Acesso · Arché",
   robots: { index: false, follow: false },
 };
 
@@ -13,7 +13,7 @@ export default function AcessoPage() {
       <div className="w-full max-w-5xl">
         <div className="text-center mb-12 lg:mb-16">
           <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/50 mb-4">
-            NGT · Acesso restrito
+            ARCHÉ · Acesso restrito
           </div>
           <h1 className="font-serif text-4xl lg:text-5xl tracking-tight">
             Como você quer entrar?
@@ -25,7 +25,7 @@ export default function AcessoPage() {
             href="/sala/login"
             icon={Users}
             tag="Cliente"
-            title="Sala NGT"
+            title="Sala Arché"
             description="Acompanhe seu caso, mensagens, documentos e suporte direto."
           />
           <Card
@@ -38,7 +38,7 @@ export default function AcessoPage() {
           <Card
             href="/admin/login"
             icon={Shield}
-            tag="Equipe NGT"
+            tag="Equipe Arché"
             title="Administração"
             description="Painel interno: contatos, simulações, blog, clientes, análises."
           />

@@ -99,7 +99,7 @@ export function SectorComparison({ empresaPct, setorPct, setorLabel }: Props) {
           {Math.abs(diff).toFixed(1)} pontos percentuais{" "}
           {acima ? "acima" : "abaixo"}
         </span>{" "}
-        da média de empresas do mesmo segmento atendidas pela NGT.
+        da média de empresas do mesmo segmento atendidas pela Arché.
       </motion.div>
     </div>
   );

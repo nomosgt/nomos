@@ -98,7 +98,7 @@ export function MensagensChat({ initial }: { initial: Msg[] }) {
                     <div className="whitespace-pre-wrap">{m.conteudo}</div>
                   </div>
                   <div className={`mt-1 text-[10px] font-mono text-[color:var(--color-ink-faint)] ${isMine ? "text-right" : ""}`}>
-                    {isMine ? "Você" : "Time NGT"} ·{" "}
+                    {isMine ? "Você" : "Time Arché"} ·{" "}
                     {new Date(m.created_at).toLocaleString("pt-BR", {
                       day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit",
                     })}

@@ -76,7 +76,7 @@ export default function ParceirosLoginPage() {
           <h1 className="font-serif text-2xl lg:text-3xl leading-tight mb-2">
             Acesso exclusivo
             <br />
-            <span className="italic text-[color:var(--color-brand)]">para parceiros NGT.</span>
+            <span className="italic text-[color:var(--color-brand)]">para parceiros Arché.</span>
           </h1>
           <p className="text-[13px] leading-relaxed text-[color:var(--color-ink-muted)] mb-8">
             Digite o seu código de colaborador para acompanhar projetos, prazos,
@@ -93,7 +93,7 @@ export default function ParceirosLoginPage() {
                 required
                 value={codigo}
                 onChange={(e) => setCodigo(maskCodigo(e.target.value))}
-                placeholder="NGT-XXXXXX"
+                placeholder="ARC-XXXXXX"
                 autoComplete="off"
                 autoCapitalize="characters"
                 disabled={loading}
@@ -123,9 +123,9 @@ export default function ParceirosLoginPage() {
           </form>
 
           <p className="mt-6 text-[11px] text-[color:var(--color-ink-faint)] leading-relaxed text-center">
-            Não possui código? Fale com a equipe NGT:{" "}
-            <a href="mailto:contato@nomosgt.com.br" className="underline hover:text-[color:var(--color-brand)]">
-              contato@nomosgt.com.br
+            Não possui código? Fale com a equipe Arché:{" "}
+            <a href="mailto:contato@archebrasil.com.br" className="underline hover:text-[color:var(--color-brand)]">
+              contato@archebrasil.com.br
             </a>
           </p>
         </div>

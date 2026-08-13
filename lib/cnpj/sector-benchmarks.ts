@@ -1,5 +1,5 @@
 /**
- * Benchmarks setoriais NGT.
+ * Benchmarks setoriais Arché.
  * Dados internos derivados de casos atendidos pela equipe — usados para
  * comparativos visuais. Valores em % do faturamento bruto anual.
  */
@@ -91,7 +91,7 @@ export function getSectorBenchmark(setor: string | null | undefined): SectorBenc
 }
 
 /**
- * Numero total de cases NGT por setor — usado em copy do disclaimer.
+ * Numero total de cases Arché por setor — usado em copy do disclaimer.
  * Soma > 850 (alinhado com o copy do hero).
  */
 export const TOTAL_CASES_BY_SECTOR: Record<string, number> = {

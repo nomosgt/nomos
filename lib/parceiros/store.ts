@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Portal de Parceiros NGT — camada de dados v1 (localStorage).
+ * Portal de Parceiros Arché — camada de dados v1 (localStorage).
  * Repository pattern: trocar por Supabase depois sem tocar na UI.
  */
 

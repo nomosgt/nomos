@@ -9,7 +9,7 @@ export const maxDuration = 30;
 
 const TOOL = {
   name: "resumo_executivo",
-  description: "Resumo executivo diario da operacao NGT",
+  description: "Resumo executivo diario da operacao Arché",
   input_schema: {
     type: "object" as const,
     properties: {
@@ -93,7 +93,7 @@ export async function GET() {
   const leadsNovos = dados.contatos_7d.filter((c) => c.status === "novo").length;
 
   const result = await callClaude({
-    system: `Voce e o Copiloto NGT — analista de operacoes da NOMOS GT (consultoria tributaria). Analise os dados dos ultimos 7 dias e produza um resumo executivo ACIONAVEL para o gestor.
+    system: `Voce e o Copiloto Arché — analista de operacoes da Arché (consultoria tributaria). Analise os dados dos ultimos 7 dias e produza um resumo executivo ACIONAVEL para o gestor.
 
 Regras:
 - Priorize leads nao atendidos (status "novo"), simulacoes de alto valor e padroes.

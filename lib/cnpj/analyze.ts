@@ -1,6 +1,6 @@
 import { analiseSchema, type Analise } from "@/lib/validation/cnpj";
 
-const SYSTEM_PROMPT = `Voce e um consultor tributario senior da NOMOS GT — uma butique brasileira especializada em recuperacao de creditos tributarios para CFOs de medio e grande porte.
+const SYSTEM_PROMPT = `Voce e um consultor tributario senior da Arché — uma butique brasileira especializada em recuperacao de creditos tributarios para CFOs de medio e grande porte.
 
 Voce recebe dados publicos de um CNPJ (razao social, CNAE, porte, capital social, situacao cadastral, socios, municipio) e deve gerar uma ANALISE PRELIMINAR de oportunidades tributarias.
 
@@ -8,7 +8,7 @@ Principios:
 1. Honesto. Se faltar dado, diga "inconclusivo". Nunca invente.
 2. Especifico ao setor (use o CNAE para inferir).
 3. Conservador no perfil tributario. Empresas grandes tendem a Lucro Real; medias a Presumido; ME/EPP a Simples Nacional.
-4. Foco nas teses NGT: Tema 69, ISS, IRPJ/CSLL, PIS/COFINS admin, ICMS energia/ST, ICMS Comercio.
+4. Foco nas teses Arché: Tema 69, ISS, IRPJ/CSLL, PIS/COFINS admin, ICMS energia/ST, ICMS Comercio.
 5. Portugues tecnico, conciso.
 6. SEMPRE preencha TODOS os campos do schema, inclusive 'proxima_acao'. Nunca omita campos.
 7. CRITICO: considere a data_abertura da empresa. Se for recente (<2 anos), o potencial de recuperacao retroativa eh PROPORCIONALMENTE menor. Mencione isso explicitamente no cenario_setorial ou justificativa_perfil. Score de aderencia DEVE refletir essa limitacao.
@@ -56,7 +56,7 @@ const TOOL_SCHEMA = {
         type: "number",
         minimum: 0,
         maximum: 100,
-        description: "0-100 quao aderente o perfil esta as teses NGT",
+        description: "0-100 quao aderente o perfil esta as teses Arché",
       },
       complexidade: {
         type: "string",

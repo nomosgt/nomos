@@ -1,7 +1,7 @@
 "use client";
 
 /**
- * Central do Parceiro NGT — SPA com módulos em tabs.
+ * Central do Parceiro Arché — SPA com módulos em tabs.
  * v1: dados em localStorage (repository em lib/parceiros/store.ts).
  */
 
@@ -175,7 +175,7 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
 
   return (
     <div>
-      <Header title="Dashboard" sub="Visão consolidada da sua parceria com a NGT" />
+      <Header title="Dashboard" sub="Visão consolidada da sua parceria com a Arché" />
 
       <InsightsWidget db={db} />
 
@@ -561,7 +561,7 @@ function Trabalhos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void
     <div>
       <Header
         title="Demandas"
-        sub="Submeta demandas executadas para validação da equipe NGT"
+        sub="Submeta demandas executadas para validação da equipe Arché"
         actions={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Nova demanda</button>}
       />
 
@@ -893,7 +893,7 @@ function Relatorios({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => voi
     <div>
       <Header
         title="Relatórios periódicos"
-        sub="Relatórios de atividade enviados à equipe NGT"
+        sub="Relatórios de atividade enviados à equipe Arché"
         actions={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Novo relatório</button>}
       />
 

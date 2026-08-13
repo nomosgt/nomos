@@ -241,8 +241,8 @@ export function ContatoForm() {
             <ContactCard
               icon={Mail}
               label="Email"
-              href="mailto:contato@nomosgt.com.br"
-              value="contato@nomosgt.com.br"
+              href="mailto:contato@archebrasil.com.br"
+              value="contato@archebrasil.com.br"
               cta="Enviar email"
             />
             <ContactCard

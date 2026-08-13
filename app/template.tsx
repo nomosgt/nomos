@@ -8,7 +8,7 @@ import { Logo } from "@/components/brand/logo";
  *
  * Sequência cinematográfica de transição entre rotas:
  *  1) Sliver azul brand atravessa o topo do viewport (left → right wipe)
- *  2) Símbolo NGT aparece centralizado por 220ms (heartbeat curto)
+ *  2) Símbolo Arché aparece centralizado por 220ms (heartbeat curto)
  *  3) Conteúdo da nova rota entra com fade + slight slide up
  */
 export default function Template({ children }: { children: React.ReactNode }) {
@@ -30,7 +30,7 @@ export default function Template({ children }: { children: React.ReactNode }) {
         className="fixed top-0 left-0 right-0 h-[2px] bg-[color:var(--color-brand)] z-[100] pointer-events-none"
       />
 
-      {/* Símbolo NGT pulsando — apenas no fim da transição, super discreto */}
+      {/* Símbolo Arché pulsando — apenas no fim da transição, super discreto */}
       <motion.div
         aria-hidden
         initial={{ opacity: 0, scale: 0.85 }}

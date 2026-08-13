@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { LoginForm } from "@/components/admin/login-form";
 
 export const metadata: Metadata = {
-  title: "Entrar · Admin NGT",
+  title: "Entrar · Admin Arché",
   robots: { index: false, follow: false },
 };
 
@@ -13,7 +13,7 @@ export default function LoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
           <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/50 mb-4">
-            NGT · Admin
+            ARCHÉ · Admin
           </div>
           <h1 className="font-serif text-3xl lg:text-4xl tracking-tight text-[color:var(--color-paper)]">
             Acesso restrito

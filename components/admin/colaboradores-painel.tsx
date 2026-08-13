@@ -283,7 +283,7 @@ function NovoCodigoForm({ onCreated }: { onCreated: (c: { codigo: string; nome: 
 
 function CodigoCard({ data, onClose }: { data: { codigo: string; nome: string }; onClose: () => void }) {
   const [copied, setCopied] = useState(false);
-  const texto = `Central do Parceiro NGT\nAcesse: https://nomosgt.com.br/parceiros/login\nSeu codigo: ${data.codigo}`;
+  const texto = `Central do Parceiro Arché\nAcesse: https://archebrasil.com.br/parceiros/login\nSeu codigo: ${data.codigo}`;
 
   function copiar() {
     navigator.clipboard.writeText(texto).then(() => {

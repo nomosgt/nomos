@@ -32,7 +32,7 @@ export default async function AdminDashboard() {
           Visão geral
         </h1>
         <p className="text-[14px] text-[color:var(--color-ink-muted)]">
-          Snapshot do que está entrando no NGT.
+          Snapshot do que está entrando na Arché.
         </p>
       </div>
 

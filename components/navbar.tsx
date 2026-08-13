@@ -41,7 +41,7 @@ export function Navbar() {
             <Link
               href="/"
               className="group flex items-center text-[color:var(--color-ink)] transition-colors"
-              aria-label="NGT — voltar à home"
+              aria-label="Arché — voltar à home"
             >
               <Logo
                 variant="full"

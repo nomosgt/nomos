@@ -54,7 +54,7 @@ export function CounterBand() {
           <div>
             <Eyebrow className="text-[color:var(--color-paper)]/60 [&_span]:bg-[color:var(--color-paper)]/15">
               <span className="text-[color:var(--color-paper)]/70">
-                Resultados acumulados · NOMOS GT
+                Resultados acumulados · Arché
               </span>
             </Eyebrow>
             <Reveal>

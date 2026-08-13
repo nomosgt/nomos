@@ -105,7 +105,7 @@ export default async function Documentos() {
         </div>
       ) : (
         <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-16 text-center text-[14px] text-[color:var(--color-ink-faint)]">
-          Nenhum documento disponível ainda. A equipe NGT vai publicar aqui
+          Nenhum documento disponível ainda. A equipe Arché vai publicar aqui
           conforme novos arquivos forem gerados.
         </div>
       )}

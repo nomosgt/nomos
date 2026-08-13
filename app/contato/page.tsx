@@ -3,9 +3,9 @@ import { ContatoHero } from "@/components/contato/contato-hero";
 import { ContatoForm } from "@/components/contato/contato-form";
 
 export const metadata: Metadata = {
-  title: "Contato · NOMOS GT",
+  title: "Contato · Arché",
   description:
-    "Agende uma conversa inicial com a NOMOS GT. Email, WhatsApp e formulário direto com o sócio fundador.",
+    "Agende uma conversa inicial com a Arché. Email, WhatsApp e formulário direto com o sócio fundador.",
 };
 
 export default function ContatoPage() {

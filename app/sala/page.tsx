@@ -230,7 +230,7 @@ export default async function SalaDashboard() {
           </div>
         ) : (
           <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-10 text-center text-[13px] text-[color:var(--color-ink-faint)]">
-            Sem atualizações por enquanto. A equipe NGT posta aqui conforme o caso avança.
+            Sem atualizações por enquanto. A equipe Arché posta aqui conforme o caso avança.
           </div>
         )}
       </div>

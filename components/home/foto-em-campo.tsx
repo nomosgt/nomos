@@ -50,7 +50,7 @@ export function FotoEmCampo() {
                   <div className="opacity-65">O futuro da gestão fiscal</div>
                 </div>
                 <div className="text-right leading-relaxed">
-                  <div>NGT</div>
+                  <div>ARCHÉ</div>
                   <div className="opacity-65">2026</div>
                 </div>
               </div>

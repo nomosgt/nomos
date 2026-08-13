@@ -21,7 +21,7 @@ async function fetchWithTimeout(url: string, ms = TIMEOUT_MS): Promise<Response 
   try {
     const res = await fetch(url, {
       signal: ctrl.signal,
-      headers: { "User-Agent": "NomosGT/1.0 (CNPJ lookup)" },
+      headers: { "User-Agent": "ArcheBrasil/1.0 (CNPJ lookup)" },
       cache: "no-store",
     });
     return res;

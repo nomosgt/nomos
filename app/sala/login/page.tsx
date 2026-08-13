@@ -3,7 +3,7 @@ import { Suspense } from "react";
 import { SalaLoginForm } from "@/components/sala/sala-login-form";
 
 export const metadata: Metadata = {
-  title: "Sala NGT · Entrar",
+  title: "Sala Arché · Entrar",
   robots: { index: false, follow: false },
 };
 
@@ -13,7 +13,7 @@ export default function SalaLoginPage() {
       <div className="w-full max-w-md">
         <div className="text-center mb-12">
           <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-brand-soft)] mb-4">
-            ◇ Sala NGT · Cliente
+            ◇ Sala Arché · Cliente
           </div>
           <h1 className="font-serif text-3xl lg:text-4xl tracking-tight">
             Entre na sua Sala

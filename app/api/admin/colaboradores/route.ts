@@ -20,12 +20,12 @@ const patchSchema = z.object({
   observacoes: z.string().max(600).optional(),
 });
 
-/** Gera codigo legivel: NGT-XXXXXX (sem caracteres ambiguos) */
+/** Gera codigo legivel: ARC-XXXXXX (sem caracteres ambiguos). Codigos NGT- antigos continuam validos. */
 function gerarCodigo(): string {
   const chars = "ABCDEFGHJKMNPQRSTUVWXYZ23456789";
   let s = "";
   for (let i = 0; i < 6; i++) s += chars[Math.floor(Math.random() * chars.length)];
-  return "NGT-" + s;
+  return "ARC-" + s;
 }
 
 async function requireAdmin() {

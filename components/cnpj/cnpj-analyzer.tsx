@@ -343,7 +343,7 @@ export function CnpjAnalyzer() {
 
                 {/* Fonte */}
                 <p className="text-[11px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] pt-6 border-t border-[color:var(--color-hairline)]">
-                  Fontes: {result.fonte.join(" + ")} · Análise: NOMOS GT (IA
+                  Fontes: {result.fonte.join(" + ")} · Análise: Arché (IA
                   assistida)
                 </p>
               </motion.div>

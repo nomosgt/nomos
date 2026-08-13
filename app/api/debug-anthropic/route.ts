@@ -1,6 +1,6 @@
 /**
  * Endpoint de DIAGNÓSTICO da chave Anthropic.
- * Acesse: https://nomos.gt/api/debug-anthropic
+ * Acesse: https://archebrasil.com.br/api/debug-anthropic
  *
  * Retorna JSON com:
  * - Chave presente?

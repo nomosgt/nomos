@@ -8,7 +8,7 @@ import { SalaNav } from "@/components/sala/sala-nav";
 import { AssistenteChat } from "@/components/sala/assistente-chat";
 
 export const metadata: Metadata = {
-  title: "Sala NGT",
+  title: "Sala Arché",
   robots: { index: false, follow: false },
 };
 
@@ -50,7 +50,7 @@ export default async function SalaLayout({
               href="/sala"
               className="font-mono text-[13px] tracking-tight text-[color:var(--color-ink)] hover:text-[color:var(--color-brand)]"
             >
-              ◇ Sala NGT
+              ◇ Sala Arché
             </Link>
             <SalaNav />
           </div>

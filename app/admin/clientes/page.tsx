@@ -27,7 +27,7 @@ export default async function AdminClientes() {
             Clientes
           </h1>
           <p className="text-[14px] text-[color:var(--color-ink-muted)]">
-            {clientes?.length || 0} cliente{(clientes?.length || 0) !== 1 ? "s" : ""} na Sala NGT.
+            {clientes?.length || 0} cliente{(clientes?.length || 0) !== 1 ? "s" : ""} na Sala Arché.
           </p>
         </div>
         <Link

@@ -15,7 +15,7 @@ export function EvertonPortrait() {
       <div className="relative aspect-[3/4] bg-[color:var(--color-ink)] overflow-hidden">
         <Image
           src="/everton/everton-palco.jpg"
-          alt="Éverton Vicente, CEO e Fundador da NOMOS GT"
+          alt="Éverton Vicente, CEO e Fundador da Arché"
           fill
           className="object-cover"
           priority
@@ -56,14 +56,14 @@ export function EvertonPortrait() {
 
         {/* Metadata inferior */}
         <div className="absolute bottom-6 right-6 z-[5] text-right font-mono text-[9px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/90 leading-relaxed">
-          <div>NGT · CEO</div>
+          <div>ARCHÉ · CEO</div>
           <div className="opacity-70">Éverton Vicente</div>
         </div>
       </div>
 
       <div className="mt-4 flex items-center justify-between font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-ink-faint)]">
         <span>◇ Retrato</span>
-        <span>NGT · 2026</span>
+        <span>ARCHÉ · 2026</span>
       </div>
     </div>
   );

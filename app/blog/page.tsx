@@ -4,7 +4,7 @@ import { BlogGrid } from "@/components/blog/blog-grid";
 import { getAllPublishedPosts } from "@/lib/blog/posts";
 
 export const metadata: Metadata = {
-  title: "Blog · NOMOS GT",
+  title: "Blog · Arché",
   description:
     "Análises técnicas sobre reforma tributária, jurisprudência, cases e atualizações do mundo fiscal.",
 };

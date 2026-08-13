@@ -23,7 +23,7 @@ export function DisclaimerCard({ setor }: Props) {
         <div className="flex items-center gap-2">
           <Database className="w-4 h-4 text-[color:var(--color-brand)]" />
           <span className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)]">
-            NGT Insights
+            Arché Insights
           </span>
         </div>
       </div>

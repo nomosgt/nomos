@@ -56,7 +56,7 @@ export function CopilotoWidget() {
         <div className="flex items-center gap-2">
           <Sparkles className="w-4 h-4 text-[color:var(--color-brand)]" />
           <h2 className="font-serif text-lg lg:text-xl text-[color:var(--color-ink)]">
-            Copiloto NGT
+            Copiloto Arché
           </h2>
           <span className="font-mono text-[9px] uppercase tracking-[0.25em] text-[color:var(--color-brand)] border border-[color:var(--color-brand)]/30 px-2 py-0.5">
             IA

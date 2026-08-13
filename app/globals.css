@@ -3,29 +3,30 @@
 @custom-variant dark (&:is(.dark *));
 
 @theme {
-  /* Color palette — warm off-white + ink + dark ochre accent */
-  --color-background: #FAFAF7;
-  --color-surface: #F4F2EC;
-  --color-ink: #0E1525;
-  --color-ink-muted: #6B6B6B;
-  --color-ink-faint: #9A9A95;
-  --color-hairline: #E5E5E0;
-  --color-accent: #8C6F3F;
-  --color-accent-dim: #5D4A2A;
-  --color-accent-soft: #D9C9A5;
+  /* Color palette ARCHÉ — branco frio big-4 + navy profundo + aço + dourado discreto */
+  --color-background: #FBFBFC;
+  --color-surface: #F3F4F7;
+  --color-ink: #10182B;
+  --color-ink-muted: #5B616E;
+  --color-ink-faint: #9AA0AA;
+  --color-hairline: #E4E6EB;
+  --color-accent: #A9853F;
+  --color-accent-dim: #6E5628;
+  --color-accent-soft: #DECFA8;
   /* Tokens paralelos (não conflitam com shadcn @theme inline) */
-  /* Azul NGT — identidade visual do material institucional (royal/navy) */
-  --color-brand: #163A8A;
-  --color-brand-dim: #0E2660;
-  --color-brand-soft: #8FA8D6;
-  --color-paper-warm: #EFEBDF;
+  /* Navy ARCHÉ — identidade oficial (barra 1 da marca) + aço das barras 2-3 */
+  --color-brand: #1B2A5C;
+  --color-brand-dim: #111C40;
+  --color-brand-soft: #97A3C4;
+  --color-steel: #A6A8AB;
+  --color-paper-warm: #EEF0F4;
   --color-paper: #EAEBEF;          /* off-white levemente azulado — texto em fundo escuro (não conflita com shadcn) */
   --color-paper-dim: #B8BAC2;      /* cinza claro acinzentado p/ texto secundário em fundo escuro */
 
-  /* Fonts — Fraunces unificada em 100% do site (sans, serif e mono) */
-  --font-sans: var(--font-fraunces), "Bodoni Moda", Georgia, "Times New Roman", serif;
-  --font-serif: var(--font-fraunces), "Bodoni Moda", Georgia, "Times New Roman", serif;
-  --font-mono: var(--font-fraunces), ui-monospace, "SF Mono", Menlo, monospace;
+  /* Fonts ARCHÉ — serif editorial nos títulos, sans limpa no corpo (padrão big-4) */
+  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
+  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
 
   /* Type scale (display) */
   --text-display-2xl: clamp(4.5rem, 11vw, 11rem);
@@ -213,7 +214,7 @@
 }
 
 :root {
-  /* Brand tokens NOMOS — blindados (devem sobrescrever qualquer override do shadcn) */
+  /* Brand tokens ARCHÉ — blindados (devem sobrescrever qualquer override do shadcn) */
   --color-brand: #163A8A;
   --color-brand-dim: #0E2660;
   --color-brand-soft: #8FA8D6;

@@ -56,7 +56,7 @@ export const POSTS: Post[] = [
     excerpt:
       "Um framework de 5 etapas para departamentos fiscais identificarem créditos não aproveitados que estão dormindo nos registros contábeis.",
     body: [
-      "A maior parte das empresas brasileiras tem créditos tributários adormecidos que nunca foram aproveitados — não por má-fé, mas por falta de leitura sistemática. Em diagnósticos recentes, a NOMOS identificou em média R$ 1,2 milhão de créditos não aproveitados por cada R$ 100 milhões de faturamento.",
+      "A maior parte das empresas brasileiras tem créditos tributários adormecidos que nunca foram aproveitados — não por má-fé, mas por falta de leitura sistemática. Em diagnósticos recentes, a Arché identificou em média R$ 1,2 milhão de créditos não aproveitados por cada R$ 100 milhões de faturamento.",
       "O framework que aplicamos passa por cinco etapas: (1) varredura documental dos últimos 60 meses, (2) cruzamento entre obrigações acessórias e registros contábeis, (3) identificação de teses aplicáveis ao perfil da operação, (4) quantificação preliminar do potencial, e (5) plano de execução priorizado por relação risco/retorno.",
       "Operações industriais e logísticas costumam concentrar a maior parte dos créditos esquecidos, mas mesmo empresas de serviços com Lucro Real apresentam oportunidades não óbvias — especialmente em PIS/COFINS sobre insumos e em IRPJ/CSLL sobre incentivos fiscais estaduais.",
     ],
@@ -72,7 +72,7 @@ export const POSTS: Post[] = [
     excerpt:
       "Como uma transportadora de médio porte combinou três teses tributárias para gerar caixa relevante sem judicialização desnecessária.",
     body: [
-      "Cliente do setor logístico, com faturamento anual de R$ 180 milhões, procurou a NOMOS com queixas pontuais sobre carga tributária crescente. O diagnóstico inicial revelou uma combinação não óbvia: créditos de PIS/COFINS sobre insumos amplamente aplicáveis ao setor, exposição não tratada em ICMS sobre energia elétrica, e oportunidade de exclusão de subvenções de ICMS da base do IRPJ/CSLL.",
+      "Cliente do setor logístico, com faturamento anual de R$ 180 milhões, procurou a Arché com queixas pontuais sobre carga tributária crescente. O diagnóstico inicial revelou uma combinação não óbvia: créditos de PIS/COFINS sobre insumos amplamente aplicáveis ao setor, exposição não tratada em ICMS sobre energia elétrica, e oportunidade de exclusão de subvenções de ICMS da base do IRPJ/CSLL.",
       "A estratégia priorizou as teses com menor risco e maior liquidez — recuperação administrativa via PER/DCOMP antes de qualquer movimento judicial. Em nove meses, o resultado consolidado foi de R$ 8,4 milhões em caixa devolvido, com mais R$ 2,1 milhões em fase final de homologação.",
       "O ponto mais relevante do case não foi o valor: foi a velocidade. O cliente não passou por qualquer autuação adicional, manteve o relacionamento intacto com a Receita Federal e continua hoje em acompanhamento continuado.",
     ],

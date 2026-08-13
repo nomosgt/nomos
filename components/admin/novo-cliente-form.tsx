@@ -61,7 +61,7 @@ export function NovoClienteForm() {
             no primeiro login (Em breve: link mágico via Supabase Auth).
           </p>
 
-          <CredField label="URL de acesso" value={`${process.env.NEXT_PUBLIC_SITE_URL || "https://nomos.gt"}/sala/login`} onCopy={copy} copyKey="url" copied={copied === "url"} />
+          <CredField label="URL de acesso" value={`${process.env.NEXT_PUBLIC_SITE_URL || "https://archebrasil.com.br"}/sala/login`} onCopy={copy} copyKey="url" copied={copied === "url"} />
           <CredField label="E-mail" value={invited.email} onCopy={copy} copyKey="email" copied={copied === "email"} />
           <CredField label="Senha temporária" value={invited.temp_password} onCopy={copy} copyKey="pwd" copied={copied === "pwd"} mono />
         </div>
@@ -80,7 +80,7 @@ export function NovoClienteForm() {
       <h1 className="font-serif text-3xl lg:text-4xl tracking-tight">Novo cliente</h1>
       <p className="text-[14px] text-[color:var(--color-ink-muted)] max-w-lg">
         Preencha os dados. O sistema gera uma senha temporária. Você envia por
-        WhatsApp/email e o cliente acessa a Sala NGT.
+        WhatsApp/email e o cliente acessa a Sala Arché.
       </p>
 
       <form onSubmit={handleSubmit} className="space-y-4">

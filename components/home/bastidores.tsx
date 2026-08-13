@@ -46,7 +46,7 @@ export function Bastidores() {
             </h2>
           </div>
           <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md lg:justify-self-end">
-            Três princípios técnicos que estruturam cada decisão na NGT — do
+            Três princípios técnicos que estruturam cada decisão na Arché — do
             primeiro diagnóstico à última petição.
           </p>
         </div>

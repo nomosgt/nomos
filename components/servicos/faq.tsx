@@ -15,12 +15,12 @@ const FAQ_ITEMS = [
     a: "Depende da via: créditos administrativos via PER/DCOMP entregam caixa em 6 a 12 meses; teses judiciais consolidadas (com decisões transitadas em julgado) em 12 a 18 meses; teses em discussão ainda no STF/STJ podem levar 24 a 36 meses, mas o ajuizamento preventivo já trava o direito retroativo. O cronograma exato é apresentado na Etapa 05 da jornada.",
   },
   {
-    q: "A NGT só trabalha com empresas grandes?",
+    q: "A Arché só trabalha com empresas grandes?",
     a: "Não. O discurso institucional é deliberadamente inclusivo: atendemos do médio porte (R$ 10M de faturamento) ao grande (R$ 500M+). Empresas menores muitas vezes têm potencial relativo maior, porque historicamente foram menos auditadas. O que importa é o perfil tributário, não o tamanho absoluto.",
   },
   {
     q: "Vocês concorrem com a contabilidade ou complementam?",
-    a: "Complementamos. O contador cuida da operação diária; a NGT atua nas teses, recuperações e contingências que exigem leitura jurídica especializada. Trabalhamos em parceria com a contabilidade do cliente — em muitos casos, é o próprio contador que indica a NGT quando identifica oportunidade fora do escopo dele.",
+    a: "Complementamos. O contador cuida da operação diária; a Arché atua nas teses, recuperações e contingências que exigem leitura jurídica especializada. Trabalhamos em parceria com a contabilidade do cliente — em muitos casos, é o próprio contador que indica a Arché quando identifica oportunidade fora do escopo dele.",
   },
   {
     q: "Como vocês garantem que a tese vai vencer?",
@@ -28,7 +28,7 @@ const FAQ_ITEMS = [
   },
   {
     q: "E se a Receita autuar a empresa depois?",
-    a: "A defesa em qualquer auto de infração relacionado às teses executadas pela NGT está incluída no escopo, sem custo adicional. Esse é o nosso skin in the game: se a leitura técnica que aplicamos for questionada, somos nós que defendemos.",
+    a: "A defesa em qualquer auto de infração relacionado às teses executadas pela Arché está incluída no escopo, sem custo adicional. Esse é o nosso skin in the game: se a leitura técnica que aplicamos for questionada, somos nós que defendemos.",
   },
   {
     q: "Vocês operam em todo o Brasil?",

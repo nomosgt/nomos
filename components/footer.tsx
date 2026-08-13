@@ -12,8 +12,8 @@ const FOOTER_LINKS = {
   ],
   Contato: [
     {
-      href: "mailto:contato@nomosgt.com.br",
-      label: "contato@nomosgt.com.br",
+      href: "mailto:contato@archebrasil.com.br",
+      label: "contato@archebrasil.com.br",
     },
     {
       href: "https://wa.me/5511933333841",
@@ -32,15 +32,15 @@ export function Footer() {
   return (
     <footer className="relative border-t border-[color:var(--color-hairline)] bg-[color:var(--color-background)]">
       <div className="mx-auto max-w-[1440px] px-6 lg:px-12 py-16 lg:py-24">
-        {/* Logo NGT gigante */}
+        {/* Logo Arché gigante */}
         <div className="flex items-end justify-between gap-10 flex-wrap mb-16">
-          <Link href="/" className="block group" aria-label="NGT — voltar à home">
+          <Link href="/" className="block group" aria-label="Arché — voltar à home">
             <Logo
               variant="full"
               className="h-28 w-auto lg:h-40 text-[color:var(--color-ink)] transition-colors group-hover:text-[color:var(--color-brand)]"
             />
             <div className="mt-6 font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-ink-muted)]">
-              Gestão Tributária
+              Inteligência Empresarial
             </div>
           </Link>
 
@@ -48,7 +48,7 @@ export function Footer() {
             href="/contato"
             className="group inline-flex items-center gap-2 px-5 py-3 border border-[color:var(--color-ink)] text-[13px] font-medium hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)] transition-all duration-300"
           >
-            Falar com a NOMOS GT
+            Falar com a Arché
             <ArrowUpRight className="w-3.5 h-3.5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
           </Link>
         </div>
@@ -96,7 +96,7 @@ export function Footer() {
         <div className="mt-20 pt-8 border-t border-[color:var(--color-hairline)] flex flex-wrap items-end justify-between gap-6">
           <div className="space-y-2">
             <div className="text-[12px] text-[color:var(--color-ink-muted)]">
-              © {new Date().getFullYear()} NOMOS GT · Todos os direitos reservados
+              © {new Date().getFullYear()} Arché · Todos os direitos reservados
             </div>
             <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)]">
               Éverton Vicente · Responsável técnico

@@ -37,7 +37,7 @@ export function TesesHero() {
           >
             <p className="text-[16px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md">
               Biblioteca das principais teses tributárias acompanhadas pela
-              NOMOS — com status, base jurídica e análise técnica de cada uma.
+              Arché — com status, base jurídica e análise técnica de cada uma.
             </p>
             <div className="inline-flex items-center gap-2 px-3 py-1.5 border border-[color:var(--color-brand)]/30 bg-[color:var(--color-brand)]/5 text-[11px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-brand)]">
               <Sparkles className="w-3 h-3" />

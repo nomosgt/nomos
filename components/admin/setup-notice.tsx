@@ -15,7 +15,7 @@ export function SetupNotice() {
             Backend não configurado
           </div>
           <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/40 mb-4">
-            NGT · Admin
+            ARCHÉ · Admin
           </div>
           <h1 className="font-serif text-3xl lg:text-4xl tracking-tight">
             Faltam variáveis do Supabase.

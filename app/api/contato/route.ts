@@ -83,7 +83,7 @@ export async function POST(req: Request) {
 
   // 5) Notificação por e-mail (fire-and-forget — não bloqueia a resposta)
   sendEmail({
-    subject: `[NGT] Novo contato — ${data.nome}`,
+    subject: `[Arché] Novo contato — ${data.nome}`,
     html: novoContatoTemplate({
       nome: data.nome,
       email: data.email,

@@ -29,7 +29,7 @@ export function ServicosCTA() {
             <div className="space-y-6">
               <p className="text-[17px] leading-relaxed text-[color:var(--color-paper)]/70 max-w-md">
                 Uma primeira conversa, sem custo, pra entender se faz sentido a
-                NOMOS olhar sua operação tributária.
+                Arché olhar sua operação tributária.
               </p>
               <Link
                 href="/contato"
