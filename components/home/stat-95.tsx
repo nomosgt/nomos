@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import Link from "next/link";
-import { ArrowUpRight, Scale, Briefcase } from "lucide-react";
+import { ArrowUpRight, Scale, Briefcase, Cpu } from "lucide-react";
 import { Container } from "@/components/ui/section";
 import { Reveal } from "@/components/motion/reveal";
 
@@ -26,6 +26,13 @@ const NUCLEOS = [
     title: "Governança e gestão empresarial",
     desc: "Diagnóstico organizacional, planejamento estratégico, KPIs, controles financeiros e estruturação de processos para crescer com previsibilidade.",
     href: "/servicos#empresarial",
+  },
+  {
+    icon: Cpu,
+    tag: "Núcleo de Tecnologia",
+    title: "Plataforma única e IA aplicada",
+    desc: "Simulador proprietário, Sala do Cliente com acompanhamento em tempo real e inteligência artificial a serviço da expertise — do diagnóstico ao resultado.",
+    href: "/servicos#tecnologia",
   },
 ];
 
@@ -73,8 +80,8 @@ export function Stat95() {
             </Reveal>
           </div>
 
-          {/* Dois núcleos */}
-          <div className="grid grid-cols-1 md:grid-cols-2 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
+          {/* Três núcleos */}
+          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
             {NUCLEOS.map((n, i) => (
               <motion.div
                 key={n.tag}

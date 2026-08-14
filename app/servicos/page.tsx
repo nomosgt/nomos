@@ -3,6 +3,7 @@ import { ServicosHero } from "@/components/servicos/servicos-hero";
 import { ServicosList } from "@/components/servicos/servicos-list";
 import { ClassificacaoRisco } from "@/components/servicos/classificacao-risco";
 import { NucleoEmpresarial } from "@/components/servicos/nucleo-empresarial";
+import { NucleoTecnologia } from "@/components/servicos/nucleo-tecnologia";
 import { FAQ } from "@/components/servicos/faq";
 import { ServicosCTA } from "@/components/servicos/servicos-cta";
 
@@ -19,6 +20,7 @@ export default function ServicosPage() {
       <ServicosList />
       <ClassificacaoRisco />
       <NucleoEmpresarial />
+      <NucleoTecnologia />
       <FAQ />
       <ServicosCTA />
     </>
