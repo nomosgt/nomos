@@ -71,7 +71,7 @@ export function Navbar() {
               </Link>
               <Link
                 href="/contato"
-                className="group inline-flex items-center gap-2.5 px-6 py-3 text-[17px] font-medium border border-[color:var(--color-ink)] text-[color:var(--color-ink)] hover:bg-[color:var(--color-ink)] hover:text-[color:var(--color-paper)] transition-all duration-300 hover:-translate-y-0.5"
+                className="group inline-flex items-center gap-2.5 px-6 py-3 text-[16px] font-medium bg-[color:var(--color-brand)] text-white hover:bg-[color:var(--color-brand-dim)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(27,42,92,0.5)]"
               >
                 Agendar diagnóstico
                 <ArrowUpRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

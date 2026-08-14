@@ -21,6 +21,15 @@ export function Hero() {
 
       <HeroArt />
 
+      {/* Barras diagonais oficiais — marca d'água editorial à direita */}
+      <div
+        aria-hidden
+        className="absolute -right-24 top-1/2 -translate-y-1/2 h-[130%] pointer-events-none select-none opacity-[0.045] hidden lg:block"
+      >
+        {/* eslint-disable-next-line @next/next/no-img-element */}
+        <img src="/brand/arche-symbol-blue.png" alt="" className="h-full w-auto" />
+      </div>
+
       <Container className="relative flex-1 flex flex-col">
         <motion.div
           initial={{ opacity: 0, y: 8 }}
@@ -73,7 +82,7 @@ export function Hero() {
             <div className="flex flex-col sm:flex-row items-start gap-3 lg:justify-end">
               <Link
                 href="/contato"
-                className="group inline-flex items-center gap-2 px-6 py-4 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] text-[13px] font-medium transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(14,21,37,0.4)]"
+                className="group inline-flex items-center gap-2 px-6 py-4 bg-[color:var(--color-brand)] text-white text-[13px] font-medium transition-all duration-300 hover:bg-[color:var(--color-brand-dim)] hover:-translate-y-0.5 hover:shadow-[0_12px_32px_-12px_rgba(27,42,92,0.45)]"
               >
                 Agendar diagnóstico
                 <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />

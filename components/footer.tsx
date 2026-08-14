@@ -37,11 +37,8 @@ export function Footer() {
           <Link href="/" className="block group" aria-label="Arché — voltar à home">
             <Logo
               variant="full"
-              className="h-28 w-auto lg:h-40 text-[color:var(--color-ink)] transition-colors group-hover:text-[color:var(--color-brand)]"
+              className="h-16 lg:h-20 transition-opacity group-hover:opacity-80"
             />
-            <div className="mt-6 font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-ink-muted)]">
-              Inteligência Empresarial
-            </div>
           </Link>
 
           <Link
