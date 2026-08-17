@@ -9,27 +9,27 @@ import { Reveal } from "@/components/motion/reveal";
 const PILARES = [
   {
     icon: Scale,
-    tag: "Pilar I",
+    tag: "01 / Tributário",
     title: "Consultoria Tributária",
     description:
-      "Consultoria desenvolvida conforme a realidade e as necessidades específicas de cada empresa — segurança jurídica, eficiência fiscal e suporte estratégico à tomada de decisão.",
+      "Recuperação e otimização de créditos, planejamento, revisão fiscal, passivos, teses e gestão de riscos tributários.",
     href: "/servicos#consultoria",
   },
   {
     icon: Gavel,
-    tag: "Pilar II",
-    title: "Recuperação de Créditos",
+    tag: "02 / Empresarial",
+    title: "Governança & Gestão",
     description:
-      "Identificação e recuperação de tributos pagos indevidamente ou em valor superior ao devido, fortalecendo o fluxo de caixa da operação.",
-    href: "/servicos#judicial",
+      "Diagnóstico organizacional, processos, controles, indicadores, planejamento e estruturação da gestão.",
+    href: "/servicos#empresarial",
   },
   {
     icon: FileSearch,
-    tag: "Pilar III",
-    title: "Regularização Fiscal",
+    tag: "03 / Estratégia",
+    title: "Tecnologia e inteligência",
     description:
-      "Suporte especializado para regularizar pendências e manter a empresa em conformidade com a legislação — com segurança.",
-    href: "/servicos#administrativa",
+      "Dados, automação e IA aplicados à análise e à tomada de decisão da nossa equipe sênior.",
+    href: "/servicos#tecnologia",
   },
 ];
 
@@ -39,14 +39,15 @@ export function AreasSection() {
       <Container>
         <div className="grid grid-cols-1 lg:grid-cols-[1fr_2fr] gap-12 lg:gap-20 items-end mb-20 lg:mb-28">
           <div>
-            <Eyebrow>Pilares Arché</Eyebrow>
+            <Eyebrow>Uma visão integrada</Eyebrow>
             <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
-              Três frentes de atuação,<br />
-              <span className="italic text-[color:var(--color-brand)]">um único objetivo.</span>
+              Uma inteligência.<br />
+              <span className="italic text-[color:var(--color-brand)]">Múltiplas especialidades.</span>
             </h2>
           </div>
           <p className="text-[16px] lg:text-[17px] leading-relaxed text-[color:var(--color-ink-muted)] max-w-md lg:justify-self-end">
-            Tornar sua operação fiscal mais eficiente e segura.
+            A empresa não precisa contratar respostas fragmentadas. A Arché
+            conecta diferentes especialidades em uma visão única do negócio.
           </p>
         </div>
 

@@ -37,14 +37,14 @@ export function Manifesto() {
           </div>
           <SplitText
             as="h2"
-            text="Tributário não é apenas custo. É leitura técnica."
+            text="Complexidade exige inteligência."
             className="font-serif text-display-md lg:text-display-xl leading-[0.95] tracking-tight text-[color:var(--color-paper)]"
             stagger={0.04}
             splitBy="word"
           />
           <SplitText
             as="p"
-            text="A diferença entre uma empresa que paga mais do que deveria e outra que recupera está na qualidade da análise. O restante é consequência de método."
+            text="Empresas não precisam de mais informação — precisam saber o que fazer com ela. Informação mostra o que aconteceu. Inteligência mostra o que fazer."
             className="block mt-12 font-serif italic text-2xl lg:text-3xl leading-[1.35] text-[color:var(--color-paper)]/70 max-w-3xl"
             stagger={0.015}
             splitBy="word"

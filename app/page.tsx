@@ -3,6 +3,7 @@ import { CounterBand } from "@/components/home/counter-band";
 import { Stat95 } from "@/components/home/stat-95";
 import { AreasSection } from "@/components/home/areas-section";
 import { WhyNomos } from "@/components/home/why-nomos";
+import { MetodoArche } from "@/components/home/metodo-arche";
 import { FotoEmCampo } from "@/components/home/foto-em-campo";
 import { SimuladorTeaser } from "@/components/home/simulador-teaser";
 import { MapaBrasil } from "@/components/home/mapa-brasil";
@@ -16,6 +17,7 @@ export default function HomePage() {
       <CounterBand />
       <Stat95 />
       <AreasSection />
+      <MetodoArche />
       <WhyNomos />
       <FotoEmCampo />
       <SimuladorTeaser />

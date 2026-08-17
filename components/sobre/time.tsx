@@ -28,7 +28,7 @@ export function Time() {
                 <div className="aspect-square bg-[color:var(--color-ink)] mb-6 relative overflow-hidden">
                   <Image
                     src="/everton/everton-palco.jpg"
-                    alt="Éverton Vicente"
+                    alt="Everton Vicente"
                     fill
                     className="object-cover object-top"
                     sizes="(max-width: 640px) 100vw, 30vw"
@@ -38,7 +38,7 @@ export function Time() {
                   CEO e Fundador
                 </div>
                 <h3 className="font-serif text-2xl text-[color:var(--color-ink)] mb-2">
-                  Éverton Vicente
+                  Everton Vicente
                 </h3>
                 <p className="text-[13px] text-[color:var(--color-ink-muted)] leading-relaxed">
                   Advogado tributarista. Bacharel em Direito (USF). Pós em

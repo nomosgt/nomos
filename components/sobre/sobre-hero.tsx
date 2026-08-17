@@ -23,14 +23,14 @@ export function SobreHero() {
           <div>
             <SplitText
               as="h1"
-              text="Éverton Vicente."
+              text="Everton Vicente."
               className="font-serif text-display-lg lg:text-display-xl leading-[0.95] tracking-tight"
               splitBy="word"
               stagger={0.04}
             />
             <SplitText
               as="h1"
-              text="A leitura técnica por trás da Arché."
+              text="Um escritório construído para empresas que querem crescer com inteligência."
               className="block mt-3 font-serif italic text-display-md lg:text-display-lg leading-[0.95] tracking-tight text-[color:var(--color-brand)]"
               splitBy="word"
               stagger={0.04}

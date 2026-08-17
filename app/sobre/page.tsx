@@ -8,7 +8,7 @@ import { Time } from "@/components/sobre/time";
 export const metadata: Metadata = {
   title: "Sobre · Arché",
   description:
-    "Éverton Vicente — fundador da Arché. Formação técnica rigorosa em Direito Tributário e mais de R$100 milhões em créditos recuperados.",
+    "Everton Vicente — fundador da Arché. Formação técnica rigorosa em Direito Tributário e mais de R$100 milhões em créditos recuperados.",
 };
 
 export default function SobrePage() {

@@ -74,10 +74,11 @@ export function NucleoTecnologia() {
               <span className="italic text-[color:var(--color-brand-soft)]">do diagnóstico ao resultado.</span>
             </h2>
             <p className="text-[16px] leading-relaxed text-[color:var(--color-paper-dim)] max-w-2xl mb-16">
-              Na Arché, tecnologia potencializa a expertise dos nossos especialistas:
-              inteligência de dados e conhecimento tributário para identificar, com
-              agilidade e precisão, o potencial da sua empresa — e acompanhar cada
-              etapa em tempo real.
+              Na Arché, aplicamos tecnologia para ampliar a capacidade e a
+              celeridade nas análises e, ao mesmo tempo, proteger as informações
+              confiadas por nossos clientes. Inteligência de dados e conhecimento
+              tributário para identificar, com agilidade e precisão, o potencial
+              da sua empresa — e acompanhar cada etapa em tempo real.
             </p>
           </Reveal>
 

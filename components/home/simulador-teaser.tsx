@@ -17,12 +17,11 @@ export function SimuladorTeaser() {
 
           <div className="grid grid-cols-1 lg:grid-cols-[1.3fr_1fr] gap-12 lg:gap-20 items-center">
             <div>
-              <Eyebrow>Simulador Arché</Eyebrow>
+              <Eyebrow>Inteligência tributária</Eyebrow>
               <Reveal>
                 <h2 className="mt-8 font-serif text-display-md lg:text-display-lg leading-[0.95] tracking-tight">
-                  Estime o <span className="italic text-[color:var(--color-brand)]">potencial</span><br />
-                  de recuperação<br />
-                  da sua empresa.
+                  Descubra onde sua empresa pode estar{" "}
+                  <span className="italic text-[color:var(--color-brand)]">perdendo eficiência.</span>
                 </h2>
               </Reveal>
               <Reveal delay={0.15}>

@@ -15,7 +15,7 @@ export function EvertonPortrait() {
       <div className="relative aspect-[3/4] bg-[color:var(--color-ink)] overflow-hidden">
         <Image
           src="/everton/everton-palco.jpg"
-          alt="Éverton Vicente, CEO e Fundador da Arché"
+          alt="Everton Vicente, CEO e Fundador da Arché"
           fill
           className="object-cover"
           priority
@@ -57,7 +57,7 @@ export function EvertonPortrait() {
         {/* Metadata inferior */}
         <div className="absolute bottom-6 right-6 z-[5] text-right font-mono text-[9px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/90 leading-relaxed">
           <div>ARCHÉ · CEO</div>
-          <div className="opacity-70">Éverton Vicente</div>
+          <div className="opacity-70">Everton Vicente</div>
         </div>
       </div>
 

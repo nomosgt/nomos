@@ -41,7 +41,7 @@ export function ClosingCTA() {
               </div>
               <div className="flex items-center justify-between">
                 <span className="font-serif text-2xl lg:text-3xl">
-                  Agendar diagnóstico
+                  Fale com especialista
                 </span>
                 <ArrowUpRight className="w-5 h-5 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1" />
               </div>
