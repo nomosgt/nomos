@@ -37,44 +37,44 @@ export function Navbar() {
         )}
       >
         <div className="mx-auto max-w-[1440px] px-6 lg:px-12">
-          <div className="flex items-center justify-between h-24 lg:h-28">
+          <div className="flex items-center justify-between gap-8 xl:gap-12 h-20 lg:h-24">
             <Link
               href="/"
-              className="group flex items-center text-[color:var(--color-ink)] transition-colors"
+              className="group flex shrink-0 items-center text-[color:var(--color-ink)] transition-colors"
               aria-label="Arché — voltar à home"
             >
               <Logo
                 variant="full"
-                className="h-12 w-auto lg:h-14 transition-colors group-hover:text-[color:var(--color-brand)]"
+                className="h-9 w-auto lg:h-11 transition-colors group-hover:text-[color:var(--color-brand)]"
               />
             </Link>
 
-            <nav className="hidden lg:flex items-center gap-11">
+            <nav className="hidden lg:flex items-center gap-7 xl:gap-9">
               {NAV_LINKS.map((link) => (
                 <Link
                   key={link.href}
                   href={link.href}
-                  className="link-underline text-[20px] font-medium tracking-wide text-[color:var(--color-ink)] hover:text-[color:var(--color-ink)]"
+                  className="link-underline whitespace-nowrap text-[15px] font-medium tracking-[0.01em] text-[color:var(--color-ink)] hover:text-[color:var(--color-ink)]"
                 >
                   {link.label}
                 </Link>
               ))}
             </nav>
 
-            <div className="hidden lg:flex items-center gap-6">
+            <div className="hidden lg:flex shrink-0 items-center gap-6">
               <Link
                 href="/acesso"
-                className="inline-flex items-center gap-2 text-[14px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)] transition-colors"
+                className="hidden xl:inline-flex items-center gap-2 whitespace-nowrap text-[11px] font-mono uppercase tracking-[0.18em] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)] transition-colors"
                 aria-label="Acessar área restrita (admin ou cliente)"
               >
                 ◇ Área restrita
               </Link>
               <Link
                 href="/contato"
-                className="group inline-flex items-center gap-2.5 px-6 py-3 text-[16px] font-medium bg-[color:var(--color-brand)] text-white hover:bg-[color:var(--color-brand-dim)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(27,42,92,0.5)]"
+                className="group inline-flex items-center gap-2 whitespace-nowrap px-5 py-2.5 text-[14px] font-medium bg-[color:var(--color-brand)] text-white hover:bg-[color:var(--color-brand-dim)] transition-all duration-300 hover:-translate-y-0.5 hover:shadow-[0_10px_24px_-10px_rgba(27,42,92,0.5)]"
               >
                 Fale com especialista
-                <ArrowUpRight className="w-5 h-5 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
+                <ArrowUpRight className="w-4 h-4 transition-transform group-hover:translate-x-0.5 group-hover:-translate-y-0.5" />
               </Link>
             </div>
 
