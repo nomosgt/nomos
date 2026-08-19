@@ -21,8 +21,8 @@ const FOOTER_LINKS = {
       external: true,
     },
     {
-      href: "https://instagram.com/nomosgt",
-      label: "@nomosgt",
+      href: "https://instagram.com/arche.empresarial",
+      label: "@arche.empresarial",
       external: true,
     },
   ],
@@ -112,13 +112,13 @@ export function Footer() {
               ◇ Área restrita
             </Link>
             <Link
-              href="https://instagram.com/nomosgt"
+              href="https://instagram.com/arche.empresarial"
               target="_blank"
               rel="noopener noreferrer"
               className="inline-flex items-center gap-2 text-[12px] text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-ink)] transition-colors"
             >
               <Instagram className="w-3.5 h-3.5" />
-              @nomosgt
+              @arche.empresarial
             </Link>
           </div>
         </div>

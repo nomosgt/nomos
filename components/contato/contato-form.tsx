@@ -248,9 +248,9 @@ export function ContatoForm() {
             <ContactCard
               icon={Instagram}
               label="Instagram"
-              href="https://instagram.com/nomosgt"
+              href="https://instagram.com/arche.empresarial"
               external
-              value="@nomosgt"
+              value="@arche.empresarial"
               cta="Ver perfil"
             />
             <InfoCard icon={MapPin} label="Endereço">

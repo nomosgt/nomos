@@ -27,10 +27,10 @@ export function Time() {
               <div className="bg-[color:var(--color-background)] p-8 lg:p-10">
                 <div className="aspect-square bg-[color:var(--color-ink)] mb-6 relative overflow-hidden">
                   <Image
-                    src="/everton/everton-palco.jpg"
+                    src="/everton/everton-socio.jpg"
                     alt="Everton Vicente"
                     fill
-                    className="object-cover object-top"
+                    className="object-cover object-center"
                     sizes="(max-width: 640px) 100vw, 30vw"
                   />
                 </div>

@@ -14,7 +14,7 @@ export function EvertonPortrait() {
     <div className="relative">
       <div className="relative aspect-[3/4] bg-[color:var(--color-ink)] overflow-hidden">
         <Image
-          src="/everton/everton-palco.jpg"
+          src="/everton/everton-socio.jpg"
           alt="Everton Vicente, CEO e Fundador da Arché"
           fill
           className="object-cover"
