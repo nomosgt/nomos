@@ -138,9 +138,55 @@ export function saveDB(db: DB) {
   if (typeof window === "undefined") return;
   try {
     localStorage.setItem(KEY, JSON.stringify(db));
+    schedulePush();
   } catch (e) {
     console.warn("[parceiros] persist fail:", e);
   }
+}
+
+/* ============================================================
+ * Central v2 — sync com Supabase (via /api/parceiros/dados)
+ * - syncFromServer(): baixa o snapshot remoto (fonte da verdade
+ *   no login — inclui edições feitas pelo admin) e hidrata o local.
+ * - schedulePush(): debounce de 1.2s após cada mutação local.
+ * ============================================================ */
+
+export async function syncFromServer(): Promise<DB | null> {
+  if (typeof window === "undefined") return null;
+  try {
+    const r = await fetch("/api/parceiros/dados", { cache: "no-store" });
+    if (!r.ok) return null;
+    const j = await r.json();
+    if (j?.dados && Array.isArray(j.dados.clientes)) {
+      const db = { ...emptyDB(), ...j.dados } as DB;
+      localStorage.setItem(KEY, JSON.stringify(db));
+      return db;
+    }
+    // primeiro acesso: sobe o que existir localmente (seed/demo)
+    schedulePush();
+    return null;
+  } catch {
+    return null;
+  }
+}
+
+let pushTimer: ReturnType<typeof setTimeout> | null = null;
+export function schedulePush() {
+  if (typeof window === "undefined") return;
+  if (pushTimer) clearTimeout(pushTimer);
+  pushTimer = setTimeout(() => {
+    try {
+      const raw = localStorage.getItem(KEY);
+      if (!raw) return;
+      void fetch("/api/parceiros/dados", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dados: JSON.parse(raw) }),
+      }).catch(() => {});
+    } catch {
+      /* offline ok — localStorage segue como cache */
+    }
+  }, 1200);
 }
 
 export function resetDemo() {

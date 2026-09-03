@@ -16,6 +16,7 @@ import {
 import { Logo } from "@/components/brand/logo";
 import {
   loadDB, saveDB, uid, fmtBRL, fmtDate, diffDays, urgencia, exportCSV,
+  syncFromServer,
   type DB, type Cliente, type Projeto, type Trabalho, type Comissao,
   type Documento, type Relatorio,
 } from "@/lib/parceiros/store";
@@ -45,7 +46,16 @@ export default function ParceirosPage() {
   const [busca, setBusca] = useState("");
 
   useEffect(() => {
+    // v2: servidor é a fonte da verdade no load (traz edições do admin);
+    // localStorage entra como fallback/cache offline.
+    let alive = true;
     setDb(loadDB());
+    void syncFromServer().then((remote) => {
+      if (alive && remote) setDb(remote);
+    });
+    return () => {
+      alive = false;
+    };
   }, []);
 
   const mutate = useCallback((fn: (d: DB) => DB) => {

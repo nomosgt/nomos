@@ -50,10 +50,10 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Codigo invalido ou desativado." }, { status: 401 });
   }
 
-  // registra ultimo acesso (fire-and-forget)
+  // registra ultimo acesso + cookie_hash p/ APIs identificarem o parceiro (fire-and-forget)
   void admin
     .from("parceiros_codigos")
-    .update({ ultimo_acesso: new Date().toISOString() })
+    .update({ ultimo_acesso: new Date().toISOString(), cookie_hash: tokenFor(row.codigo) })
     .eq("id", row.id)
     .then(() => {});
 

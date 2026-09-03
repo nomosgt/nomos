@@ -10,6 +10,7 @@ const ITEMS = [
   { href: "/admin/cnpj", label: "CNPJ" },
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/colaboradores", label: "Colaboradores" },
+  { href: "/admin/parceiros", label: "Parceiros" },
   { href: "/admin/blog", label: "Blog" },
 ];
 
