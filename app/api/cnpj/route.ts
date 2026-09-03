@@ -42,10 +42,16 @@ export async function POST(req: Request) {
   }
   const { cnpj } = parsed.data;
 
-  const [brasil, receita] = await Promise.all([
-    fetchBrasilApi(cnpj),
-    fetchReceitaWs(cnpj).catch(() => null),
-  ]);
+  // Velocidade: BrasilAPI é a fonte primária. A ReceitaWS (lenta, 3 req/min)
+  // ganha no máximo +1.5s após a BrasilAPI responder — senão seguimos sem ela.
+  const receitaPromise = fetchReceitaWs(cnpj).catch(() => null);
+  const brasil = await fetchBrasilApi(cnpj);
+  const receita = brasil
+    ? await Promise.race([
+        receitaPromise,
+        new Promise<null>((r) => setTimeout(() => r(null), 1500)),
+      ])
+    : await receitaPromise;
 
   if (!brasil && !receita) {
     return NextResponse.json(

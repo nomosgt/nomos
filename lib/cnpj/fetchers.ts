@@ -13,7 +13,7 @@ export interface CnpjRaw {
   data: Record<string, unknown>;
 }
 
-const TIMEOUT_MS = 8000;
+const TIMEOUT_MS = 5000;
 
 async function fetchWithTimeout(url: string, ms = TIMEOUT_MS): Promise<Response | null> {
   const ctrl = new AbortController();

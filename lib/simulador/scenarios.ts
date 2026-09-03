@@ -14,11 +14,17 @@ import { tesesParaSetor, type SetorKey } from "./teses-catalog";
 
 // ============================================================
 // TRAVAS por cenário — % máximo do faturamento acumulado 60m
+//
+// CALIBRADO COM CASO REAL (set/2026): J.B Shoes (indústria,
+// ~R$ 3M/ano, janela 60m ≈ R$ 15M acumulado) → diagnóstico
+// real da equipe: R$ 187k de potencial TOTAL (IRPJ/CSLL 112k
+// + ICMS 75k) ≈ 1,25% do acumulado. O cenário base fica ABAIXO
+// da âncora real (conservador) e o otimista ligeiramente acima.
 // ============================================================
 const CAPS_PCT: Record<Cenario, number> = {
-  pessimista: 0.035, // 3.5% do faturamento acumulado
-  base: 0.085, // 8.5%
-  otimista: 0.185, // 18.5%
+  pessimista: 0.004, // 0,4% do faturamento acumulado
+  base: 0.011, // 1,1% — âncora: caso real ~1,25%
+  otimista: 0.022, // 2,2% — teto p/ perfis com alta aderência documental
 };
 
 // ============================================================
@@ -32,7 +38,7 @@ const REDUTORES = {
   sem_regime_confirmado: 0.25, // -25%
 };
 
-const HONORARIOS_PCT_DEFAULT = 0.3; // 30% de honorários advocatícios sobre valor recuperado
+const HONORARIOS_PCT_DEFAULT = 0.25; // honorários sobre êxito (20% judicial / 25% adm — usamos 25%, conservador)
 
 /**
  * Score de confiabilidade — inferido a partir do que o usuario forneceu.
