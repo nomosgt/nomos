@@ -35,10 +35,10 @@ export async function GET() {
   }
   const admin = createAdminClient();
 
-  const [codigos, dados, cases] = await Promise.all([
+  const [codigos, dados, cases, financeiro] = await Promise.all([
     admin
       .from("parceiros_codigos")
-      .select("id, codigo, nome, percentual, ativo, ultimo_acesso, created_at")
+      .select("id, codigo, nome, percentual, ativo, papel, ultimo_acesso, created_at")
       .order("created_at", { ascending: false }),
     admin.from("parceiro_dados").select("parceiro_id, dados, updated_at, updated_by"),
     admin
@@ -47,10 +47,16 @@ export async function GET() {
       .neq("status", "arquivado")
       .order("created_at", { ascending: false })
       .limit(100),
+    admin
+      .from("parceiro_financeiro")
+      .select("parceiro_id, percentual, pendente, proximo_pagamento, proximo_valor, historico, observacoes"),
   ]);
 
   const dadosMap = new Map(
     (dados.data ?? []).map((d) => [d.parceiro_id, d]),
+  );
+  const finMap = new Map(
+    (financeiro.data ?? []).map((f) => [f.parceiro_id, f]),
   );
 
   return NextResponse.json({
@@ -59,9 +65,65 @@ export async function GET() {
       snapshot: dadosMap.get(p.id)?.dados ?? null,
       snapshot_updated_at: dadosMap.get(p.id)?.updated_at ?? null,
       snapshot_updated_by: dadosMap.get(p.id)?.updated_by ?? null,
+      financeiro: finMap.get(p.id) ?? null,
     })),
     cases: cases.data ?? [],
   });
+}
+
+const finSchema = z.object({
+  parceiro_id: z.string().uuid(),
+  financeiro: z.object({
+    percentual: z.number().min(0).max(100),
+    pendente: z.number().min(0),
+    proximo_pagamento: z.string().nullable().optional(),
+    proximo_valor: z.number().nullable().optional(),
+    observacoes: z.string().max(1000).nullable().optional(),
+    historico: z
+      .array(
+        z.object({
+          data: z.string(),
+          valor: z.number(),
+          descricao: z.string().max(300),
+          status: z.enum(["pago", "pendente"]),
+        }),
+      )
+      .optional(),
+  }),
+});
+
+/** PUT — admin define a folha oficial que o colaborador vê na Central. */
+export async function PUT(req: Request) {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Supabase nao configurado" }, { status: 503 });
+  }
+  if (!(await requireAdmin())) {
+    return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
+  }
+  let body: unknown;
+  try {
+    body = await req.json();
+  } catch {
+    return NextResponse.json({ error: "JSON invalido" }, { status: 400 });
+  }
+  const parsed = finSchema.safeParse(body);
+  if (!parsed.success) {
+    return NextResponse.json({ error: "Payload invalido" }, { status: 422 });
+  }
+  const admin = createAdminClient();
+  const f = parsed.data.financeiro;
+  const { error } = await admin.from("parceiro_financeiro").upsert({
+    parceiro_id: parsed.data.parceiro_id,
+    percentual: f.percentual,
+    pendente: f.pendente,
+    proximo_pagamento: f.proximo_pagamento ?? null,
+    proximo_valor: f.proximo_valor ?? null,
+    observacoes: f.observacoes ?? null,
+    ...(f.historico ? { historico: f.historico } : {}),
+    updated_at: new Date().toISOString(),
+  });
+  if (error) return NextResponse.json({ error: "Falha ao gravar" }, { status: 500 });
+  return NextResponse.json({ ok: true });
 }
 
 const patchSchema = z.object({

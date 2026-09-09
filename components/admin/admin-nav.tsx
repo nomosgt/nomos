@@ -11,6 +11,7 @@ const ITEMS = [
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/colaboradores", label: "Colaboradores" },
   { href: "/admin/parceiros", label: "Parceiros" },
+  { href: "/admin/financeiro", label: "Financeiro" },
   { href: "/admin/blog", label: "Blog" },
 ];
 

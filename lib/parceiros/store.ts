@@ -20,6 +20,12 @@ export interface Cliente {
   criado_em: string;
 }
 
+export interface Andamento {
+  id: string;
+  texto: string;
+  criado_em: string;
+}
+
 export interface Projeto {
   id: string;
   nome: string;
@@ -30,6 +36,8 @@ export interface Projeto {
   vencimento: string | null;
   observacoes: string;
   criado_em: string;
+  /** Andamentos do processo — visíveis p/ admin e supervisão; publicáveis ao cliente. */
+  andamentos?: Andamento[];
 }
 
 export interface Trabalho {
@@ -151,23 +159,50 @@ export function saveDB(db: DB) {
  * - schedulePush(): debounce de 1.2s após cada mutação local.
  * ============================================================ */
 
-export async function syncFromServer(): Promise<DB | null> {
-  if (typeof window === "undefined") return null;
+export interface ColaboradorSupervisao {
+  id: string;
+  nome: string;
+  ativo: boolean;
+  ultimo_acesso: string | null;
+  dados: Omit<DB, "comissoes"> | null;
+  updated_at: string | null;
+}
+
+export type CentralPayload =
+  | { supervisor: true; nome: string; colaboradores: ColaboradorSupervisao[] }
+  | { supervisor?: false; nome?: string; dados: Partial<DB> | null };
+
+/** Busca o payload da Central: modo parceiro (hidrata local) ou supervisão. */
+export async function fetchCentral(): Promise<
+  { mode: "supervisor"; payload: Extract<CentralPayload, { supervisor: true }> }
+  | { mode: "parceiro"; db: DB | null }
+  | { mode: "offline" }
+> {
+  if (typeof window === "undefined") return { mode: "offline" };
   try {
     const r = await fetch("/api/parceiros/dados", { cache: "no-store" });
-    if (!r.ok) return null;
-    const j = await r.json();
-    if (j?.dados && Array.isArray(j.dados.clientes)) {
-      const db = { ...emptyDB(), ...j.dados } as DB;
+    if (!r.ok) return { mode: "offline" };
+    const j = (await r.json()) as CentralPayload;
+    if (j && "supervisor" in j && j.supervisor === true) {
+      return { mode: "supervisor", payload: j };
+    }
+    const dados = (j as { dados?: Partial<DB> | null }).dados;
+    if (dados && Array.isArray(dados.clientes)) {
+      const db = { ...emptyDB(), ...dados } as DB;
       localStorage.setItem(KEY, JSON.stringify(db));
-      return db;
+      return { mode: "parceiro", db };
     }
     // primeiro acesso: sobe o que existir localmente (seed/demo)
     schedulePush();
-    return null;
+    return { mode: "parceiro", db: null };
   } catch {
-    return null;
+    return { mode: "offline" };
   }
+}
+
+export async function syncFromServer(): Promise<DB | null> {
+  const r = await fetchCentral();
+  return r.mode === "parceiro" ? r.db : null;
 }
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;

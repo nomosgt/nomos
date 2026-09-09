@@ -16,10 +16,12 @@ import {
 import { Logo } from "@/components/brand/logo";
 import {
   loadDB, saveDB, uid, fmtBRL, fmtDate, diffDays, urgencia, exportCSV,
-  syncFromServer,
+  fetchCentral,
   type DB, type Cliente, type Projeto, type Trabalho, type Comissao,
-  type Documento, type Relatorio,
+  type Documento, type Relatorio, type ColaboradorSupervisao,
 } from "@/lib/parceiros/store";
+import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
+import { SupervisaoView } from "@/components/parceiros/supervisao-view";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
@@ -45,13 +47,23 @@ export default function ParceirosPage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [busca, setBusca] = useState("");
 
+  const [supervisao, setSupervisao] = useState<{
+    nome: string;
+    colaboradores: ColaboradorSupervisao[];
+  } | null>(null);
+
   useEffect(() => {
     // v2: servidor é a fonte da verdade no load (traz edições do admin);
     // localStorage entra como fallback/cache offline.
     let alive = true;
     setDb(loadDB());
-    void syncFromServer().then((remote) => {
-      if (alive && remote) setDb(remote);
+    void fetchCentral().then((r) => {
+      if (!alive) return;
+      if (r.mode === "supervisor") {
+        setSupervisao({ nome: r.payload.nome, colaboradores: r.payload.colaboradores });
+      } else if (r.mode === "parceiro" && r.db) {
+        setDb(r.db);
+      }
     });
     return () => {
       alive = false;
@@ -71,6 +83,17 @@ export default function ParceirosPage() {
     await fetch("/api/parceiros/auth", { method: "DELETE" }).catch(() => {});
     router.push("/parceiros/login");
     router.refresh();
+  }
+
+  // Modo supervisão (Dra. Gabriela) — todos os processos, zero financeiro.
+  if (supervisao) {
+    return (
+      <SupervisaoView
+        nome={supervisao.nome}
+        colaboradores={supervisao.colaboradores}
+        logout={logout}
+      />
+    );
   }
 
   if (!db) {
@@ -186,6 +209,8 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
   return (
     <div>
       <Header title="Dashboard" sub="Visão consolidada da sua parceria com a Arché" />
+
+      <FinanceiroCard />
 
       <InsightsWidget db={db} />
 
@@ -399,6 +424,7 @@ function Projetos({ db, mutate, busca, setBusca }: { db: DB; mutate: (fn: (d: DB
           status: (data.status as Projeto["status"]) || "em_andamento",
           prioridade: (data.prioridade as Projeto["prioridade"]) || "media",
           vencimento: data.vencimento || null, observacoes: data.observacoes || "",
+          andamentos: data.andamentos || [],
           criado_em: new Date().toISOString(),
         });
       }
@@ -488,6 +514,21 @@ function Projetos({ db, mutate, busca, setBusca }: { db: DB; mutate: (fn: (d: DB
 
 function ProjetoForm({ existing, clientes, onSave }: { existing: Projeto | null; clientes: Cliente[]; onSave: (d: Partial<Projeto>, e: Projeto | null) => void }) {
   const [f, setF] = useState<Partial<Projeto>>(existing || { status: "em_andamento", prioridade: "media" });
+  const [novoAndamento, setNovoAndamento] = useState("");
+
+  function addAndamento() {
+    const texto = novoAndamento.trim();
+    if (texto.length < 3) return;
+    setF((prev) => ({
+      ...prev,
+      andamentos: [
+        ...(prev.andamentos ?? []),
+        { id: uid(), texto, criado_em: new Date().toISOString() },
+      ],
+    }));
+    setNovoAndamento("");
+  }
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(f, existing); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
       <Field label="Nome do projeto *" span2>
@@ -523,6 +564,41 @@ function ProjetoForm({ existing, clientes, onSave }: { existing: Projeto | null;
       <Field label="Observações" span2>
         <textarea className={inputCls} rows={3} value={f.observacoes || ""} onChange={(e) => setF({ ...f, observacoes: e.target.value })} />
       </Field>
+
+      {/* Andamentos do processo — visíveis p/ Arché e supervisão; publicáveis ao cliente */}
+      <div className="md:col-span-2 border-t border-[color:var(--color-hairline)] pt-4">
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
+          Andamentos do processo
+        </div>
+        {(f.andamentos?.length ?? 0) > 0 && (
+          <div className="mb-3 border-l-2 border-[color:var(--color-brand)]/30 pl-3 space-y-1.5 max-h-40 overflow-y-auto">
+            {f.andamentos!.slice().reverse().map((a) => (
+              <div key={a.id} className="text-[12px] leading-relaxed text-[color:var(--color-ink)]">
+                <span className="font-mono text-[10px] text-[color:var(--color-ink-faint)] mr-2">
+                  {new Date(a.criado_em).toLocaleDateString("pt-BR")}
+                </span>
+                {a.texto}
+              </div>
+            ))}
+          </div>
+        )}
+        <div className="flex gap-2">
+          <input
+            className={inputCls}
+            value={novoAndamento}
+            onChange={(e) => setNovoAndamento(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter") { e.preventDefault(); addAndamento(); } }}
+            placeholder="Descreva o avanço do processo — a equipe Arché e a supervisão acompanham em tempo real…"
+          />
+          <button type="button" onClick={addAndamento} className={btnGhost}>
+            Registrar
+          </button>
+        </div>
+        <p className="mt-1.5 text-[11px] text-[color:var(--color-ink-faint)]">
+          Salve o projeto para sincronizar. A Arché valida e publica o avanço na Sala do Cliente.
+        </p>
+      </div>
+
       <div className="md:col-span-2 flex justify-end pt-2">
         <button type="submit" className={btnBrand}>Salvar</button>
       </div>

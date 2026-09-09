@@ -1,0 +1,105 @@
+import { NextResponse } from "next/server";
+import { promises as fs } from "fs";
+import path from "path";
+import { createClient } from "@/lib/supabase/server";
+
+export const runtime = "nodejs";
+export const dynamic = "force-dynamic";
+
+/**
+ * Livro-Caixa Arché — serve o sistema completo do Éverton (HTML standalone)
+ * com script de sincronização Supabase injetado. Admin-only.
+ */
+
+async function isAdmin(): Promise<boolean> {
+  const supabase = await createClient();
+  const { data: u } = await supabase.auth.getUser();
+  if (!u.user) return false;
+  const { data: prof } = await supabase
+    .from("admin_profiles")
+    .select("user_id")
+    .eq("user_id", u.user.id)
+    .maybeSingle();
+  return Boolean(prof);
+}
+
+const SYNC_SCRIPT = `<script>
+/* Arché sync — hidrata do Supabase na 1a carga e faz push automático */
+(function () {
+  var PREFIX = "livro-caixa:";
+  var FLAG = "lc-hydrated-v1";
+  var pushTimer = null;
+
+  function collect() {
+    var out = {};
+    for (var i = 0; i < localStorage.length; i++) {
+      var k = localStorage.key(i);
+      if (k && k.indexOf(PREFIX) === 0) out[k] = localStorage.getItem(k);
+    }
+    return out;
+  }
+
+  function schedulePush() {
+    if (pushTimer) clearTimeout(pushTimer);
+    pushTimer = setTimeout(function () {
+      fetch("/api/admin/livro-caixa/dados", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ dados: collect() }),
+      }).then(function () { setStatus("salvo na nuvem"); })
+        .catch(function () { setStatus("offline — salvo local"); });
+    }, 1500);
+  }
+
+  function setStatus(txt) {
+    var el = document.getElementById("arche-sync-status");
+    if (el) { el.textContent = "\\u2601 " + txt; }
+  }
+
+  // intercepta writes do app
+  var origSet = localStorage.setItem.bind(localStorage);
+  localStorage.setItem = function (k, v) {
+    origSet(k, v);
+    if (typeof k === "string" && k.indexOf(PREFIX) === 0) schedulePush();
+  };
+
+  // hidratação (1x por sessão): baixa snapshot e recarrega
+  if (!sessionStorage.getItem(FLAG)) {
+    sessionStorage.setItem(FLAG, "1");
+    fetch("/api/admin/livro-caixa/dados", { cache: "no-store" })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (j) {
+        if (j && j.dados && Object.keys(j.dados).length > 0) {
+          var atual = JSON.stringify(collect());
+          var remoto = JSON.stringify(j.dados);
+          if (atual !== remoto) {
+            Object.keys(j.dados).forEach(function (k) { origSet(k, j.dados[k]); });
+            location.reload();
+          }
+        }
+      })
+      .catch(function () {});
+  }
+
+  // badge de status no topo
+  document.addEventListener("DOMContentLoaded", function () {
+    var b = document.createElement("div");
+    b.id = "arche-sync-status";
+    b.style.cssText = "position:fixed;bottom:12px;right:16px;z-index:9999;background:#1B2A5C;color:#fff;font:11px/1 monospace;padding:6px 12px;border-radius:3px;opacity:.85";
+    b.textContent = "\\u2601 sincronizado";
+    document.body.appendChild(b);
+  });
+})();
+</script>`;
+
+export async function GET(req: Request) {
+  if (!(await isAdmin())) {
+    return NextResponse.redirect(new URL("/admin/login?next=/admin/financeiro", req.url));
+  }
+  const file = path.join(process.cwd(), "app", "api", "admin", "livro-caixa", "template.html");
+  let html = await fs.readFile(file, "utf8");
+  html = html.replace(/<head>/i, "<head>" + SYNC_SCRIPT);
+  return new NextResponse(html, {
+    headers: { "Content-Type": "text/html; charset=utf-8", "Cache-Control": "no-store" },
+  });
+}

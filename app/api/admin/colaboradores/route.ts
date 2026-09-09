@@ -18,6 +18,7 @@ const patchSchema = z.object({
   ativo: z.boolean().optional(),
   nome: z.string().min(2).max(120).optional(),
   observacoes: z.string().max(600).optional(),
+  papel: z.enum(["parceiro", "supervisor"]).optional(),
 });
 
 /** Gera codigo legivel: ARC-XXXXXX (sem caracteres ambiguos). Codigos NGT- antigos continuam validos. */

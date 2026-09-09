@@ -21,18 +21,27 @@ interface Comissao {
 }
 interface Snapshot {
   clientes?: { id: string; nome: string; documento?: string }[];
-  projetos?: { id: string; nome: string; status: string; vencimento?: string | null }[];
+  projetos?: {
+    id: string; nome: string; status: string; vencimento?: string | null;
+    andamentos?: { id: string; texto: string; criado_em: string }[];
+  }[];
   trabalhos?: Trabalho[];
   comissoes?: Comissao[];
   relatorios?: { id: string; periodo: string; resumo?: string }[];
   [k: string]: unknown;
 }
+interface Financeiro {
+  percentual: number; pendente: number;
+  proximo_pagamento: string | null; proximo_valor: number | null;
+  observacoes: string | null;
+}
 interface Parceiro {
   id: string; codigo: string; nome: string; percentual: number | null;
-  ativo: boolean; ultimo_acesso: string | null;
+  ativo: boolean; papel?: "parceiro" | "supervisor"; ultimo_acesso: string | null;
   snapshot: Snapshot | null;
   snapshot_updated_at: string | null;
   snapshot_updated_by: string | null;
+  financeiro: Financeiro | null;
 }
 interface CaseRow {
   id: string; titulo: string; tese: string | null; status: string;
@@ -41,6 +50,118 @@ interface CaseRow {
 
 const fmtBRL = (v: number) =>
   v.toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+const finInputCls =
+  "w-full border border-[color:var(--color-hairline)] bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:border-[color:var(--color-brand)]";
+
+/** Papel (parceiro/supervisão) + Folha oficial que o colaborador vê na Central. */
+function PapelEFolha({
+  p, salvando, onTogglePapel, onSalvarFin,
+}: {
+  p: Parceiro;
+  salvando: boolean;
+  onTogglePapel: () => void;
+  onSalvarFin: (f: Financeiro) => void;
+}) {
+  const [f, setF] = useState<Financeiro>({
+    percentual: p.financeiro?.percentual ?? p.percentual ?? 0,
+    pendente: p.financeiro?.pendente ?? 0,
+    proximo_pagamento: p.financeiro?.proximo_pagamento ?? null,
+    proximo_valor: p.financeiro?.proximo_valor ?? null,
+    observacoes: p.financeiro?.observacoes ?? null,
+  });
+  const [salvo, setSalvo] = useState(false);
+
+  return (
+    <div className="border border-[color:var(--color-brand)]/25 bg-blue-50/30 p-4 space-y-4">
+      <div className="flex flex-wrap items-center justify-between gap-3">
+        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)]">
+          Folha do colaborador — o que ele vê na Central
+        </div>
+        <button
+          onClick={onTogglePapel}
+          disabled={salvando}
+          className="text-[11px] font-mono uppercase tracking-[0.15em] px-3 py-1.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-muted)] hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent-dim)] disabled:opacity-50"
+        >
+          {p.papel === "supervisor" ? "Reverter p/ parceiro" : "Tornar supervisor(a)"}
+        </button>
+      </div>
+
+      {p.papel === "supervisor" ? (
+        <p className="text-[12px] text-[color:var(--color-ink-muted)]">
+          Perfil de supervisão: acessa os processos de todos os colaboradores,
+          sem qualquer dado financeiro. A folha não se aplica.
+        </p>
+      ) : (
+        <>
+          <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
+            <div>
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-1">
+                Comissão %
+              </label>
+              <input
+                type="number" min={0} max={100} step={0.5}
+                className={finInputCls}
+                value={f.percentual}
+                onChange={(e) => setF({ ...f, percentual: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-1">
+                Pendente (R$)
+              </label>
+              <input
+                type="number" min={0} step={0.01}
+                className={finInputCls}
+                value={f.pendente}
+                onChange={(e) => setF({ ...f, pendente: Number(e.target.value) })}
+              />
+            </div>
+            <div>
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-1">
+                Próx. pagamento
+              </label>
+              <input
+                type="date"
+                className={finInputCls}
+                value={f.proximo_pagamento ?? ""}
+                onChange={(e) => setF({ ...f, proximo_pagamento: e.target.value || null })}
+              />
+            </div>
+            <div>
+              <label className="block font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-1">
+                Valor próx. (R$)
+              </label>
+              <input
+                type="number" min={0} step={0.01}
+                className={finInputCls}
+                value={f.proximo_valor ?? ""}
+                onChange={(e) =>
+                  setF({ ...f, proximo_valor: e.target.value === "" ? null : Number(e.target.value) })
+                }
+              />
+            </div>
+          </div>
+          <div className="flex flex-wrap items-center gap-3">
+            <input
+              className={finInputCls + " flex-1 min-w-[220px]"}
+              placeholder="Observação visível ao colaborador (opcional)"
+              value={f.observacoes ?? ""}
+              onChange={(e) => setF({ ...f, observacoes: e.target.value || null })}
+            />
+            <button
+              onClick={() => { onSalvarFin(f); setSalvo(true); setTimeout(() => setSalvo(false), 2500); }}
+              disabled={salvando}
+              className="px-4 py-2 bg-[color:var(--color-brand)] text-white text-[12px] font-medium disabled:opacity-50 hover:-translate-y-0.5 transition-all"
+            >
+              {salvo ? "Salvo ✓" : "Salvar folha"}
+            </button>
+          </div>
+        </>
+      )}
+    </div>
+  );
+}
 
 export function ParceirosCentral() {
   const [parceiros, setParceiros] = useState<Parceiro[]>([]);
@@ -114,6 +235,59 @@ export function ParceirosCentral() {
         : c,
     );
     void gravar(p, snap);
+  }
+
+  async function salvarFinanceiro(p: Parceiro, fin: Financeiro) {
+    setSalvando(true);
+    try {
+      const r = await fetch("/api/admin/parceiros", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({
+          parceiro_id: p.id,
+          financeiro: {
+            percentual: fin.percentual,
+            pendente: fin.pendente,
+            proximo_pagamento: fin.proximo_pagamento || null,
+            proximo_valor: fin.proximo_valor ?? null,
+            observacoes: fin.observacoes || null,
+          },
+        }),
+      });
+      if (r.ok) {
+        setParceiros((prev) =>
+          prev.map((x) => (x.id === p.id ? { ...x, financeiro: fin } : x)),
+        );
+      }
+    } finally {
+      setSalvando(false);
+    }
+  }
+
+  async function togglePapel(p: Parceiro) {
+    const novo = p.papel === "supervisor" ? "parceiro" : "supervisor";
+    if (
+      novo === "supervisor" &&
+      !window.confirm(
+        `Tornar ${p.nome} SUPERVISOR(A)? Este perfil vê os processos de TODOS os colaboradores, mas NUNCA dados financeiros.`,
+      )
+    )
+      return;
+    setSalvando(true);
+    try {
+      const r = await fetch("/api/admin/colaboradores", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ id: p.id, papel: novo }),
+      });
+      if (r.ok) {
+        setParceiros((prev) =>
+          prev.map((x) => (x.id === p.id ? { ...x, papel: novo } : x)),
+        );
+      }
+    } finally {
+      setSalvando(false);
+    }
   }
 
   async function publicar() {
@@ -194,6 +368,11 @@ export function ParceirosCentral() {
                       {!p.ativo && (
                         <span className="ml-2 text-[10px] font-mono uppercase text-red-700">inativo</span>
                       )}
+                      {p.papel === "supervisor" && (
+                        <span className="ml-2 text-[10px] font-mono uppercase px-1.5 py-0.5 border border-[color:var(--color-accent)] text-[color:var(--color-accent-dim)]">
+                          supervisão
+                        </span>
+                      )}
                     </div>
                     <div className="text-[11px] text-[color:var(--color-ink-muted)]">
                       {s
@@ -205,8 +384,16 @@ export function ParceirosCentral() {
                 <ChevronDown className={`w-4 h-4 transition-transform ${open ? "rotate-180" : ""}`} />
               </button>
 
-              {open && s && (
+              {open && (
                 <div className="border-t border-[color:var(--color-hairline)] px-5 py-5 space-y-6 text-[13px]">
+                  <PapelEFolha
+                    p={p}
+                    salvando={salvando}
+                    onTogglePapel={() => void togglePapel(p)}
+                    onSalvarFin={(f) => void salvarFinanceiro(p, f)}
+                  />
+
+                  {s && (<>
                   {/* Demandas p/ validação */}
                   <div>
                     <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
@@ -292,12 +479,39 @@ export function ParceirosCentral() {
                     ))}
                   </div>
 
+                  {/* Andamentos de processo */}
+                  {(s.projetos ?? []).some((pr) => (pr.andamentos?.length ?? 0) > 0) && (
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
+                        Andamentos de processo
+                      </div>
+                      {(s.projetos ?? [])
+                        .filter((pr) => (pr.andamentos?.length ?? 0) > 0)
+                        .map((pr) => (
+                          <div key={pr.id} className="mb-3">
+                            <div className="font-medium text-[13px] mb-1">{pr.nome}</div>
+                            <div className="border-l-2 border-[color:var(--color-brand)]/30 pl-3 space-y-1">
+                              {pr.andamentos!.slice(-4).reverse().map((a) => (
+                                <div key={a.id} className="text-[12px] text-[color:var(--color-ink)]">
+                                  <span className="font-mono text-[10px] text-[color:var(--color-ink-faint)] mr-2">
+                                    {new Date(a.criado_em).toLocaleDateString("pt-BR")}
+                                  </span>
+                                  {a.texto}
+                                </div>
+                              ))}
+                            </div>
+                          </div>
+                        ))}
+                    </div>
+                  )}
+
                   {/* Carteira resumo */}
                   <div className="text-[11px] text-[color:var(--color-ink-muted)]">
                     Carteira: {(s.clientes ?? []).map((c) => c.nome).join(", ") || "—"} ·
                     Sync {p.snapshot_updated_by === "admin" ? "pelo admin" : "pelo parceiro"} em{" "}
                     {p.snapshot_updated_at ? new Date(p.snapshot_updated_at).toLocaleString("pt-BR") : "—"}
                   </div>
+                  </>)}
                 </div>
               )}
             </div>

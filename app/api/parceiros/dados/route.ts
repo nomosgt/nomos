@@ -17,11 +17,19 @@ async function resolveParceiro(req: Request) {
   const admin = createAdminClient();
   const { data } = await admin
     .from("parceiros_codigos")
-    .select("id, nome, ativo")
+    .select("id, nome, ativo, papel")
     .eq("cookie_hash", m[1])
     .maybeSingle();
   if (!data || !data.ativo) return null;
   return { admin, parceiro: data };
+}
+
+/** Remove QUALQUER dado financeiro de um snapshot (visão supervisora). */
+function stripFinanceiro(dados: Record<string, unknown> | null) {
+  if (!dados) return null;
+  const clone = { ...dados };
+  delete clone.comissoes;
+  return clone;
 }
 
 export async function GET(req: Request) {
@@ -30,6 +38,33 @@ export async function GET(req: Request) {
   }
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+
+  // ── Supervisor(a): enxerga TODOS os colaboradores, SEM financeiro ──
+  if (ctx.parceiro.papel === "supervisor") {
+    const [codigos, dados] = await Promise.all([
+      ctx.admin
+        .from("parceiros_codigos")
+        .select("id, nome, ativo, papel, ultimo_acesso")
+        .eq("papel", "parceiro")
+        .order("nome"),
+      ctx.admin.from("parceiro_dados").select("parceiro_id, dados, updated_at"),
+    ]);
+    const map = new Map((dados.data ?? []).map((d) => [d.parceiro_id, d]));
+    return NextResponse.json({
+      supervisor: true,
+      nome: ctx.parceiro.nome,
+      colaboradores: (codigos.data ?? []).map((c) => ({
+        id: c.id,
+        nome: c.nome,
+        ativo: c.ativo,
+        ultimo_acesso: c.ultimo_acesso,
+        dados: stripFinanceiro(
+          (map.get(c.id)?.dados as Record<string, unknown> | undefined) ?? null,
+        ),
+        updated_at: map.get(c.id)?.updated_at ?? null,
+      })),
+    });
+  }
 
   const { data } = await ctx.admin
     .from("parceiro_dados")
@@ -51,6 +86,9 @@ export async function PUT(req: Request) {
   }
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
+  if (ctx.parceiro.papel === "supervisor") {
+    return NextResponse.json({ error: "Perfil de supervisao e somente leitura" }, { status: 403 });
+  }
 
   let body: { dados?: unknown } = {};
   try {
