@@ -3,23 +3,20 @@
 import { useState } from "react";
 import { motion } from "framer-motion";
 import {
-  Eye, LogOut, ChevronDown, FolderKanban, ClipboardCheck,
+  Eye, ChevronDown, FolderKanban, ClipboardCheck,
   MessageSquareText, Users, Clock,
 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
 import type { ColaboradorSupervisao } from "@/lib/parceiros/store";
 
 /**
- * Modo Supervisão (Dra. Gabriela) — visão de TODOS os colaboradores:
- * carteira, projetos, demandas e andamentos de processo.
+ * Aba Supervisão (Dra. Gabriela) — visão de TODOS os colaboradores:
+ * carteira, projetos, demandas, diário e andamentos de processo.
  * Por regra de acesso, NENHUM dado financeiro chega a esta tela
  * (o servidor remove comissões e valores antes de responder).
  */
 
 interface Props {
-  nome: string;
   colaboradores: ColaboradorSupervisao[];
-  logout: () => void;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -37,7 +34,7 @@ function fmtDT(iso: string | null | undefined) {
   return iso ? new Date(iso).toLocaleDateString("pt-BR") : "—";
 }
 
-export function SupervisaoView({ nome, colaboradores, logout }: Props) {
+export function SupervisaoPanel({ colaboradores }: Props) {
   const [aberto, setAberto] = useState<string | null>(null);
 
   const totProjetos = colaboradores.reduce(
@@ -48,30 +45,11 @@ export function SupervisaoView({ nome, colaboradores, logout }: Props) {
     (s, c) => s + (c.dados?.projetos?.reduce((a, p) => a + (p.andamentos?.length ?? 0), 0) ?? 0), 0);
 
   return (
-    <div className="min-h-screen bg-[color:var(--color-surface)]">
-      {/* Header supervisão */}
-      <header className="bg-[color:var(--color-ink)] text-[color:var(--color-paper)]">
-        <div className="mx-auto max-w-6xl px-6 py-6 flex items-center justify-between gap-4">
-          <div className="flex items-center gap-4">
-            <Logo variant="full" className="h-9 w-auto text-[color:var(--color-paper)]" />
-            <div className="hidden sm:block h-8 w-px bg-[color:var(--color-paper)]/20" />
-            <div>
-              <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-accent-soft)]">
-                <Eye className="w-3.5 h-3.5" /> Supervisão de processos
-              </div>
-              <div className="text-[13px] text-[color:var(--color-paper)]/70 mt-0.5">{nome}</div>
-            </div>
-          </div>
-          <button
-            onClick={logout}
-            className="inline-flex items-center gap-2 text-[12px] text-[color:var(--color-paper)]/60 hover:text-[color:var(--color-paper)] transition-colors"
-          >
-            <LogOut className="w-4 h-4" /> Sair
-          </button>
-        </div>
-      </header>
-
-      <main className="mx-auto max-w-6xl px-6 py-10">
+    <div>
+      <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-accent-dim)] mb-6">
+        <Eye className="w-3.5 h-3.5" /> Supervisão de processos
+      </div>
+      <div>
         {/* KPIs — sem financeiro, por regra de acesso */}
         <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)] mb-10">
           {[
@@ -206,7 +184,7 @@ export function SupervisaoView({ nome, colaboradores, logout }: Props) {
             );
           })}
         </div>
-      </main>
+      </div>
     </div>
   );
 }

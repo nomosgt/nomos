@@ -26,7 +26,7 @@ async function resolveParceiro(req: Request) {
     .select("id, nome, ativo, papel")
     .eq("cookie_hash", m[1])
     .maybeSingle();
-  if (!data || !data.ativo || data.papel === "supervisor") return null;
+  if (!data || !data.ativo) return null;
   return { admin, parceiro: data };
 }
 

@@ -180,41 +180,49 @@ export interface ColaboradorSupervisao {
   updated_at: string | null;
 }
 
-export type CentralPayload =
-  | { supervisor: true; nome: string; colaboradores: ColaboradorSupervisao[] }
-  | { supervisor?: false; nome?: string; dados: Partial<DB> | null };
+export interface CentralPayload {
+  supervisor?: boolean;
+  nome?: string;
+  dados: Partial<DB> | null;
+  colaboradores?: ColaboradorSupervisao[];
+}
 
-/** Busca o payload da Central: modo parceiro (hidrata local) ou supervisão. */
-export async function fetchCentral(): Promise<
-  { mode: "supervisor"; payload: Extract<CentralPayload, { supervisor: true }> }
-  | { mode: "parceiro"; db: DB | null }
-  | { mode: "offline" }
-> {
-  if (typeof window === "undefined") return { mode: "offline" };
+/**
+ * Busca o payload da Central. Todo perfil tem o próprio painel (hidratado
+ * do servidor); supervisores recebem ADICIONALMENTE a lista de colaboradores
+ * (sem financeiro) para a aba Supervisão.
+ */
+export async function fetchCentral(): Promise<{
+  db: DB | null;
+  colaboradores: ColaboradorSupervisao[] | null;
+  offline: boolean;
+}> {
+  if (typeof window === "undefined") return { db: null, colaboradores: null, offline: true };
   try {
     const r = await fetch("/api/parceiros/dados", { cache: "no-store" });
-    if (!r.ok) return { mode: "offline" };
+    if (!r.ok) return { db: null, colaboradores: null, offline: true };
     const j = (await r.json()) as CentralPayload;
-    if (j && "supervisor" in j && j.supervisor === true) {
-      return { mode: "supervisor", payload: j };
-    }
-    const dados = (j as { dados?: Partial<DB> | null }).dados;
-    if (dados && Array.isArray(dados.clientes)) {
-      const db = { ...emptyDB(), ...dados } as DB;
+    let db: DB | null = null;
+    if (j.dados && Array.isArray(j.dados.clientes)) {
+      db = { ...emptyDB(), ...j.dados } as DB;
       localStorage.setItem(KEY, JSON.stringify(db));
-      return { mode: "parceiro", db };
+    } else {
+      // primeiro acesso: sobe o que existir localmente (seed/demo)
+      schedulePush();
     }
-    // primeiro acesso: sobe o que existir localmente (seed/demo)
-    schedulePush();
-    return { mode: "parceiro", db: null };
+    return {
+      db,
+      colaboradores: j.supervisor === true ? (j.colaboradores ?? []) : null,
+      offline: false,
+    };
   } catch {
-    return { mode: "offline" };
+    return { db: null, colaboradores: null, offline: true };
   }
 }
 
 export async function syncFromServer(): Promise<DB | null> {
   const r = await fetchCentral();
-  return r.mode === "parceiro" ? r.db : null;
+  return r.db;
 }
 
 let pushTimer: ReturnType<typeof setTimeout> | null = null;

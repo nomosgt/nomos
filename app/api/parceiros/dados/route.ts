@@ -39,9 +39,16 @@ export async function GET(req: Request) {
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
-  // ── Supervisor(a): enxerga TODOS os colaboradores, SEM financeiro ──
+  const { data } = await ctx.admin
+    .from("parceiro_dados")
+    .select("dados, updated_at, updated_by")
+    .eq("parceiro_id", ctx.parceiro.id)
+    .maybeSingle();
+
+  // ── Supervisor(a): Central normal + visão de TODOS os colaboradores
+  //    (SEM financeiro — comissões removidas no servidor) ──
   if (ctx.parceiro.papel === "supervisor") {
-    const [codigos, dados] = await Promise.all([
+    const [codigos, todos] = await Promise.all([
       ctx.admin
         .from("parceiros_codigos")
         .select("id, nome, ativo, papel, ultimo_acesso")
@@ -49,10 +56,13 @@ export async function GET(req: Request) {
         .order("nome"),
       ctx.admin.from("parceiro_dados").select("parceiro_id, dados, updated_at"),
     ]);
-    const map = new Map((dados.data ?? []).map((d) => [d.parceiro_id, d]));
+    const map = new Map((todos.data ?? []).map((d) => [d.parceiro_id, d]));
     return NextResponse.json({
       supervisor: true,
       nome: ctx.parceiro.nome,
+      dados: data?.dados ?? null,
+      updated_at: data?.updated_at ?? null,
+      updated_by: data?.updated_by ?? null,
       colaboradores: (codigos.data ?? []).map((c) => ({
         id: c.id,
         nome: c.nome,
@@ -65,12 +75,6 @@ export async function GET(req: Request) {
       })),
     });
   }
-
-  const { data } = await ctx.admin
-    .from("parceiro_dados")
-    .select("dados, updated_at, updated_by")
-    .eq("parceiro_id", ctx.parceiro.id)
-    .maybeSingle();
 
   return NextResponse.json({
     nome: ctx.parceiro.nome,
@@ -86,9 +90,6 @@ export async function PUT(req: Request) {
   }
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
-  if (ctx.parceiro.papel === "supervisor") {
-    return NextResponse.json({ error: "Perfil de supervisao e somente leitura" }, { status: 403 });
-  }
 
   let body: { dados?: unknown } = {};
   try {

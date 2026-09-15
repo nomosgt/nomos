@@ -24,9 +24,8 @@ export async function GET(req: Request) {
     .eq("cookie_hash", m[1])
     .maybeSingle();
   if (!p || !p.ativo) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
-  if (p.papel === "supervisor") {
-    return NextResponse.json({ error: "Perfil de supervisao nao acessa financeiro" }, { status: 403 });
-  }
+  // Supervisor(a) vê APENAS a própria folha — nunca a dos demais
+  // (a visão de supervisão já chega sem qualquer dado financeiro).
 
   const { data: fin } = await admin
     .from("parceiro_financeiro")

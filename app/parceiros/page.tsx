@@ -21,14 +21,15 @@ import {
   type Documento, type Relatorio, type ColaboradorSupervisao,
 } from "@/lib/parceiros/store";
 import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
-import { SupervisaoView } from "@/components/parceiros/supervisao-view";
+import { SupervisaoPanel } from "@/components/parceiros/supervisao-view";
+import { Eye } from "lucide-react";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
 } from "@/components/parceiros/ui";
 import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
-type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios";
+type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios" | "supervisao";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "painel", label: "Dashboard", icon: LayoutDashboard },
@@ -48,10 +49,7 @@ export default function ParceirosPage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [busca, setBusca] = useState("");
 
-  const [supervisao, setSupervisao] = useState<{
-    nome: string;
-    colaboradores: ColaboradorSupervisao[];
-  } | null>(null);
+  const [supervisao, setSupervisao] = useState<ColaboradorSupervisao[] | null>(null);
 
   useEffect(() => {
     // v2: servidor é a fonte da verdade no load (traz edições do admin);
@@ -60,11 +58,8 @@ export default function ParceirosPage() {
     setDb(loadDB());
     void fetchCentral().then((r) => {
       if (!alive) return;
-      if (r.mode === "supervisor") {
-        setSupervisao({ nome: r.payload.nome, colaboradores: r.payload.colaboradores });
-      } else if (r.mode === "parceiro" && r.db) {
-        setDb(r.db);
-      }
+      if (r.db) setDb(r.db);
+      if (r.colaboradores) setSupervisao(r.colaboradores);
     });
     return () => {
       alive = false;
@@ -86,17 +81,6 @@ export default function ParceirosPage() {
     router.refresh();
   }
 
-  // Modo supervisão (Dra. Gabriela) — todos os processos, zero financeiro.
-  if (supervisao) {
-    return (
-      <SupervisaoView
-        nome={supervisao.nome}
-        colaboradores={supervisao.colaboradores}
-        logout={logout}
-      />
-    );
-  }
-
   if (!db) {
     return (
       <div className="min-h-screen bg-[color:var(--color-surface)] flex items-center justify-center">
@@ -110,7 +94,7 @@ export default function ParceirosPage() {
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)] flex">
       <aside className="hidden lg:flex w-64 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex-col px-5 py-8 flex-shrink-0 sticky top-0 h-screen">
-        <SidebarContent tab={tab} setTab={setTab} logout={logout} />
+        <SidebarContent tab={tab} setTab={setTab} logout={logout} supervisor={!!supervisao} />
       </aside>
 
       <div className="lg:hidden fixed top-0 inset-x-0 z-40 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex items-center justify-between px-4 h-14">
@@ -131,7 +115,7 @@ export default function ParceirosPage() {
             <button onClick={() => setMobileNav(false)} className="absolute top-4 right-4 p-2" aria-label="Fechar menu">
               <X className="w-5 h-5" />
             </button>
-            <SidebarContent tab={tab} setTab={(t) => { setTab(t); setMobileNav(false); }} logout={logout} />
+            <SidebarContent tab={tab} setTab={(t) => { setTab(t); setMobileNav(false); }} logout={logout} supervisor={!!supervisao} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -153,6 +137,7 @@ export default function ParceirosPage() {
             {tab === "comissoes" && <Comissoes db={db} />}
             {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
             {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
+            {tab === "supervisao" && supervisao && <SupervisaoPanel colaboradores={supervisao} />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -160,7 +145,10 @@ export default function ParceirosPage() {
   );
 }
 
-function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) => void; logout: () => void }) {
+function SidebarContent({ tab, setTab, logout, supervisor }: { tab: Tab; setTab: (t: Tab) => void; logout: () => void; supervisor?: boolean }) {
+  const items = supervisor
+    ? [...NAV, { id: "supervisao" as Tab, label: "Supervisão", icon: Eye }]
+    : NAV;
   return (
     <>
       <div className="mb-10">
@@ -171,7 +159,7 @@ function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) =>
       </div>
 
       <nav className="flex-1 space-y-1">
-        {NAV.map((item) => (
+        {items.map((item) => (
           <button
             key={item.id}
             onClick={() => setTab(item.id)}
