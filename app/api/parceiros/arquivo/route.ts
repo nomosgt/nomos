@@ -55,7 +55,12 @@ export async function GET(req: Request) {
 
   if (!autorizado) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
 
-  const { data, error } = await admin.storage.from(BUCKET).createSignedUrl(path, 600);
+  // download: true força o navegador a BAIXAR com o nome original
+  // (em vez de tentar renderizar e falhar em tipos não suportados)
+  const nomeOriginal = path.split("/").pop()?.replace(/^\d+-/, "") || "arquivo";
+  const { data, error } = await admin.storage
+    .from(BUCKET)
+    .createSignedUrl(path, 600, { download: nomeOriginal });
   if (error || !data?.signedUrl) {
     return NextResponse.json({ error: "Arquivo nao encontrado" }, { status: 404 });
   }

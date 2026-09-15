@@ -909,7 +909,24 @@ function Documentos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => voi
             <div key={doc.id} className="flex items-center gap-4 bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] px-5 py-4">
               <FileText className="w-4 h-4 text-[color:var(--color-brand)] flex-shrink-0" />
               <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-medium text-[color:var(--color-ink)] truncate">{doc.nome}</div>
+                {doc.storage_path ? (
+                  <a
+                    href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}`}
+                    target="_blank"
+                    rel="noopener noreferrer"
+                    className="text-[14px] font-medium text-[color:var(--color-brand)] truncate block underline-offset-2 hover:underline"
+                    title={`Baixar ${doc.arquivo_nome || doc.nome}`}
+                  >
+                    {doc.nome}
+                  </a>
+                ) : (
+                  <div className="text-[14px] font-medium text-[color:var(--color-ink)] truncate">
+                    {doc.nome}
+                    <span className="ml-2 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-faint)]">
+                      sem anexo
+                    </span>
+                  </div>
+                )}
                 <div className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
                   {doc.tipo} · {projetoNome(doc.projeto_id)} · {fmtDate(doc.data_envio)}
                 </div>
