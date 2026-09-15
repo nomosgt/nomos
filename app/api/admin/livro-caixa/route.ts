@@ -89,6 +89,45 @@ const SYNC_SCRIPT = `<script>
     b.textContent = "\\u2601 sincronizado";
     document.body.appendChild(b);
 
+    // ── Auto-importa colaboradores com login p/ os cadastros do app ──
+    function seedColab(ativos, tentativa) {
+      try {
+        if (
+          typeof DB === "undefined" || typeof save !== "function" || typeof uid !== "function" ||
+          !Array.isArray(DB.parceiros)
+        ) {
+          if ((tentativa || 0) < 8) setTimeout(function () { seedColab(ativos, (tentativa || 0) + 1); }, 900);
+          return;
+        }
+        var mudouP = false, mudouC = false;
+        ativos.forEach(function (c) {
+          var nome = (c.nome || "").trim();
+          if (!nome) return;
+          var lower = nome.toLowerCase();
+          var temP = DB.parceiros.some(function (x) { return (x.nome || "").trim().toLowerCase() === lower; });
+          if (!temP) {
+            DB.parceiros.push({ id: uid(), nome: nome, contato: c.codigo || "", percentualPadrao: Number(c.percentual) || 0, parcelasPadrao: 1, obs: "Colaborador com login na Central" });
+            mudouP = true;
+          }
+          var temC = (DB.comissionados || []).some(function (x) { return (x.nome || "").trim().toLowerCase() === lower; });
+          if (!temC) {
+            DB.comissionados.push({ id: uid(), nome: nome, contato: c.codigo || "", percentualPadrao: Number(c.percentual) || 0, parcelasPadrao: 1, obs: "Colaborador com login na Central" });
+            mudouC = true;
+          }
+        });
+        if (mudouP) {
+          save("parceiros");
+          if (typeof popularSelectParceiros === "function") popularSelectParceiros();
+          if (typeof renderParceiros === "function") renderParceiros();
+        }
+        if (mudouC) {
+          save("comissionados");
+          if (typeof renderComissionados === "function") renderComissionados();
+          if (typeof renderListaComissionamentos === "function") renderListaComissionamentos();
+        }
+      } catch (e) {}
+    }
+
     // ── Trava Arché: parceiros e comissionados SÓ com login de colaborador ──
     fetch("/api/admin/colaboradores", { cache: "no-store" })
       .then(function (r) { return r.json(); })
@@ -98,6 +137,7 @@ const SYNC_SCRIPT = `<script>
         var ativos = lista.filter(function (c) {
           return c && c.ativo !== false && c.papel !== "supervisor" && c.nome;
         });
+        setTimeout(function () { seedColab(ativos, 0); }, 1200);
         ["form-parceiro", "form-comissionado"].forEach(function (fid) {
           var form = document.getElementById(fid);
           if (!form) return;
