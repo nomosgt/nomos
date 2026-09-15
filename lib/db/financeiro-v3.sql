@@ -29,3 +29,9 @@ create table if not exists public.livro_caixa_dados (
   updated_at timestamptz not null default now()
 );
 alter table public.livro_caixa_dados enable row level security;
+
+-- 4) Bucket privado para arquivos de processo dos colaboradores
+--    (acesso só via API com URL assinada — service role)
+insert into storage.buckets (id, name, public)
+values ('parceiros', 'parceiros', false)
+on conflict (id) do nothing;

@@ -70,6 +70,17 @@ export interface Documento {
   data_envio: string | null;
   observacoes: string;
   criado_em: string;
+  /** Caminho no Supabase Storage quando o arquivo foi anexado (upload real). */
+  storage_path?: string | null;
+  arquivo_nome?: string | null;
+}
+
+/** Diário de desenvolvimento — registro livre e datado do colaborador. */
+export interface DiarioEntry {
+  id: string;
+  texto: string;
+  projeto_id: string | null;
+  criado_em: string;
 }
 
 export interface Relatorio {
@@ -87,6 +98,7 @@ export interface DB {
   comissoes: Comissao[];
   documentos: Documento[];
   relatorios: Relatorio[];
+  diario?: DiarioEntry[];
 }
 
 const KEY = "ngt_parceiros_db_v1";

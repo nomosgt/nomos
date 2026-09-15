@@ -11,13 +11,13 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, ClipboardCheck, Percent,
   FileText, ScrollText, LogOut, Plus, Download, Pencil, Trash2,
-  Search, Menu, X,
+  Search, Menu, X, BookOpen, Paperclip, Loader2,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import {
-  loadDB, saveDB, uid, fmtBRL, fmtDate, diffDays, urgencia, exportCSV,
+  loadDB, saveDB, uid, fmtDate, diffDays, urgencia, exportCSV,
   fetchCentral,
-  type DB, type Cliente, type Projeto, type Trabalho, type Comissao,
+  type DB, type Cliente, type Projeto, type Trabalho,
   type Documento, type Relatorio, type ColaboradorSupervisao,
 } from "@/lib/parceiros/store";
 import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
@@ -28,13 +28,14 @@ import {
 } from "@/components/parceiros/ui";
 import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
-type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "comissoes" | "documentos" | "relatorios";
+type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "painel", label: "Dashboard", icon: LayoutDashboard },
   { id: "clientes", label: "Carteira", icon: Users },
   { id: "projetos", label: "Projetos", icon: FolderKanban },
   { id: "trabalhos", label: "Demandas", icon: ClipboardCheck },
+  { id: "diario", label: "Diário", icon: BookOpen },
   { id: "comissoes", label: "Financeiro", icon: Percent },
   { id: "documentos", label: "Documentos", icon: FileText },
   { id: "relatorios", label: "Relatórios", icon: ScrollText },
@@ -148,7 +149,8 @@ export default function ParceirosPage() {
             {tab === "clientes" && <Clientes db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
             {tab === "projetos" && <Projetos db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
             {tab === "trabalhos" && <Trabalhos db={db} mutate={mutate} />}
-            {tab === "comissoes" && <Comissoes db={db} mutate={mutate} />}
+            {tab === "diario" && <Diario db={db} mutate={mutate} />}
+            {tab === "comissoes" && <Comissoes db={db} />}
             {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
             {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
           </motion.div>
@@ -202,9 +204,8 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
     .filter((p) => { const d = diffDays(p.vencimento); return d !== null && d <= 10; })
     .sort((a, b) => (diffDays(a.vencimento) ?? 99) - (diffDays(b.vencimento) ?? 99));
   const trabalhosPendentes = db.trabalhos.filter((t) => t.status === "pendente");
-  const comissoesPendentes = db.comissoes.filter((c) => c.status !== "paga");
-  const totalPendente = comissoesPendentes.reduce((s, c) => s + c.valor, 0);
-  const totalPago = db.comissoes.filter((c) => c.status === "paga").reduce((s, c) => s + c.valor, 0);
+  const diario = db.diario ?? [];
+  const ultimosDiario = diario.slice(-5).reverse();
 
   return (
     <div>
@@ -218,7 +219,7 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
         <Metric label="Projetos ativos" value={String(ativos.length)} onClick={() => setTab("projetos")} />
         <Metric label="Prazos ≤ 10 dias" value={String(prazosProximos.length)} accent={prazosProximos.length > 0} onClick={() => setTab("projetos")} />
         <Metric label="Trabalhos pendentes" value={String(trabalhosPendentes.length)} onClick={() => setTab("trabalhos")} />
-        <Metric label="Comissões a receber" value={fmtBRL(totalPendente)} onClick={() => setTab("comissoes")} />
+        <Metric label="Registros no diário" value={String(diario.length)} onClick={() => setTab("diario")} />
       </div>
 
       <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -242,21 +243,24 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
         </section>
 
         <section className="bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] p-6">
-          <h3 className="font-serif text-lg text-[color:var(--color-ink)] mb-4">Resumo financeiro</h3>
-          <div className="space-y-3">
-            <div className="flex justify-between items-baseline">
-              <span className="text-[13px] text-[color:var(--color-ink-muted)]">Comissões pagas</span>
-              <span className="font-mono text-[15px] text-emerald-700 tabular-nums">{fmtBRL(totalPago)}</span>
+          <h3 className="font-serif text-lg text-[color:var(--color-ink)] mb-4">Diário recente</h3>
+          {ultimosDiario.length === 0 ? (
+            <p className="text-[13px] text-[color:var(--color-ink-muted)]">
+              Nenhum registro ainda. Use o Diário para documentar o desenvolvimento
+              dos seus processos — a Arché e a supervisão acompanham.
+            </p>
+          ) : (
+            <div className="space-y-2.5">
+              {ultimosDiario.map((e) => (
+                <div key={e.id} className="border-l-2 border-[color:var(--color-brand)]/30 pl-3">
+                  <div className="font-mono text-[10px] text-[color:var(--color-ink-faint)]">
+                    {new Date(e.criado_em).toLocaleDateString("pt-BR")}
+                  </div>
+                  <div className="text-[13px] text-[color:var(--color-ink)] line-clamp-2">{e.texto}</div>
+                </div>
+              ))}
             </div>
-            <div className="flex justify-between items-baseline">
-              <span className="text-[13px] text-[color:var(--color-ink-muted)]">A receber (previstas + aprovadas)</span>
-              <span className="font-mono text-[15px] text-[color:var(--color-brand)] tabular-nums">{fmtBRL(totalPendente)}</span>
-            </div>
-            <div className="pt-3 border-t border-[color:var(--color-hairline)] flex justify-between items-baseline">
-              <span className="text-[13px] font-medium text-[color:var(--color-ink)]">Total geral</span>
-              <span className="font-mono text-[17px] font-medium text-[color:var(--color-ink)] tabular-nums">{fmtBRL(totalPago + totalPendente)}</span>
-            </div>
-          </div>
+          )}
         </section>
       </div>
     </div>
@@ -728,116 +732,137 @@ function TrabalhoForm({
 
 /* ==================== COMISSOES ==================== */
 
-function Comissoes({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void }) {
-  const [modal, setModal] = useState<null | Comissao>(null);
-  const [novo, setNovo] = useState(false);
-
-  const totalPago = db.comissoes.filter((c) => c.status === "paga").reduce((s, c) => s + c.valor, 0);
-  const totalPend = db.comissoes.filter((c) => c.status !== "paga").reduce((s, c) => s + c.valor, 0);
-
-  function salvar(data: Partial<Comissao>, existing: Comissao | null) {
-    mutate((d) => {
-      if (existing) {
-        d.comissoes = d.comissoes.map((c) => (c.id === existing.id ? { ...c, ...data } : c));
-      } else {
-        d.comissoes.push({
-          id: uid(), projeto_id: data.projeto_id || null, descricao: data.descricao || "",
-          percentual: Number(data.percentual) || 0, valor: Number(data.valor) || 0,
-          status: (data.status as Comissao["status"]) || "prevista",
-          data_pagamento: data.data_pagamento || null, criado_em: new Date().toISOString(),
-        });
-      }
-      return d;
-    });
-    setModal(null);
-    setNovo(false);
-  }
-
-  function excluir(id: string) {
-    if (!confirm("Excluir esta comissão?")) return;
-    mutate((d) => { d.comissoes = d.comissoes.filter((c) => c.id !== id); return d; });
-  }
-
-  const projetoNome = (id: string | null) => db.projetos.find((p) => p.id === id)?.nome || "geral";
-
+/**
+ * Financeiro — SOMENTE LEITURA para o colaborador.
+ * A única fonte da verdade é a folha definida pela Arché (Livro-Caixa do admin).
+ * O colaborador não cria, edita nem exclui comissões.
+ */
+function Comissoes({ db }: { db: DB; mutate?: (fn: (d: DB) => DB) => void }) {
+  void db;
   return (
     <div>
       <Header
         title="Financeiro"
-        sub={`Pagas: ${fmtBRL(totalPago)} · A receber: ${fmtBRL(totalPend)}`}
-        actions={
-          <>
-            <button className={btnGhost} onClick={() => exportCSV("comissoes.csv", db.comissoes as unknown as Record<string, unknown>[])}>
-              <Download className="w-3.5 h-3.5" /> CSV
-            </button>
-            <button className={btnBrand} onClick={() => setNovo(true)}>
-              <Plus className="w-3.5 h-3.5" /> Nova comissão
-            </button>
-          </>
-        }
+        sub="Sua folha oficial — definida e atualizada exclusivamente pela equipe Arché"
       />
-
-      {db.comissoes.length === 0 ? (
-        <EmptyState title="Nenhuma comissão" body="Registre a primeira comissão prevista da parceria." action={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Nova comissão</button>} />
-      ) : (
-        <div className="space-y-2">
-          {db.comissoes.map((c) => (
-            <div key={c.id} className="flex items-center gap-4 bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] px-5 py-4">
-              <div className="flex-1 min-w-0">
-                <div className="text-[14px] font-medium text-[color:var(--color-ink)] truncate">{c.descricao || "Comissão"}</div>
-                <div className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
-                  {projetoNome(c.projeto_id)} · {c.percentual}% {c.data_pagamento ? "· pago em " + fmtDate(c.data_pagamento) : ""}
-                </div>
-              </div>
-              <div className="font-mono text-[15px] tabular-nums text-[color:var(--color-ink)]">{fmtBRL(c.valor)}</div>
-              <Badge status={c.status} />
-              <button className={btnGhost} onClick={() => setModal(c)}><Pencil className="w-3.5 h-3.5" /></button>
-              <button className={btnDanger} onClick={() => excluir(c.id)}><Trash2 className="w-3.5 h-3.5" /></button>
-            </div>
-          ))}
-        </div>
-      )}
-
-      <Modal open={novo || !!modal} title={modal ? "Editar comissão" : "Nova comissão"} onClose={() => { setModal(null); setNovo(false); }} wide>
-        <ComissaoForm existing={modal} projetos={db.projetos} onSave={salvar} />
-      </Modal>
+      <FinanceiroCard />
+      <div className="mt-6 border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-5 text-[13px] text-[color:var(--color-ink-muted)] leading-relaxed">
+        Percentual de comissão, valores pendentes e datas de pagamento são
+        gerenciados pela Arché no sistema financeiro central. Dúvidas sobre a
+        sua folha? Fale com a equipe:{" "}
+        <a href="mailto:contato@archebrasil.com.br" className="underline text-[color:var(--color-brand)]">
+          contato@archebrasil.com.br
+        </a>
+        .
+      </div>
     </div>
   );
 }
 
-function ComissaoForm({ existing, projetos, onSave }: { existing: Comissao | null; projetos: Projeto[]; onSave: (d: Partial<Comissao>, e: Comissao | null) => void }) {
-  const [f, setF] = useState<Partial<Comissao>>(existing || { status: "prevista" });
+/* ==================== DIÁRIO ==================== */
+
+/**
+ * Diário de desenvolvimento — registro cronológico livre do colaborador.
+ * Cada entrada sincroniza com a Arché e com a supervisão automaticamente.
+ */
+function Diario({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void }) {
+  const [texto, setTexto] = useState("");
+  const [projetoId, setProjetoId] = useState("");
+
+  const entradas = (db.diario ?? []).slice().reverse();
+  const projetoNome = (id: string | null) =>
+    db.projetos.find((p) => p.id === id)?.nome || null;
+
+  function registrar() {
+    const t = texto.trim();
+    if (t.length < 3) return;
+    mutate((d) => {
+      d.diario = [
+        ...(d.diario ?? []),
+        { id: uid(), texto: t, projeto_id: projetoId || null, criado_em: new Date().toISOString() },
+      ];
+      return d;
+    });
+    setTexto("");
+  }
+
+  function excluir(id: string) {
+    if (!confirm("Excluir este registro do diário?")) return;
+    mutate((d) => {
+      d.diario = (d.diario ?? []).filter((e) => e.id !== id);
+      return d;
+    });
+  }
+
   return (
-    <form onSubmit={(e) => { e.preventDefault(); onSave(f, existing); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      <Field label="Descrição *" span2>
-        <input required className={inputCls} value={f.descricao || ""} onChange={(e) => setF({ ...f, descricao: e.target.value })} />
-      </Field>
-      <Field label="Projeto vinculado" span2>
-        <select className={selectCls} value={f.projeto_id || ""} onChange={(e) => setF({ ...f, projeto_id: e.target.value || null })}>
-          <option value="">Geral (sem projeto)</option>
-          {projetos.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-        </select>
-      </Field>
-      <Field label="Percentual (%)">
-        <input type="number" step="0.1" min="0" max="100" className={inputCls} value={f.percentual ?? ""} onChange={(e) => setF({ ...f, percentual: Number(e.target.value) })} />
-      </Field>
-      <Field label="Valor (R$)">
-        <input type="number" step="0.01" min="0" className={inputCls} value={f.valor ?? ""} onChange={(e) => setF({ ...f, valor: Number(e.target.value) })} />
-      </Field>
-      <Field label="Status">
-        <select className={selectCls} value={f.status || "prevista"} onChange={(e) => setF({ ...f, status: e.target.value as Comissao["status"] })}>
-          <option value="prevista">Prevista</option>
-          <option value="aprovada">Aprovada</option>
-          <option value="paga">Paga</option>
-        </select>
-      </Field>
-      <Field label="Data do pagamento">
-        <input type="date" className={inputCls} value={f.data_pagamento || ""} onChange={(e) => setF({ ...f, data_pagamento: e.target.value })} />
-      </Field>
-      <div className="md:col-span-2 flex justify-end pt-2">
-        <button type="submit" className={btnBrand}>Salvar</button>
+    <div>
+      <Header
+        title="Diário"
+        sub="Documente o desenvolvimento dos seus processos — a Arché e a supervisão acompanham em tempo real"
+      />
+
+      {/* Composer */}
+      <div className="bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] p-5 mb-8">
+        <textarea
+          className={inputCls}
+          rows={3}
+          value={texto}
+          onChange={(e) => setTexto(e.target.value)}
+          placeholder="O que avançou hoje? Diligências, protocolos, contatos com o cliente, próximos passos…"
+        />
+        <div className="mt-3 flex flex-wrap items-center gap-3">
+          <select
+            className={selectCls + " max-w-xs"}
+            value={projetoId}
+            onChange={(e) => setProjetoId(e.target.value)}
+          >
+            <option value="">Registro geral (sem projeto)</option>
+            {db.projetos.map((p) => (
+              <option key={p.id} value={p.id}>{p.nome}</option>
+            ))}
+          </select>
+          <button className={btnBrand} onClick={registrar} disabled={texto.trim().length < 3}>
+            <Plus className="w-3.5 h-3.5" /> Registrar no diário
+          </button>
+        </div>
       </div>
-    </form>
+
+      {/* Timeline */}
+      {entradas.length === 0 ? (
+        <EmptyState
+          title="Diário vazio"
+          body="Registre o primeiro avanço. Cada entrada fica datada e visível para a equipe Arché e para a supervisão."
+        />
+      ) : (
+        <div className="relative border-l-2 border-[color:var(--color-hairline)] ml-2 pl-6 space-y-6">
+          {entradas.map((e) => (
+            <div key={e.id} className="relative">
+              <span className="absolute -left-[31px] top-1.5 w-3 h-3 rounded-full bg-[color:var(--color-brand)]" />
+              <div className="flex flex-wrap items-center gap-3 mb-1">
+                <span className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
+                  {new Date(e.criado_em).toLocaleString("pt-BR")}
+                </span>
+                {projetoNome(e.projeto_id) && (
+                  <span className="font-mono text-[10px] uppercase tracking-wide px-2 py-0.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-muted)]">
+                    {projetoNome(e.projeto_id)}
+                  </span>
+                )}
+                <button
+                  className="ml-auto text-[color:var(--color-ink-faint)] hover:text-red-700"
+                  onClick={() => excluir(e.id)}
+                  aria-label="Excluir registro"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
+              <p className="text-[14px] leading-relaxed text-[color:var(--color-ink)] whitespace-pre-wrap">
+                {e.texto}
+              </p>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
   );
 }
 
@@ -901,6 +926,17 @@ function Documentos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => voi
                   {doc.tipo} · {projetoNome(doc.projeto_id)} · {fmtDate(doc.data_envio)}
                 </div>
               </div>
+              {doc.storage_path && (
+                <a
+                  href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}`}
+                  target="_blank"
+                  rel="noopener noreferrer"
+                  className={btnGhost}
+                  title={doc.arquivo_nome || "Baixar arquivo"}
+                >
+                  <Download className="w-3.5 h-3.5" /> Baixar
+                </a>
+              )}
               <button className={btnGhost} onClick={() => setModal(doc)}><Pencil className="w-3.5 h-3.5" /></button>
               <button className={btnDanger} onClick={() => excluir(doc.id)}><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
@@ -917,8 +953,63 @@ function Documentos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => voi
 
 function DocumentoForm({ existing, projetos, onSave }: { existing: Documento | null; projetos: Projeto[]; onSave: (d: Partial<Documento>, e: Documento | null) => void }) {
   const [f, setF] = useState<Partial<Documento>>(existing || {});
+  const [enviando, setEnviando] = useState(false);
+  const [erroUpload, setErroUpload] = useState<string | null>(null);
+
+  async function anexar(file: File) {
+    setEnviando(true);
+    setErroUpload(null);
+    try {
+      const fd = new FormData();
+      fd.append("file", file);
+      const r = await fetch("/api/parceiros/upload", { method: "POST", body: fd });
+      const j = await r.json();
+      if (!r.ok) {
+        setErroUpload(j.error || "Falha no upload.");
+        return;
+      }
+      setF((prev) => ({
+        ...prev,
+        storage_path: j.path,
+        arquivo_nome: j.nome,
+        nome: prev.nome || j.nome,
+      }));
+    } catch {
+      setErroUpload("Erro de conexão no upload.");
+    } finally {
+      setEnviando(false);
+    }
+  }
+
   return (
     <form onSubmit={(e) => { e.preventDefault(); onSave(f, existing); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
+      {/* Anexo real — Supabase Storage */}
+      <div className="md:col-span-2 border border-dashed border-[color:var(--color-brand)]/40 bg-blue-50/30 p-4">
+        <div className="flex flex-wrap items-center gap-3">
+          <Paperclip className="w-4 h-4 text-[color:var(--color-brand)]" />
+          <label className="cursor-pointer text-[13px] font-medium text-[color:var(--color-brand)] underline underline-offset-2">
+            {enviando ? "Enviando…" : f.storage_path ? "Trocar arquivo" : "Anexar arquivo do processo"}
+            <input
+              type="file"
+              className="hidden"
+              disabled={enviando}
+              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
+              onChange={(e) => { const file = e.target.files?.[0]; if (file) void anexar(file); }}
+            />
+          </label>
+          {enviando && <Loader2 className="w-4 h-4 animate-spin text-[color:var(--color-brand)]" />}
+          {f.arquivo_nome && !enviando && (
+            <span className="text-[12px] text-[color:var(--color-ink-muted)]">
+              ✓ {f.arquivo_nome}
+            </span>
+          )}
+        </div>
+        <p className="mt-1.5 text-[11px] text-[color:var(--color-ink-faint)]">
+          PDF, imagem, Word, Excel, CSV ou ZIP · até 15MB · armazenado com acesso restrito (você, a Arché e a supervisão).
+        </p>
+        {erroUpload && <p className="mt-1 text-[12px] text-red-700">{erroUpload}</p>}
+      </div>
+
       <Field label="Nome do documento *" span2>
         <input required className={inputCls} value={f.nome || ""} onChange={(e) => setF({ ...f, nome: e.target.value })} />
       </Field>

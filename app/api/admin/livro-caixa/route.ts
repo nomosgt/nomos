@@ -88,6 +88,51 @@ const SYNC_SCRIPT = `<script>
     b.style.cssText = "position:fixed;bottom:12px;right:16px;z-index:9999;background:#1B2A5C;color:#fff;font:11px/1 monospace;padding:6px 12px;border-radius:3px;opacity:.85";
     b.textContent = "\\u2601 sincronizado";
     document.body.appendChild(b);
+
+    // ── Trava Arché: parceiros e comissionados SÓ com login de colaborador ──
+    fetch("/api/admin/colaboradores", { cache: "no-store" })
+      .then(function (r) { return r.json(); })
+      .then(function (j) {
+        var lista = (j && (j.colaboradores || j.data || j)) || [];
+        if (!Array.isArray(lista)) return;
+        var ativos = lista.filter(function (c) {
+          return c && c.ativo !== false && c.papel !== "supervisor" && c.nome;
+        });
+        ["form-parceiro", "form-comissionado"].forEach(function (fid) {
+          var form = document.getElementById(fid);
+          if (!form) return;
+          var inp = form.querySelector('input[name="nome"]');
+          if (!inp) return;
+          var sel = document.createElement("select");
+          sel.name = "nome";
+          sel.required = true;
+          sel.style.cssText = inp.style.cssText;
+          sel.className = inp.className;
+          var ph = document.createElement("option");
+          ph.value = ""; ph.textContent = "Selecione o colaborador com login\\u2026";
+          sel.appendChild(ph);
+          ativos.forEach(function (c) {
+            var o = document.createElement("option");
+            o.value = c.nome;
+            o.textContent = c.nome + (c.codigo ? " (" + c.codigo + ")" : "");
+            o.setAttribute("data-pct", c.percentual != null ? c.percentual : "");
+            sel.appendChild(o);
+          });
+          // auto-preenche o % padrao do login ao selecionar
+          sel.addEventListener("change", function () {
+            var opt = sel.options[sel.selectedIndex];
+            var pct = opt ? opt.getAttribute("data-pct") : "";
+            var pctInput = form.querySelector('input[name="percentualPadrao"]');
+            if (pctInput && pct) pctInput.value = pct;
+          });
+          inp.parentNode.replaceChild(sel, inp);
+          var hint = document.createElement("div");
+          hint.style.cssText = "font-size:10px;color:#8B8E94;margin-top:3px";
+          hint.textContent = "Somente colaboradores com login na Central podem ser cadastrados.";
+          sel.parentNode.appendChild(hint);
+        });
+      })
+      .catch(function () {});
   });
 })();
 </script>`;

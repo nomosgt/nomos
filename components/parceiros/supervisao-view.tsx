@@ -167,6 +167,24 @@ export function SupervisaoView({ nome, colaboradores, logout }: Props) {
                       </div>
                     ))}
 
+                    {(c.dados?.diario?.length ?? 0) > 0 && (
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
+                          Diário de desenvolvimento
+                        </div>
+                        <div className="border-l-2 border-[color:var(--color-accent)]/40 pl-3 space-y-2">
+                          {c.dados!.diario!.slice(-6).reverse().map((e) => (
+                            <div key={e.id} className="text-[12px] leading-relaxed text-[color:var(--color-ink)]">
+                              <span className="font-mono text-[10px] text-[color:var(--color-ink-faint)] mr-2">
+                                {fmtDT(e.criado_em)}
+                              </span>
+                              {e.texto}
+                            </div>
+                          ))}
+                        </div>
+                      </div>
+                    )}
+
                     {trabalhos.length > 0 && (
                       <div>
                         <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">

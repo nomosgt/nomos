@@ -28,6 +28,8 @@ interface Snapshot {
   trabalhos?: Trabalho[];
   comissoes?: Comissao[];
   relatorios?: { id: string; periodo: string; resumo?: string }[];
+  diario?: { id: string; texto: string; projeto_id: string | null; criado_em: string }[];
+  documentos?: { id: string; nome: string; tipo: string; storage_path?: string | null; arquivo_nome?: string | null }[];
   [k: string]: unknown;
 }
 interface Financeiro {
@@ -478,6 +480,47 @@ export function ParceirosCentral() {
                       </div>
                     ))}
                   </div>
+
+                  {/* Diário de desenvolvimento */}
+                  {(s.diario?.length ?? 0) > 0 && (
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
+                        Diário de desenvolvimento
+                      </div>
+                      <div className="border-l-2 border-[color:var(--color-accent)]/40 pl-3 space-y-1.5 max-h-48 overflow-y-auto">
+                        {s.diario!.slice(-8).reverse().map((e) => (
+                          <div key={e.id} className="text-[12px] leading-relaxed text-[color:var(--color-ink)]">
+                            <span className="font-mono text-[10px] text-[color:var(--color-ink-faint)] mr-2">
+                              {new Date(e.criado_em).toLocaleDateString("pt-BR")}
+                            </span>
+                            {e.texto}
+                          </div>
+                        ))}
+                      </div>
+                    </div>
+                  )}
+
+                  {/* Arquivos anexados */}
+                  {(s.documentos ?? []).some((d) => d.storage_path) && (
+                    <div>
+                      <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-2">
+                        Arquivos anexados
+                      </div>
+                      <div className="flex flex-wrap gap-2">
+                        {(s.documentos ?? []).filter((d) => d.storage_path).map((d) => (
+                          <a
+                            key={d.id}
+                            href={`/api/parceiros/arquivo?path=${encodeURIComponent(d.storage_path!)}`}
+                            target="_blank"
+                            rel="noopener noreferrer"
+                            className="text-[12px] underline underline-offset-2 text-[color:var(--color-brand)] hover:opacity-80"
+                          >
+                            {d.arquivo_nome || d.nome}
+                          </a>
+                        ))}
+                      </div>
+                    </div>
+                  )}
 
                   {/* Andamentos de processo */}
                   {(s.projetos ?? []).some((pr) => (pr.andamentos?.length ?? 0) > 0) && (
