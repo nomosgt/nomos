@@ -78,6 +78,11 @@ export async function POST(req: Request) {
     titulo: parsed.data.titulo,
     corpo: parsed.data.corpo,
   });
-  if (error) return NextResponse.json({ error: "Falha ao enviar" }, { status: 500 });
+  if (error) {
+    const hint = error.message.includes("does not exist")
+      ? "Tabela de aprovacoes nao configurada — rode o SQL do aprovacoes-v4 no Supabase."
+      : "Falha ao enviar.";
+    return NextResponse.json({ error: hint }, { status: 500 });
+  }
   return NextResponse.json({ ok: true });
 }
