@@ -510,7 +510,7 @@ export function ParceirosCentral() {
                         {(s.documentos ?? []).filter((d) => d.storage_path).map((d) => (
                           <a
                             key={d.id}
-                            href={`/api/parceiros/arquivo?path=${encodeURIComponent(d.storage_path!)}`}
+                            href={`/api/parceiros/arquivo?path=${encodeURIComponent(d.storage_path!)}&modo=ver`}
                             target="_blank"
                             rel="noopener noreferrer"
                             className="text-[12px] underline underline-offset-2 text-[color:var(--color-brand)] hover:opacity-80"

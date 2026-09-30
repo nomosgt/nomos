@@ -22,6 +22,7 @@ import {
 } from "@/lib/parceiros/store";
 import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
 import { SupervisaoPanel } from "@/components/parceiros/supervisao-view";
+import { AprovacoesParceiro } from "@/components/parceiros/aprovacoes-parceiro";
 import { Eye } from "lucide-react";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
@@ -671,6 +672,8 @@ function Trabalhos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void
       <Modal open={novo || !!modal} title={modal ? "Editar demanda" : "Nova demanda"} onClose={() => { setModal(null); setNovo(false); }} wide>
         <TrabalhoForm existing={modal} projetos={db.projetos} onSave={salvar} onSetStatus={setStatus} />
       </Modal>
+
+      <AprovacoesParceiro />
     </div>
   );
 }
@@ -911,11 +914,11 @@ function Documentos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => voi
               <div className="flex-1 min-w-0">
                 {doc.storage_path ? (
                   <a
-                    href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}`}
+                    href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}&modo=ver`}
                     target="_blank"
                     rel="noopener noreferrer"
                     className="text-[14px] font-medium text-[color:var(--color-brand)] truncate block underline-offset-2 hover:underline"
-                    title={`Baixar ${doc.arquivo_nome || doc.nome}`}
+                    title={`Abrir ${doc.arquivo_nome || doc.nome}`}
                   >
                     {doc.nome}
                   </a>

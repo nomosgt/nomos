@@ -55,12 +55,12 @@ export async function GET(req: Request) {
 
   if (!autorizado) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
 
-  // download: true força o navegador a BAIXAR com o nome original
-  // (em vez de tentar renderizar e falhar em tipos não suportados)
+  // modo=ver abre inline no navegador; padrão baixa com o nome original
+  const modoVer = new URL(req.url).searchParams.get("modo") === "ver";
   const nomeOriginal = path.split("/").pop()?.replace(/^\d+-/, "") || "arquivo";
   const { data, error } = await admin.storage
     .from(BUCKET)
-    .createSignedUrl(path, 600, { download: nomeOriginal });
+    .createSignedUrl(path, 600, modoVer ? undefined : { download: nomeOriginal });
   if (error || !data?.signedUrl) {
     return NextResponse.json({ error: "Arquivo nao encontrado" }, { status: 404 });
   }

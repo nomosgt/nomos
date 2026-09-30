@@ -4,6 +4,7 @@ import { ArrowLeft, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/utils";
 import { ClientePainel } from "@/components/admin/cliente-painel";
+import { ClienteDocsAprovacoes } from "@/components/admin/cliente-docs-aprovacoes";
 
 export const dynamic = "force-dynamic";
 
@@ -47,6 +48,11 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
           </div>
         </div>
       </div>
+
+      <ClienteDocsAprovacoes
+        clienteId={id}
+        casos={(casos.data || []).map((c) => ({ id: c.id, titulo: c.titulo }))}
+      />
 
       <ClientePainel
         clienteId={id}

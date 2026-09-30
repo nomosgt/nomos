@@ -1,5 +1,5 @@
 import { createClient } from "@/lib/supabase/server";
-import { FileText, Download } from "lucide-react";
+import { FileText, Download, Eye } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -45,7 +45,7 @@ export default async function Documentos() {
                 <Th>Caso</Th>
                 <Th>Data</Th>
                 <Th>Tamanho</Th>
-                <Th>Baixar</Th>
+                <Th>Arquivo</Th>
               </tr>
             </thead>
             <tbody>
@@ -85,17 +85,24 @@ export default async function Documentos() {
                       </span>
                     </Td>
                     <Td>
-                      <form action="/api/sala/documentos/baixar" method="POST">
-                        <input type="hidden" name="path" value={d.storage_path} />
-                        <input type="hidden" name="nome" value={d.nome} />
-                        <button
-                          type="submit"
+                      <div className="flex items-center gap-4">
+                        <a
+                          href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=ver`}
+                          target="_blank"
+                          rel="noopener noreferrer"
                           className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-brand)] hover:underline"
+                        >
+                          <Eye className="w-3 h-3" />
+                          Abrir
+                        </a>
+                        <a
+                          href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=baixar`}
+                          className="inline-flex items-center gap-1.5 text-[11px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-ink-muted)] hover:underline"
                         >
                           <Download className="w-3 h-3" />
                           Baixar
-                        </button>
-                      </form>
+                        </a>
+                      </div>
                     </Td>
                   </tr>
                 );
