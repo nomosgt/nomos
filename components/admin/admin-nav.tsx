@@ -12,6 +12,7 @@ const ITEMS = [
   { href: "/admin/colaboradores", label: "Colaboradores" },
   { href: "/admin/parceiros", label: "Parceiros" },
   { href: "/admin/financeiro", label: "Financeiro" },
+  { href: "/admin/relatorios", label: "Relatórios" },
   { href: "/admin/blog", label: "Blog" },
 ];
 
