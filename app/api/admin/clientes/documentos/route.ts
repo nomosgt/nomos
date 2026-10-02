@@ -21,6 +21,45 @@ async function requireAdmin() {
   return prof ? u.user : null;
 }
 
+/** GET → clientes ativos com seus casos (p/ publicar documentos, ex.: Gerador de Relatórios). */
+export async function GET() {
+  if (!isSupabaseConfigured()) {
+    return NextResponse.json({ error: "Supabase nao configurado" }, { status: 503 });
+  }
+  const adminUser = await requireAdmin();
+  if (!adminUser) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
+
+  const admin = createAdminClient();
+  const [clientes, casos] = await Promise.all([
+    admin
+      .from("client_profiles")
+      .select("user_id, nome, empresa")
+      .eq("status", "ativo")
+      .order("nome"),
+    admin
+      .from("client_cases")
+      .select("id, client_id, titulo, status")
+      .neq("status", "arquivado")
+      .order("created_at", { ascending: false }),
+  ]);
+
+  const porCliente = new Map<string, { id: string; titulo: string; status: string }[]>();
+  for (const c of casos.data ?? []) {
+    const arr = porCliente.get(c.client_id) ?? [];
+    arr.push({ id: c.id, titulo: c.titulo, status: c.status });
+    porCliente.set(c.client_id, arr);
+  }
+
+  return NextResponse.json({
+    clientes: (clientes.data ?? []).map((c) => ({
+      user_id: c.user_id,
+      nome: c.nome,
+      empresa: c.empresa,
+      casos: porCliente.get(c.user_id) ?? [],
+    })),
+  });
+}
+
 /** POST multipart { file, case_id, categoria?, visibilidade? } → sobe e registra. */
 export async function POST(req: Request) {
   if (!isSupabaseConfigured()) {
