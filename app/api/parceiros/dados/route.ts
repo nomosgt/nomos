@@ -24,14 +24,6 @@ async function resolveParceiro(req: Request) {
   return { admin, parceiro: data };
 }
 
-/** Remove QUALQUER dado financeiro de um snapshot (visão supervisora). */
-function stripFinanceiro(dados: Record<string, unknown> | null) {
-  if (!dados) return null;
-  const clone = { ...dados };
-  delete clone.comissoes;
-  return clone;
-}
-
 export async function GET(req: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Supabase nao configurado" }, { status: 503 });
@@ -45,37 +37,8 @@ export async function GET(req: Request) {
     .eq("parceiro_id", ctx.parceiro.id)
     .maybeSingle();
 
-  // ── Supervisor(a): Central normal + visão de TODOS os colaboradores
-  //    (SEM financeiro — comissões removidas no servidor) ──
-  if (ctx.parceiro.papel === "supervisor") {
-    const [codigos, todos] = await Promise.all([
-      ctx.admin
-        .from("parceiros_codigos")
-        .select("id, nome, ativo, papel, ultimo_acesso")
-        .eq("papel", "parceiro")
-        .order("nome"),
-      ctx.admin.from("parceiro_dados").select("parceiro_id, dados, updated_at"),
-    ]);
-    const map = new Map((todos.data ?? []).map((d) => [d.parceiro_id, d]));
-    return NextResponse.json({
-      supervisor: true,
-      nome: ctx.parceiro.nome,
-      dados: data?.dados ?? null,
-      updated_at: data?.updated_at ?? null,
-      updated_by: data?.updated_by ?? null,
-      colaboradores: (codigos.data ?? []).map((c) => ({
-        id: c.id,
-        nome: c.nome,
-        ativo: c.ativo,
-        ultimo_acesso: c.ultimo_acesso,
-        dados: stripFinanceiro(
-          (map.get(c.id)?.dados as Record<string, unknown> | undefined) ?? null,
-        ),
-        updated_at: map.get(c.id)?.updated_at ?? null,
-      })),
-    });
-  }
-
+  // Supervisão é exclusiva do painel admin — todo colaborador (qualquer papel)
+  // recebe somente o próprio painel.
   return NextResponse.json({
     nome: ctx.parceiro.nome,
     dados: data?.dados ?? null,

@@ -11,26 +11,25 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, ClipboardCheck, Percent,
   FileText, ScrollText, LogOut, Plus, Download, Pencil, Trash2,
-  Search, Menu, X, BookOpen, Paperclip, Loader2,
+  Search, Menu, X, BookOpen,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 import {
   loadDB, saveDB, uid, fmtDate, diffDays, urgencia, exportCSV,
   fetchCentral,
   type DB, type Cliente, type Projeto, type Trabalho,
-  type Documento, type Relatorio, type ColaboradorSupervisao,
+  type Documento, type Relatorio,
 } from "@/lib/parceiros/store";
 import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
-import { SupervisaoPanel } from "@/components/parceiros/supervisao-view";
 import { AprovacoesParceiro } from "@/components/parceiros/aprovacoes-parceiro";
-import { Eye } from "lucide-react";
+import { DocumentosDrive } from "@/components/parceiros/documentos-drive";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
 } from "@/components/parceiros/ui";
 import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
-type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios" | "supervisao";
+type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "painel", label: "Dashboard", icon: LayoutDashboard },
@@ -50,8 +49,6 @@ export default function ParceirosPage() {
   const [mobileNav, setMobileNav] = useState(false);
   const [busca, setBusca] = useState("");
 
-  const [supervisao, setSupervisao] = useState<ColaboradorSupervisao[] | null>(null);
-
   useEffect(() => {
     // v2: servidor é a fonte da verdade no load (traz edições do admin);
     // localStorage entra como fallback/cache offline.
@@ -60,7 +57,6 @@ export default function ParceirosPage() {
     void fetchCentral().then((r) => {
       if (!alive) return;
       if (r.db) setDb(r.db);
-      if (r.colaboradores) setSupervisao(r.colaboradores);
     });
     return () => {
       alive = false;
@@ -95,7 +91,7 @@ export default function ParceirosPage() {
   return (
     <div className="min-h-screen bg-[color:var(--color-surface)] flex">
       <aside className="hidden lg:flex w-64 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex-col px-5 py-8 flex-shrink-0 sticky top-0 h-screen">
-        <SidebarContent tab={tab} setTab={setTab} logout={logout} supervisor={!!supervisao} />
+        <SidebarContent tab={tab} setTab={setTab} logout={logout} />
       </aside>
 
       <div className="lg:hidden fixed top-0 inset-x-0 z-40 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex items-center justify-between px-4 h-14">
@@ -116,7 +112,7 @@ export default function ParceirosPage() {
             <button onClick={() => setMobileNav(false)} className="absolute top-4 right-4 p-2" aria-label="Fechar menu">
               <X className="w-5 h-5" />
             </button>
-            <SidebarContent tab={tab} setTab={(t) => { setTab(t); setMobileNav(false); }} logout={logout} supervisor={!!supervisao} />
+            <SidebarContent tab={tab} setTab={(t) => { setTab(t); setMobileNav(false); }} logout={logout} />
           </motion.div>
         )}
       </AnimatePresence>
@@ -138,7 +134,6 @@ export default function ParceirosPage() {
             {tab === "comissoes" && <Comissoes db={db} />}
             {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
             {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
-            {tab === "supervisao" && supervisao && <SupervisaoPanel colaboradores={supervisao} />}
           </motion.div>
         </AnimatePresence>
       </main>
@@ -146,10 +141,8 @@ export default function ParceirosPage() {
   );
 }
 
-function SidebarContent({ tab, setTab, logout, supervisor }: { tab: Tab; setTab: (t: Tab) => void; logout: () => void; supervisor?: boolean }) {
-  const items = supervisor
-    ? [...NAV, { id: "supervisao" as Tab, label: "Supervisão", icon: Eye }]
-    : NAV;
+function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) => void; logout: () => void }) {
+  const items = NAV;
   return (
     <>
       <div className="mb-10">
@@ -860,190 +853,67 @@ function Diario({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void })
 /* ==================== DOCUMENTOS ==================== */
 
 function Documentos({ db, mutate }: { db: DB; mutate: (fn: (d: DB) => DB) => void }) {
-  const [modal, setModal] = useState<null | Documento>(null);
-  const [novo, setNovo] = useState(false);
+  // Registros antigos (metadados vinculados a projeto) — mantidos como legado.
+  const legados = db.documentos;
+  const projetoNome = (id: string | null) => db.projetos.find((p) => p.id === id)?.nome || "geral";
 
-  function salvar(data: Partial<Documento>, existing: Documento | null) {
-    mutate((d) => {
-      if (existing) {
-        d.documentos = d.documentos.map((x) => (x.id === existing.id ? { ...x, ...data } : x));
-      } else {
-        d.documentos.push({
-          id: uid(), nome: data.nome || "", tipo: data.tipo || "Outro",
-          projeto_id: data.projeto_id || null, data_envio: data.data_envio || null,
-          observacoes: data.observacoes || "", criado_em: new Date().toISOString(),
-        });
-      }
-      return d;
-    });
-    setModal(null);
-    setNovo(false);
-  }
-
-  function excluir(id: string) {
-    if (!confirm("Excluir este documento?")) return;
+  function excluirLegado(id: string) {
+    if (!confirm("Excluir este registro?")) return;
     mutate((d) => { d.documentos = d.documentos.filter((x) => x.id !== id); return d; });
   }
-
-  const projetoNome = (id: string | null) => db.projetos.find((p) => p.id === id)?.nome || "geral";
 
   return (
     <div>
       <Header
         title="Documentos"
-        sub="Registro de documentos enviados e recebidos"
-        actions={
-          <>
-            <button className={btnGhost} onClick={() => exportCSV("documentos.csv", db.documentos as unknown as Record<string, unknown>[])}>
-              <Download className="w-3.5 h-3.5" /> CSV
-            </button>
-            <button className={btnBrand} onClick={() => setNovo(true)}>
-              <Plus className="w-3.5 h-3.5" /> Novo documento
-            </button>
-          </>
-        }
+        sub="Seus arquivos de trabalho — envie, abra e organize. A Arché vê tudo em tempo real."
       />
 
-      {db.documentos.length === 0 ? (
-        <EmptyState title="Nenhum documento" body="Registre o primeiro documento da parceria." action={<button className={btnBrand} onClick={() => setNovo(true)}><Plus className="w-3.5 h-3.5" /> Novo documento</button>} />
-      ) : (
-        <div className="space-y-2">
-          {db.documentos.map((doc) => (
-            <div key={doc.id} className="flex items-center gap-4 bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] px-5 py-4">
-              <FileText className="w-4 h-4 text-[color:var(--color-brand)] flex-shrink-0" />
-              <div className="flex-1 min-w-0">
-                {doc.storage_path ? (
-                  <a
-                    href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}&modo=ver`}
-                    target="_blank"
-                    rel="noopener noreferrer"
-                    className="text-[14px] font-medium text-[color:var(--color-brand)] truncate block underline-offset-2 hover:underline"
-                    title={`Abrir ${doc.arquivo_nome || doc.nome}`}
-                  >
-                    {doc.nome}
-                  </a>
-                ) : (
-                  <div className="text-[14px] font-medium text-[color:var(--color-ink)] truncate">
-                    {doc.nome}
-                    <span className="ml-2 font-mono text-[9px] uppercase tracking-wide px-1.5 py-0.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-faint)]">
-                      sem anexo
-                    </span>
+      <DocumentosDrive />
+
+      {legados.length > 0 && (
+        <div className="mt-10 border-t border-[color:var(--color-hairline)] pt-6">
+          <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-faint)] mb-3">
+            Registros vinculados a projetos
+          </div>
+          <div className="space-y-2">
+            {legados.map((doc) => (
+              <div key={doc.id} className="flex items-center gap-4 bg-[color:var(--color-background)] border border-[color:var(--color-hairline)] px-5 py-3.5">
+                <FileText className="w-4 h-4 text-[color:var(--color-brand)] flex-shrink-0" />
+                <div className="flex-1 min-w-0">
+                  {doc.storage_path ? (
+                    <a
+                      href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}&modo=ver`}
+                      target="_blank"
+                      rel="noopener noreferrer"
+                      className="text-[13.5px] font-medium text-[color:var(--color-brand)] truncate block underline-offset-2 hover:underline"
+                      title={`Abrir ${doc.arquivo_nome || doc.nome}`}
+                    >
+                      {doc.nome}
+                    </a>
+                  ) : (
+                    <div className="text-[13.5px] font-medium text-[color:var(--color-ink)] truncate">{doc.nome}</div>
+                  )}
+                  <div className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
+                    {doc.tipo} · {projetoNome(doc.projeto_id)} · {fmtDate(doc.data_envio)}
                   </div>
-                )}
-                <div className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
-                  {doc.tipo} · {projetoNome(doc.projeto_id)} · {fmtDate(doc.data_envio)}
                 </div>
+                {doc.storage_path && (
+                  <a
+                    href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}`}
+                    className={btnGhost}
+                    title={doc.arquivo_nome || "Baixar arquivo"}
+                  >
+                    <Download className="w-3.5 h-3.5" /> Baixar
+                  </a>
+                )}
+                <button className={btnDanger} onClick={() => excluirLegado(doc.id)}><Trash2 className="w-3.5 h-3.5" /></button>
               </div>
-              {doc.storage_path && (
-                <a
-                  href={`/api/parceiros/arquivo?path=${encodeURIComponent(doc.storage_path)}`}
-                  target="_blank"
-                  rel="noopener noreferrer"
-                  className={btnGhost}
-                  title={doc.arquivo_nome || "Baixar arquivo"}
-                >
-                  <Download className="w-3.5 h-3.5" /> Baixar
-                </a>
-              )}
-              <button className={btnGhost} onClick={() => setModal(doc)}><Pencil className="w-3.5 h-3.5" /></button>
-              <button className={btnDanger} onClick={() => excluir(doc.id)}><Trash2 className="w-3.5 h-3.5" /></button>
-            </div>
-          ))}
+            ))}
+          </div>
         </div>
       )}
-
-      <Modal open={novo || !!modal} title={modal ? "Editar documento" : "Novo documento"} onClose={() => { setModal(null); setNovo(false); }} wide>
-        <DocumentoForm existing={modal} projetos={db.projetos} onSave={salvar} />
-      </Modal>
     </div>
-  );
-}
-
-function DocumentoForm({ existing, projetos, onSave }: { existing: Documento | null; projetos: Projeto[]; onSave: (d: Partial<Documento>, e: Documento | null) => void }) {
-  const [f, setF] = useState<Partial<Documento>>(existing || {});
-  const [enviando, setEnviando] = useState(false);
-  const [erroUpload, setErroUpload] = useState<string | null>(null);
-
-  async function anexar(file: File) {
-    setEnviando(true);
-    setErroUpload(null);
-    try {
-      const fd = new FormData();
-      fd.append("file", file);
-      const r = await fetch("/api/parceiros/upload", { method: "POST", body: fd });
-      const j = await r.json();
-      if (!r.ok) {
-        setErroUpload(j.error || "Falha no upload.");
-        return;
-      }
-      setF((prev) => ({
-        ...prev,
-        storage_path: j.path,
-        arquivo_nome: j.nome,
-        nome: prev.nome || j.nome,
-      }));
-    } catch {
-      setErroUpload("Erro de conexão no upload.");
-    } finally {
-      setEnviando(false);
-    }
-  }
-
-  return (
-    <form onSubmit={(e) => { e.preventDefault(); onSave(f, existing); }} className="grid grid-cols-1 md:grid-cols-2 gap-4">
-      {/* Anexo real — Supabase Storage */}
-      <div className="md:col-span-2 border border-dashed border-[color:var(--color-brand)]/40 bg-blue-50/30 p-4">
-        <div className="flex flex-wrap items-center gap-3">
-          <Paperclip className="w-4 h-4 text-[color:var(--color-brand)]" />
-          <label className="cursor-pointer text-[13px] font-medium text-[color:var(--color-brand)] underline underline-offset-2">
-            {enviando ? "Enviando…" : f.storage_path ? "Trocar arquivo" : "Anexar arquivo do processo"}
-            <input
-              type="file"
-              className="hidden"
-              disabled={enviando}
-              accept=".pdf,.png,.jpg,.jpeg,.webp,.doc,.docx,.xls,.xlsx,.csv,.txt,.zip"
-              onChange={(e) => { const file = e.target.files?.[0]; if (file) void anexar(file); }}
-            />
-          </label>
-          {enviando && <Loader2 className="w-4 h-4 animate-spin text-[color:var(--color-brand)]" />}
-          {f.arquivo_nome && !enviando && (
-            <span className="text-[12px] text-[color:var(--color-ink-muted)]">
-              ✓ {f.arquivo_nome}
-            </span>
-          )}
-        </div>
-        <p className="mt-1.5 text-[11px] text-[color:var(--color-ink-faint)]">
-          PDF, imagem, Word, Excel, CSV ou ZIP · até 15MB · armazenado com acesso restrito (você, a Arché e a supervisão).
-        </p>
-        {erroUpload && <p className="mt-1 text-[12px] text-red-700">{erroUpload}</p>}
-      </div>
-
-      <Field label="Nome do documento *" span2>
-        <input required className={inputCls} value={f.nome || ""} onChange={(e) => setF({ ...f, nome: e.target.value })} />
-      </Field>
-      <Field label="Tipo">
-        <select className={selectCls} value={f.tipo || "Outro"} onChange={(e) => setF({ ...f, tipo: e.target.value })}>
-          {["Contrato", "Procuração", "SPED", "XML/NF", "Balancete", "Petição", "Relatório", "Outro"].map((t) => (
-            <option key={t} value={t}>{t}</option>
-          ))}
-        </select>
-      </Field>
-      <Field label="Projeto vinculado">
-        <select className={selectCls} value={f.projeto_id || ""} onChange={(e) => setF({ ...f, projeto_id: e.target.value || null })}>
-          <option value="">Geral</option>
-          {projetos.map((p) => <option key={p.id} value={p.id}>{p.nome}</option>)}
-        </select>
-      </Field>
-      <Field label="Data de envio">
-        <input type="date" className={inputCls} value={f.data_envio || ""} onChange={(e) => setF({ ...f, data_envio: e.target.value })} />
-      </Field>
-      <Field label="Observações" span2>
-        <textarea className={inputCls} rows={2} value={f.observacoes || ""} onChange={(e) => setF({ ...f, observacoes: e.target.value })} />
-      </Field>
-      <div className="md:col-span-2 flex justify-end pt-2">
-        <button type="submit" className={btnBrand}>Salvar</button>
-      </div>
-    </form>
   );
 }
 

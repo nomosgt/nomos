@@ -9,8 +9,8 @@ const BUCKET = "parceiros";
 
 /**
  * GET ?path=<storage_path> → URL assinada (10 min) para download.
- * Autorizado para: o próprio parceiro dono do arquivo, perfis de
- * supervisão (Dra. Gabriela) e admins logados.
+ * Autorizado para: o próprio parceiro dono do arquivo e admins logados.
+ * (Supervisão é exclusiva do admin — nenhum colaborador vê arquivo alheio.)
  */
 export async function GET(req: Request) {
   if (!isSupabaseConfigured()) {
@@ -25,16 +25,16 @@ export async function GET(req: Request) {
   const admin = createAdminClient();
   let autorizado = false;
 
-  // 1) parceiro logado (dono) ou supervisor
+  // 1) parceiro logado — somente os próprios arquivos
   const cookie = req.headers.get("cookie") || "";
   const m = cookie.match(/ngt_parceiros=([a-f0-9]{40})/);
   if (m) {
     const { data: p } = await admin
       .from("parceiros_codigos")
-      .select("id, ativo, papel")
+      .select("id, ativo")
       .eq("cookie_hash", m[1])
       .maybeSingle();
-    if (p?.ativo && (p.papel === "supervisor" || path.startsWith(p.id + "/"))) {
+    if (p?.ativo && path.startsWith(p.id + "/")) {
       autorizado = true;
     }
   }

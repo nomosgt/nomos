@@ -11,12 +11,13 @@ const ITEMS = [
   { href: "/admin/clientes", label: "Clientes" },
   { href: "/admin/colaboradores", label: "Colaboradores" },
   { href: "/admin/parceiros", label: "Parceiros" },
+  { href: "/admin/arquivos", label: "Arquivos" },
   { href: "/admin/financeiro", label: "Financeiro" },
   { href: "/admin/relatorios", label: "Relatórios" },
   { href: "/admin/blog", label: "Blog" },
 ];
 
-export function AdminNav() {
+export function AdminNav({ dark }: { dark?: boolean }) {
   const path = usePathname();
   return (
     <nav className="flex items-center gap-1 overflow-x-auto">
@@ -29,8 +30,12 @@ export function AdminNav() {
             href={it.href}
             className={`px-3 py-1.5 text-[12px] font-mono uppercase tracking-[0.2em] rounded-sm transition-colors whitespace-nowrap ${
               active
-                ? "bg-[color:var(--color-ink)] text-[color:var(--color-paper)]"
-                : "text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-ink)]"
+                ? dark
+                  ? "bg-[color:var(--color-paper)]/15 text-[color:var(--color-paper)]"
+                  : "bg-[color:var(--color-ink)] text-[color:var(--color-paper)]"
+                : dark
+                  ? "text-[color:var(--color-paper)]/55 hover:text-[color:var(--color-paper)]"
+                  : "text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-ink)]"
             }`}
           >
             {it.label}

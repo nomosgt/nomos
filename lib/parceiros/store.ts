@@ -107,34 +107,6 @@ function emptyDB(): DB {
   return { clientes: [], projetos: [], trabalhos: [], comissoes: [], documentos: [], relatorios: [] };
 }
 
-function seedDB(): DB {
-  const now = new Date().toISOString();
-  const d30 = new Date(Date.now() + 30 * 864e5).toISOString().slice(0, 10);
-  const d7 = new Date(Date.now() + 7 * 864e5).toISOString().slice(0, 10);
-  const c1 = uid();
-  const p1 = uid();
-  const p2 = uid();
-  return {
-    clientes: [
-      { id: c1, nome: "Exemplo Industria Ltda", documento: "12.345.678/0001-90", contato: "Maria Silva", email: "contato@exemplo.com.br", telefone: "(11) 99999-0000", criado_em: now },
-    ],
-    projetos: [
-      { id: p1, nome: "Recuperacao PIS/COFINS — Tema 69", cliente_id: c1, etapa: "Analise documental", status: "em_andamento", prioridade: "alta", vencimento: d7, observacoes: "Aguardando SPED do cliente.", criado_em: now },
-      { id: p2, nome: "Creditos ICMS Energia", cliente_id: c1, etapa: "Peticionamento", status: "aguardando", prioridade: "media", vencimento: d30, observacoes: "", criado_em: now },
-    ],
-    trabalhos: [
-      { id: uid(), titulo: "Memoria de calculo Tema 69", projeto_id: p1, descricao: "Planilha de apuracao 60 meses.", fundamentacao: "RE 574.706 / Tema 69 STF", status: "pendente", ressalva: "", criado_em: now },
-    ],
-    comissoes: [
-      { id: uid(), projeto_id: p1, descricao: "Comissao exito — fase 1", percentual: 10, valor: 25000, status: "prevista", data_pagamento: null, criado_em: now },
-    ],
-    documentos: [
-      { id: uid(), nome: "Contrato de parceria assinado", tipo: "Contrato", projeto_id: null, data_envio: now.slice(0, 10), observacoes: "", criado_em: now },
-    ],
-    relatorios: [],
-  };
-}
-
 export function uid(): string {
   return Math.random().toString(36).slice(2, 10) + Date.now().toString(36);
 }
@@ -144,9 +116,10 @@ export function loadDB(): DB {
   try {
     const raw = localStorage.getItem(KEY);
     if (!raw) {
-      const seeded = seedDB();
-      localStorage.setItem(KEY, JSON.stringify(seeded));
-      return seeded;
+      // Central nasce limpa — nada de dados fictícios; o colaborador começa do zero.
+      const vazio = emptyDB();
+      localStorage.setItem(KEY, JSON.stringify(vazio));
+      return vazio;
     }
     return { ...emptyDB(), ...JSON.parse(raw) };
   } catch {
@@ -171,52 +144,36 @@ export function saveDB(db: DB) {
  * - schedulePush(): debounce de 1.2s após cada mutação local.
  * ============================================================ */
 
-export interface ColaboradorSupervisao {
-  id: string;
-  nome: string;
-  ativo: boolean;
-  ultimo_acesso: string | null;
-  dados: Omit<DB, "comissoes"> | null;
-  updated_at: string | null;
-}
-
 export interface CentralPayload {
-  supervisor?: boolean;
   nome?: string;
   dados: Partial<DB> | null;
-  colaboradores?: ColaboradorSupervisao[];
 }
 
 /**
- * Busca o payload da Central. Todo perfil tem o próprio painel (hidratado
- * do servidor); supervisores recebem ADICIONALMENTE a lista de colaboradores
- * (sem financeiro) para a aba Supervisão.
+ * Busca o payload da Central — o próprio painel do colaborador, hidratado
+ * do servidor (fonte da verdade; inclui edições feitas pelo admin).
+ * Supervisão é exclusiva do painel admin.
  */
 export async function fetchCentral(): Promise<{
   db: DB | null;
-  colaboradores: ColaboradorSupervisao[] | null;
   offline: boolean;
 }> {
-  if (typeof window === "undefined") return { db: null, colaboradores: null, offline: true };
+  if (typeof window === "undefined") return { db: null, offline: true };
   try {
     const r = await fetch("/api/parceiros/dados", { cache: "no-store" });
-    if (!r.ok) return { db: null, colaboradores: null, offline: true };
+    if (!r.ok) return { db: null, offline: true };
     const j = (await r.json()) as CentralPayload;
     let db: DB | null = null;
     if (j.dados && Array.isArray(j.dados.clientes)) {
       db = { ...emptyDB(), ...j.dados } as DB;
       localStorage.setItem(KEY, JSON.stringify(db));
     } else {
-      // primeiro acesso: sobe o que existir localmente (seed/demo)
+      // primeiro acesso: sobe o estado local (vazio — sem dados fictícios)
       schedulePush();
     }
-    return {
-      db,
-      colaboradores: j.supervisor === true ? (j.colaboradores ?? []) : null,
-      offline: false,
-    };
+    return { db, offline: false };
   } catch {
-    return { db: null, colaboradores: null, offline: true };
+    return { db: null, offline: true };
   }
 }
 
