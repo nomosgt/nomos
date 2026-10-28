@@ -23,6 +23,7 @@ import {
 import { FinanceiroCard } from "@/components/parceiros/financeiro-card";
 import { AprovacoesParceiro } from "@/components/parceiros/aprovacoes-parceiro";
 import { DocumentosDrive } from "@/components/parceiros/documentos-drive";
+import { TarefasArche } from "@/components/parceiros/tarefas-arche";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
@@ -192,6 +193,8 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
   return (
     <div>
       <Header title="Dashboard" sub="Visão consolidada da sua parceria com a Arché" />
+
+      <TarefasArche />
 
       <FinanceiroCard />
 

@@ -5,6 +5,7 @@ import {
   Loader2, ChevronDown, CheckCircle2, XCircle, AlertTriangle,
   Send, RefreshCw, Handshake,
 } from "lucide-react";
+import { PrazoChecklists } from "@/components/admin/prazo-checklists";
 
 /**
  * Admin · Central do Parceiro v2 — visão e controle total do admin
@@ -58,11 +59,10 @@ const finInputCls =
 
 /** Papel (parceiro/supervisão) + Folha oficial que o colaborador vê na Central. */
 function PapelEFolha({
-  p, salvando, onTogglePapel, onSalvarFin,
+  p, salvando, onSalvarFin,
 }: {
   p: Parceiro;
   salvando: boolean;
-  onTogglePapel: () => void;
   onSalvarFin: (f: Financeiro) => void;
 }) {
   const [f, setF] = useState<Financeiro>({
@@ -80,21 +80,9 @@ function PapelEFolha({
         <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)]">
           Folha do colaborador — o que ele vê na Central
         </div>
-        <button
-          onClick={onTogglePapel}
-          disabled={salvando}
-          className="text-[11px] font-mono uppercase tracking-[0.15em] px-3 py-1.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-muted)] hover:border-[color:var(--color-accent)] hover:text-[color:var(--color-accent-dim)] disabled:opacity-50"
-        >
-          {p.papel === "supervisor" ? "Reverter p/ parceiro" : "Tornar supervisor(a)"}
-        </button>
       </div>
 
-      {p.papel === "supervisor" ? (
-        <p className="text-[12px] text-[color:var(--color-ink-muted)]">
-          Perfil de supervisão: acessa os processos de todos os colaboradores,
-          sem qualquer dado financeiro. A folha não se aplica.
-        </p>
-      ) : (
+      {(
         <>
           <div className="grid grid-cols-2 md:grid-cols-4 gap-3">
             <div>
@@ -266,31 +254,7 @@ export function ParceirosCentral() {
     }
   }
 
-  async function togglePapel(p: Parceiro) {
-    const novo = p.papel === "supervisor" ? "parceiro" : "supervisor";
-    if (
-      novo === "supervisor" &&
-      !window.confirm(
-        `Tornar ${p.nome} SUPERVISOR(A)? Este perfil vê os processos de TODOS os colaboradores, mas NUNCA dados financeiros.`,
-      )
-    )
-      return;
-    setSalvando(true);
-    try {
-      const r = await fetch("/api/admin/colaboradores", {
-        method: "PATCH",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ id: p.id, papel: novo }),
-      });
-      if (r.ok) {
-        setParceiros((prev) =>
-          prev.map((x) => (x.id === p.id ? { ...x, papel: novo } : x)),
-        );
-      }
-    } finally {
-      setSalvando(false);
-    }
-  }
+  // Supervisão é exclusiva do painel admin — o papel "supervisor" foi aposentado.
 
   async function publicar() {
     if (!pub.caseId || pub.titulo.length < 3 || pub.corpo.length < 3) return;
@@ -391,9 +355,11 @@ export function ParceirosCentral() {
                   <PapelEFolha
                     p={p}
                     salvando={salvando}
-                    onTogglePapel={() => void togglePapel(p)}
                     onSalvarFin={(f) => void salvarFinanceiro(p, f)}
                   />
+
+                  {/* Prazo (deadline) + Checklists — admin define, colaborador executa */}
+                  <PrazoChecklists parceiroId={p.id} />
 
                   {s && (<>
                   {/* Demandas p/ validação */}
