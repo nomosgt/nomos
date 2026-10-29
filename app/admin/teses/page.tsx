@@ -3,11 +3,12 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Search, Sparkles, Plus, Pencil, Trash2, Loader2, Star,
-  BookOpen, ExternalLink, FlaskConical,
+  BookOpen, ExternalLink, FlaskConical, Building2,
 } from "lucide-react";
 import {
   Modal, Field, inputCls, selectCls, btnBrand, btnGhost, btnDanger, EmptyState,
 } from "@/components/parceiros/ui";
+import { EmpresasConsole } from "@/components/admin/empresas-console";
 
 /**
  * Central de Inteligência de Teses — protótipo à parte (não linkado no menu).
@@ -78,6 +79,8 @@ export default function TesesPage() {
   const [resultado, setResultado] = useState<PesquisaResultado | null>(null);
   const [erroIA, setErroIA] = useState<string | null>(null);
 
+  const [aba, setAba] = useState<"acervo" | "empresas">("acervo");
+
   const carregar = useCallback(async () => {
     try {
       const sp = new URLSearchParams();
@@ -143,6 +146,26 @@ export default function TesesPage() {
         </p>
       </div>
 
+      {/* Abas */}
+      <div className="flex items-center gap-1 border-b border-[color:var(--color-hairline)]">
+        {([["acervo", "Acervo & IA", BookOpen], ["empresas", "Empresas", Building2]] as const).map(([id, label, Icon]) => (
+          <button
+            key={id}
+            onClick={() => setAba(id)}
+            className={`inline-flex items-center gap-2 px-4 py-2.5 text-[13px] font-medium border-b-2 -mb-px transition-colors ${
+              aba === id
+                ? "border-[color:var(--color-brand)] text-[color:var(--color-ink)]"
+                : "border-transparent text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-ink)]"
+            }`}
+          >
+            <Icon className="w-4 h-4" /> {label}
+          </button>
+        ))}
+      </div>
+
+      {aba === "empresas" && <EmpresasConsole />}
+
+      {aba === "acervo" && (<>
       {/* ───────── Pesquisa IA ───────── */}
       <div className="border-2 border-[color:var(--color-brand)]/25 bg-blue-50/30 p-5">
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-brand)] mb-3">
@@ -277,6 +300,7 @@ export default function TesesPage() {
       <Modal open={novo || !!modal} title={modal ? "Editar tese" : "Nova tese"} onClose={() => { setModal(null); setNovo(false); }} wide>
         <TeseForm existing={modal} onSaved={() => { setModal(null); setNovo(false); void carregar(); }} />
       </Modal>
+      </>)}
     </div>
   );
 }
