@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  CalendarClock, ClipboardCheck, Plus, Trash2, Loader2, ExternalLink, X,
+  CalendarClock, ClipboardCheck, Plus, Trash2, Loader2, ExternalLink, X, Users,
 } from "lucide-react";
 
 /**
@@ -18,6 +18,7 @@ interface Item {
 }
 interface Checklist { id: string; titulo: string; criado_em: string; itens: Item[] }
 interface Deadline { titulo: string | null; prazo: string; updated_at: string }
+interface ClienteSala { user_id: string; nome: string; empresa: string | null; atribuido: boolean }
 
 const inputCls =
   "w-full border border-[color:var(--color-hairline)] bg-transparent px-3 py-2 text-[13px] focus:outline-none focus:border-[color:var(--color-brand)]";
@@ -33,6 +34,7 @@ function isoParaLocal(iso: string): string {
 export function PrazoChecklists({ parceiroId }: { parceiroId: string }) {
   const [deadline, setDeadline] = useState<Deadline | null>(null);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [clientes, setClientes] = useState<ClienteSala[]>([]);
   const [carregado, setCarregado] = useState(false);
   const [salvando, setSalvando] = useState(false);
   const [msg, setMsg] = useState<string | null>(null);
@@ -56,6 +58,14 @@ export function PrazoChecklists({ parceiroId }: { parceiroId: string }) {
       const j = await r.json();
       setDeadline(j.deadline ?? null);
       setChecklists(j.checklists ?? []);
+      setClientes((prev) => {
+        // preserva marcações ainda não salvas durante o polling de 15s
+        const locais = new Map(prev.map((c) => [c.user_id, c.atribuido]));
+        return (j.clientes ?? []).map((s: ClienteSala) => {
+          const local = locais.get(s.user_id);
+          return local !== undefined && local !== s.atribuido ? { ...s, atribuido: local } : s;
+        });
+      });
       if (j.deadline) {
         setPrazoLocal(isoParaLocal(j.deadline.prazo));
         setTituloPrazo(j.deadline.titulo ?? "");
@@ -136,8 +146,76 @@ export function PrazoChecklists({ parceiroId }: { parceiroId: string }) {
     );
   }
 
+  async function salvarAtribuicoes() {
+    setSalvando(true);
+    setMsg(null);
+    try {
+      const ids = clientes.filter((c) => c.atribuido).map((c) => c.user_id);
+      const r = await fetch("/api/admin/parceiros/tarefas", {
+        method: "PATCH",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ parceiro_id: parceiroId, client_ids: ids }),
+      });
+      const j = await r.json();
+      if (!r.ok) { setMsg(j.error || "Falha ao atribuir."); return; }
+      setMsg(`✓ ${ids.length} cliente(s) atribuído(s) — o colaborador já vê na Central.`);
+    } finally {
+      setSalvando(false);
+    }
+  }
+
   return (
     <div className="border border-[color:var(--color-accent)]/30 bg-amber-50/20 p-4 space-y-5">
+      {/* ── Clientes atribuídos ── */}
+      <div>
+        <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-accent-dim)] mb-2">
+          <Users className="w-3.5 h-3.5" />
+          Clientes deste colaborador
+        </div>
+        {clientes.length === 0 ? (
+          <p className="text-[12px] text-[color:var(--color-ink-faint)]">
+            Nenhum cliente ativo na Sala ainda.
+          </p>
+        ) : (
+          <>
+            <div className="flex flex-wrap gap-2 mb-2">
+              {clientes.map((c) => (
+                <label
+                  key={c.user_id}
+                  className={`inline-flex items-center gap-2 px-3 py-1.5 border cursor-pointer text-[12.5px] transition-colors ${
+                    c.atribuido
+                      ? "border-[color:var(--color-brand)] bg-blue-50/60 text-[color:var(--color-ink)]"
+                      : "border-[color:var(--color-hairline)] text-[color:var(--color-ink-muted)] hover:border-[color:var(--color-brand)]/50"
+                  }`}
+                >
+                  <input
+                    type="checkbox"
+                    className="w-3.5 h-3.5 accent-[color:var(--color-brand)]"
+                    checked={c.atribuido}
+                    onChange={() =>
+                      setClientes((prev) =>
+                        prev.map((x) => (x.user_id === c.user_id ? { ...x, atribuido: !x.atribuido } : x)),
+                      )
+                    }
+                  />
+                  {c.nome}{c.empresa ? ` — ${c.empresa}` : ""}
+                </label>
+              ))}
+            </div>
+            <button
+              onClick={() => void salvarAtribuicoes()}
+              disabled={salvando}
+              className="px-4 py-1.5 bg-[color:var(--color-brand)] text-white text-[12px] font-medium disabled:opacity-50"
+            >
+              Salvar atribuições
+            </button>
+            <p className="mt-1.5 text-[11px] text-[color:var(--color-ink-faint)]">
+              O colaborador vê os clientes marcados na Central e só consegue enviar aprovações para eles.
+            </p>
+          </>
+        )}
+      </div>
+
       {/* ── Prazo / deadline ── */}
       <div>
         <div className="flex items-center gap-2 font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-accent-dim)] mb-2">

@@ -2,7 +2,7 @@
 
 import { useCallback, useEffect, useRef, useState } from "react";
 import {
-  AlertTriangle, ClipboardCheck, Paperclip, Loader2, ExternalLink,
+  AlertTriangle, ClipboardCheck, Paperclip, Loader2, ExternalLink, Users,
 } from "lucide-react";
 
 /**
@@ -17,6 +17,7 @@ interface Item {
 }
 interface Checklist { id: string; titulo: string; criado_em: string; itens: Item[] }
 interface Deadline { titulo: string | null; prazo: string; updated_at: string }
+interface ClienteAtribuido { user_id: string; nome: string; empresa: string | null }
 
 function fmtPrazo(iso: string): string {
   const d = new Date(iso);
@@ -27,6 +28,7 @@ function fmtPrazo(iso: string): string {
 export function TarefasArche() {
   const [deadline, setDeadline] = useState<Deadline | null>(null);
   const [checklists, setChecklists] = useState<Checklist[]>([]);
+  const [clientes, setClientes] = useState<ClienteAtribuido[]>([]);
   const [carregado, setCarregado] = useState(false);
   const [anexando, setAnexando] = useState<string | null>(null);
   const [erro, setErro] = useState<string | null>(null);
@@ -40,6 +42,7 @@ export function TarefasArche() {
       const j = await r.json();
       setDeadline(j.deadline ?? null);
       setChecklists(j.checklists ?? []);
+      setClientes(j.clientes ?? []);
     } catch { /* offline — segue sem a seção */ } finally {
       setCarregado(true);
     }
@@ -92,7 +95,7 @@ export function TarefasArche() {
     }
   }
 
-  if (!carregado || (!deadline && checklists.length === 0)) return null;
+  if (!carregado || (!deadline && checklists.length === 0 && clientes.length === 0)) return null;
 
   const vencido = deadline ? new Date(deadline.prazo).getTime() < Date.now() : false;
 
@@ -125,6 +128,32 @@ export function TarefasArche() {
               {vencido ? " — fale com a equipe Arché." : "."}
             </div>
           </div>
+        </div>
+      )}
+
+      {/* Clientes sob responsabilidade do colaborador */}
+      {clientes.length > 0 && (
+        <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-5">
+          <div className="flex items-center gap-2 mb-3">
+            <Users className="w-4 h-4 text-[color:var(--color-brand)]" />
+            <span className="font-medium text-[14px]">Seus clientes</span>
+            <span className="font-mono text-[11px] text-[color:var(--color-ink-faint)]">
+              atribuídos pela Arché
+            </span>
+          </div>
+          <div className="flex flex-wrap gap-2">
+            {clientes.map((c) => (
+              <span
+                key={c.user_id}
+                className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-[color:var(--color-brand)]/30 bg-blue-50/40 text-[12.5px] text-[color:var(--color-ink)]"
+              >
+                {c.nome}{c.empresa ? ` — ${c.empresa}` : ""}
+              </span>
+            ))}
+          </div>
+          <p className="mt-2.5 text-[11px] text-[color:var(--color-ink-faint)]">
+            As solicitações de aprovação que você enviar vão somente para estes clientes.
+          </p>
         </div>
       )}
 

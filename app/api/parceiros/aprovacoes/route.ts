@@ -27,12 +27,11 @@ export async function GET(req: Request) {
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
-  const [clientes, minhas] = await Promise.all([
+  const [atr, minhas] = await Promise.all([
     ctx.admin
-      .from("client_profiles")
-      .select("user_id, nome, empresa")
-      .eq("status", "ativo")
-      .order("nome"),
+      .from("parceiro_clientes")
+      .select("client_id, client_profiles!inner ( user_id, nome, empresa, status )")
+      .eq("parceiro_id", ctx.parceiro.id),
     ctx.admin
       .from("client_aprovacoes")
       .select("id, created_at, titulo, corpo, status, resposta, respondido_em, client_id")
@@ -41,8 +40,26 @@ export async function GET(req: Request) {
       .limit(50),
   ]);
 
+  // Clientes endereçáveis = SOMENTE os atribuídos pelo admin a este colaborador.
+  // (Se a tabela de atribuições ainda não existir, cai no comportamento antigo.)
+  let clientes: { user_id: string; nome: string; empresa: string | null }[];
+  if (atr.error && atr.error.message.includes("does not exist")) {
+    const todos = await ctx.admin
+      .from("client_profiles")
+      .select("user_id, nome, empresa")
+      .eq("status", "ativo")
+      .order("nome");
+    clientes = todos.data ?? [];
+  } else {
+    clientes = (atr.data ?? [])
+      .map((a) => a.client_profiles as unknown as { user_id: string; nome: string; empresa: string | null; status: string })
+      .filter((c) => c && c.status === "ativo")
+      .map((c) => ({ user_id: c.user_id, nome: c.nome, empresa: c.empresa }))
+      .sort((a, b) => a.nome.localeCompare(b.nome));
+  }
+
   return NextResponse.json({
-    clientes: clientes.data ?? [],
+    clientes,
     minhas: minhas.data ?? [],
   });
 }

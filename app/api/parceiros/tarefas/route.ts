@@ -32,7 +32,7 @@ export async function GET(req: Request) {
   const ctx = await resolveParceiro(req);
   if (!ctx) return NextResponse.json({ error: "Nao autenticado" }, { status: 401 });
 
-  const [dl, cls] = await Promise.all([
+  const [dl, cls, atr] = await Promise.all([
     ctx.admin
       .from("parceiro_deadlines")
       .select("titulo, prazo, updated_at")
@@ -43,10 +43,14 @@ export async function GET(req: Request) {
       .select("id, titulo, criado_em, parceiro_checklist_itens ( id, ordem, texto, feito, feito_em, anexo_path, anexo_nome )")
       .eq("parceiro_id", ctx.parceiro.id)
       .order("criado_em", { ascending: false }),
+    ctx.admin
+      .from("parceiro_clientes")
+      .select("client_id, client_profiles!inner ( nome, empresa )")
+      .eq("parceiro_id", ctx.parceiro.id),
   ]);
   if (dl.error && dl.error.message.includes("does not exist")) {
     // tabelas ainda não criadas — área simplesmente não aparece
-    return NextResponse.json({ deadline: null, checklists: [] });
+    return NextResponse.json({ deadline: null, checklists: [], clientes: [] });
   }
   const checklists = (cls.data ?? []).map((c) => ({
     id: c.id,
@@ -54,7 +58,11 @@ export async function GET(req: Request) {
     criado_em: c.criado_em,
     itens: (c.parceiro_checklist_itens ?? []).sort((a, b) => a.ordem - b.ordem),
   }));
-  return NextResponse.json({ deadline: dl.data ?? null, checklists });
+  const clientes = (atr.data ?? []).map((a) => {
+    const p = a.client_profiles as unknown as { nome: string; empresa: string | null } | null;
+    return { user_id: a.client_id, nome: p?.nome ?? "Cliente", empresa: p?.empresa ?? null };
+  });
+  return NextResponse.json({ deadline: dl.data ?? null, checklists, clientes });
 }
 
 const patchSchema = z.union([

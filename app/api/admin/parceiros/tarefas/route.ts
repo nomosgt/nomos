@@ -41,13 +41,15 @@ export async function GET(req: Request) {
     return NextResponse.json({ error: "parceiro_id invalido" }, { status: 422 });
   }
   const admin = createAdminClient();
-  const [dl, cls] = await Promise.all([
+  const [dl, cls, salaClientes, atribuidos] = await Promise.all([
     admin.from("parceiro_deadlines").select("titulo, prazo, updated_at").eq("parceiro_id", parceiroId).maybeSingle(),
     admin
       .from("parceiro_checklists")
       .select("id, titulo, criado_em, parceiro_checklist_itens ( id, ordem, texto, feito, feito_em, anexo_path, anexo_nome )")
       .eq("parceiro_id", parceiroId)
       .order("criado_em", { ascending: false }),
+    admin.from("client_profiles").select("user_id, nome, empresa").eq("status", "ativo").order("nome"),
+    admin.from("parceiro_clientes").select("client_id").eq("parceiro_id", parceiroId),
   ]);
   if (dl.error) {
     const hint = hintTabela(dl.error.message);
@@ -59,7 +61,52 @@ export async function GET(req: Request) {
     criado_em: c.criado_em,
     itens: (c.parceiro_checklist_itens ?? []).sort((a, b) => a.ordem - b.ordem),
   }));
-  return NextResponse.json({ deadline: dl.data ?? null, checklists });
+  // atribuições: se a tabela ainda não existir, segue com lista vazia
+  const setAtribuidos = new Set((atribuidos.data ?? []).map((a) => a.client_id));
+  const clientes = (salaClientes.data ?? []).map((c) => ({
+    user_id: c.user_id,
+    nome: c.nome,
+    empresa: c.empresa,
+    atribuido: setAtribuidos.has(c.user_id),
+  }));
+  return NextResponse.json({ deadline: dl.data ?? null, checklists, clientes });
+}
+
+const atribuirSchema = z.object({
+  parceiro_id: z.string().uuid(),
+  client_ids: z.array(z.string().uuid()).max(200),
+});
+
+/** PATCH — define o conjunto de clientes atribuídos ao colaborador. */
+export async function PATCH(req: Request) {
+  if (!isSupabaseConfigured()) return NextResponse.json({ error: "Indisponivel" }, { status: 503 });
+  if (!(await requireAdmin())) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
+
+  let body: unknown;
+  try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON invalido" }, { status: 400 }); }
+  const parsed = atribuirSchema.safeParse(body);
+  if (!parsed.success) return NextResponse.json({ error: "Payload invalido" }, { status: 422 });
+
+  const admin = createAdminClient();
+  const { error: delErr } = await admin
+    .from("parceiro_clientes")
+    .delete()
+    .eq("parceiro_id", parsed.data.parceiro_id);
+  if (delErr) {
+    return NextResponse.json(
+      { error: delErr.message.includes("does not exist") ? "Tabela de atribuicoes nao configurada — rode o SQL v8 no Supabase." : "Falha ao atualizar" },
+      { status: 500 },
+    );
+  }
+  if (parsed.data.client_ids.length > 0) {
+    const rows = parsed.data.client_ids.map((cid) => ({
+      parceiro_id: parsed.data.parceiro_id,
+      client_id: cid,
+    }));
+    const { error } = await admin.from("parceiro_clientes").insert(rows);
+    if (error) return NextResponse.json({ error: "Falha ao atribuir" }, { status: 500 });
+  }
+  return NextResponse.json({ ok: true, total: parsed.data.client_ids.length });
 }
 
 const putSchema = z.object({
