@@ -94,6 +94,16 @@ const camposSchema = z.object({
   fonte_url: z.string().max(500).optional().nullable(),
   observacoes: z.string().max(4000).optional().nullable(),
   destaque: z.boolean().optional(),
+  // Dossiê
+  fundamentacao_detalhada: z.string().max(6000).optional().nullable(),
+  jurisprudencia: z.array(z.string().max(300)).max(20).optional(),
+  como_identificar: z.string().max(3000).optional().nullable(),
+  documentos: z.array(z.string().max(200)).max(30).optional(),
+  base_calculo: z.string().max(3000).optional().nullable(),
+  passo_a_passo: z.array(z.string().max(500)).max(20).optional(),
+  orgao: z.string().max(60).optional().nullable(),
+  prazo_prescricional: z.string().max(120).optional().nullable(),
+  relacionadas: z.array(z.string().max(80)).max(20).optional(),
 });
 
 export async function POST(req: Request) {

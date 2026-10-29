@@ -3,37 +3,22 @@
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
   Search, Sparkles, Plus, Pencil, Trash2, Loader2, Star,
-  BookOpen, ExternalLink, FlaskConical, Building2,
+  BookOpen, FlaskConical, Building2,
 } from "lucide-react";
 import {
   Modal, Field, inputCls, selectCls, btnBrand, btnGhost, btnDanger, EmptyState,
 } from "@/components/parceiros/ui";
 import { EmpresasConsole } from "@/components/admin/empresas-console";
+import { TeseDossie, type Tese } from "@/components/admin/tese-dossie";
 
 /**
  * Central de Inteligência de Teses — protótipo à parte (não linkado no menu).
- * Acervo próprio + pesquisa IA cruzando com o acervo. Fontes legítimas.
+ * Acervo próprio + pesquisa IA + dossiê por tese + painel + vínculo empresas.
  */
 
-interface Tese {
-  id: string;
-  nome: string;
-  tributos: string[];
-  resumo: string;
-  fundamento: string | null;
-  precedente: string | null;
-  esfera: string;
-  status_jur: string;
-  setores: string[];
-  regimes: string[];
-  risco: string;
-  retroatividade: string | null;
-  potencial: string | null;
-  tags: string[];
-  fonte_url: string | null;
-  observacoes: string | null;
-  destaque: boolean;
-  updated_at: string;
+interface EmpresaLink {
+  cnpj: string; razao_social: string | null; nome_fantasia: string | null;
+  cnae_descricao: string | null; perfil_tributario_sugerido: string | null; municipio: string | null; uf: string | null;
 }
 
 const STATUS_LABEL: Record<string, string> = {
@@ -80,6 +65,15 @@ export default function TesesPage() {
   const [erroIA, setErroIA] = useState<string | null>(null);
 
   const [aba, setAba] = useState<"acervo" | "empresas">("acervo");
+  const [detalhe, setDetalhe] = useState<Tese | null>(null);
+  const [empresasLink, setEmpresasLink] = useState<EmpresaLink[]>([]);
+
+  useEffect(() => {
+    fetch("/api/admin/empresas", { cache: "no-store" })
+      .then((r) => (r.ok ? r.json() : null))
+      .then((j) => { if (j?.empresas) setEmpresasLink(j.empresas); })
+      .catch(() => {});
+  }, []);
 
   const carregar = useCallback(async () => {
     try {
@@ -110,6 +104,27 @@ export default function TesesPage() {
     const s = new Set<string>();
     (teses ?? []).forEach((t) => (t.tributos || []).forEach((x) => s.add(x)));
     return [...s].sort();
+  }, [teses]);
+
+  const stats = useMemo(() => {
+    const lista = teses ?? [];
+    const porTributo: Record<string, number> = {};
+    const porRisco: Record<string, number> = { baixo: 0, medio: 0, alto: 0 };
+    const porStatus: Record<string, number> = {};
+    lista.forEach((t) => {
+      (t.tributos || []).forEach((x) => { porTributo[x] = (porTributo[x] || 0) + 1; });
+      if (porRisco[t.risco] !== undefined) porRisco[t.risco] += 1;
+      porStatus[t.status_jur] = (porStatus[t.status_jur] || 0) + 1;
+    });
+    const tributoTop = Object.entries(porTributo).sort((a, b) => b[1] - a[1]).slice(0, 6);
+    const maxTrib = tributoTop[0]?.[1] || 1;
+    return {
+      total: lista.length,
+      destaques: lista.filter((t) => t.destaque).length,
+      firmadas: (porStatus.tese_firmada || 0) + (porStatus.consolidada || 0),
+      oportunidades: (porStatus.oportunidade || 0) + (porStatus.em_discussao || 0),
+      porRisco, tributoTop, maxTrib,
+    };
   }, [teses]);
 
   async function pesquisarIA() {
@@ -222,6 +237,37 @@ export default function TesesPage() {
         )}
       </div>
 
+      {/* ───────── Painel de inteligência ───────── */}
+      {(teses?.length ?? 0) > 0 && (
+        <div className="grid grid-cols-2 lg:grid-cols-4 gap-3">
+          <PainelCard label="Teses no acervo" valor={stats.total} sub={`${stats.destaques} em destaque`} />
+          <PainelCard label="Consolidadas / firmadas" valor={stats.firmadas} sub="menor risco" accent="emerald" />
+          <PainelCard label="Oportunidades" valor={stats.oportunidades} sub="em discussão" accent="violet" />
+          <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-4">
+            <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-2">Risco</div>
+            <div className="flex items-end gap-3 text-[13px]">
+              <span className="text-emerald-700 font-medium">{stats.porRisco.baixo}<span className="font-mono text-[9px] ml-0.5">baixo</span></span>
+              <span className="text-amber-700 font-medium">{stats.porRisco.medio}<span className="font-mono text-[9px] ml-0.5">médio</span></span>
+              <span className="text-rose-700 font-medium">{stats.porRisco.alto}<span className="font-mono text-[9px] ml-0.5">alto</span></span>
+            </div>
+          </div>
+        </div>
+      )}
+      {(teses?.length ?? 0) > 0 && stats.tributoTop.length > 0 && (
+        <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-4">
+          <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-3">Teses por tributo</div>
+          <div className="space-y-1.5">
+            {stats.tributoTop.map(([trib, n]) => (
+              <button key={trib} onClick={() => setFTributo(fTributo === trib ? "" : trib)} className="w-full flex items-center gap-3 text-left group">
+                <span className={`font-mono text-[11px] w-20 flex-shrink-0 ${fTributo === trib ? "text-[color:var(--color-brand)] font-medium" : "text-[color:var(--color-ink-muted)]"}`}>{trib}</span>
+                <span className="flex-1 h-2 bg-[color:var(--color-surface)] overflow-hidden"><span className="block h-2 bg-[color:var(--color-brand)]/60 group-hover:bg-[color:var(--color-brand)]" style={{ width: `${(n / stats.maxTrib) * 100}%` }} /></span>
+                <span className="font-mono text-[11px] text-[color:var(--color-ink-faint)] w-6 text-right">{n}</span>
+              </button>
+            ))}
+          </div>
+        </div>
+      )}
+
       {/* ───────── Acervo ───────── */}
       <div>
         <div className="flex flex-wrap items-center justify-between gap-3 mb-4">
@@ -265,15 +311,19 @@ export default function TesesPage() {
         ) : (
           <div className="grid grid-cols-1 lg:grid-cols-2 gap-3">
             {teses.map((t) => (
-              <div key={t.id} className="group border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-4 hover:border-[color:var(--color-brand)]/40 transition-colors">
+              <div
+                key={t.id}
+                onClick={() => setDetalhe(t)}
+                className="group border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-4 hover:border-[color:var(--color-brand)]/40 hover:shadow-sm transition-all cursor-pointer"
+              >
                 <div className="flex items-start justify-between gap-2 mb-1.5">
                   <div className="flex items-center gap-1.5 min-w-0">
                     {t.destaque && <Star className="w-3.5 h-3.5 text-[color:var(--color-accent)] flex-shrink-0 fill-[color:var(--color-accent)]" />}
                     <h3 className="font-medium text-[14px] text-[color:var(--color-ink)]">{t.nome}</h3>
                   </div>
                   <div className="flex items-center gap-1 opacity-0 group-hover:opacity-100 transition-opacity flex-shrink-0">
-                    <button onClick={() => setModal(t)} className="p-1 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"><Pencil className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => void excluir(t)} className="p-1 text-[color:var(--color-ink-faint)] hover:text-rose-700"><Trash2 className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); setModal(t); }} className="p-1 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"><Pencil className="w-3.5 h-3.5" /></button>
+                    <button onClick={(e) => { e.stopPropagation(); void excluir(t); }} className="p-1 text-[color:var(--color-ink-faint)] hover:text-rose-700"><Trash2 className="w-3.5 h-3.5" /></button>
                   </div>
                 </div>
                 <p className="text-[12.5px] text-[color:var(--color-ink-muted)] leading-relaxed mb-2.5">{t.resumo}</p>
@@ -281,16 +331,12 @@ export default function TesesPage() {
                   {(t.tributos || []).map((tr) => <span key={tr} className="font-mono text-[9px] uppercase px-1.5 py-0.5 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-muted)]">{tr}</span>)}
                   <span className={`font-mono text-[9px] uppercase px-1.5 py-0.5 border ${STATUS_CLS[t.status_jur]}`}>{STATUS_LABEL[t.status_jur]}</span>
                   <span className={`font-mono text-[9px] uppercase ${RISCO_CLS[t.risco]}`}>risco {t.risco}</span>
+                  {t.dossie_ia && <span className="font-mono text-[9px] uppercase px-1.5 py-0.5 text-[color:var(--color-brand)]">● dossiê</span>}
                 </div>
-                <div className="flex flex-wrap items-center gap-x-3 gap-y-1 text-[11px] text-[color:var(--color-ink-faint)] font-mono">
-                  {t.precedente && <span>{t.precedente}</span>}
-                  {t.retroatividade && <span>· {t.retroatividade}</span>}
+                <div className="flex flex-wrap items-center justify-between gap-x-3 gap-y-1 text-[11px] text-[color:var(--color-ink-faint)] font-mono">
+                  <span>{[t.precedente, t.retroatividade].filter(Boolean).join(" · ")}</span>
+                  <span className="text-[color:var(--color-brand)] opacity-0 group-hover:opacity-100 transition-opacity">abrir dossiê →</span>
                 </div>
-                {t.fonte_url && (
-                  <a href={t.fonte_url} target="_blank" rel="noopener noreferrer" className="inline-flex items-center gap-1 mt-2 text-[11px] text-[color:var(--color-brand)] hover:underline underline-offset-2">
-                    <ExternalLink className="w-3 h-3" /> fonte
-                  </a>
-                )}
               </div>
             ))}
           </div>
@@ -301,6 +347,27 @@ export default function TesesPage() {
         <TeseForm existing={modal} onSaved={() => { setModal(null); setNovo(false); void carregar(); }} />
       </Modal>
       </>)}
+
+      {detalhe && (
+        <TeseDossie
+          tese={detalhe}
+          teses={teses ?? []}
+          empresas={empresasLink}
+          onClose={() => setDetalhe(null)}
+          onUpdated={(nt) => { setTeses((prev) => (prev ?? []).map((x) => (x.id === nt.id ? { ...x, ...nt } : x))); setDetalhe(nt); }}
+        />
+      )}
+    </div>
+  );
+}
+
+function PainelCard({ label, valor, sub, accent }: { label: string; valor: number; sub?: string; accent?: "emerald" | "violet" }) {
+  const cor = accent === "emerald" ? "text-emerald-700" : accent === "violet" ? "text-violet-700" : "text-[color:var(--color-brand)]";
+  return (
+    <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-background)] p-4">
+      <div className="font-mono text-[9px] uppercase tracking-[0.2em] text-[color:var(--color-ink-faint)] mb-1">{label}</div>
+      <div className={`font-serif text-3xl ${cor}`}>{valor}</div>
+      {sub && <div className="font-mono text-[10px] text-[color:var(--color-ink-faint)] mt-0.5">{sub}</div>}
     </div>
   );
 }
