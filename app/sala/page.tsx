@@ -1,4 +1,5 @@
 import Link from "next/link";
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/utils";
 import { ArrowUpRight, Bell, FileText, MessageCircle, TrendingUp, Clock } from "lucide-react";
@@ -34,7 +35,8 @@ const TIPO_COLOR: Record<string, { color: string; label: string }> = {
 export default async function SalaDashboard() {
   const supabase = await createClient();
   const { data: u } = await supabase.auth.getUser();
-  const userId = u.user!.id;
+  if (!u.user) redirect("/sala/login");
+  const userId = u.user.id;
 
   const [stats, cases, updates, msgs] = await Promise.all([
     supabase.from("client_dashboard").select("*").eq("user_id", userId).maybeSingle(),

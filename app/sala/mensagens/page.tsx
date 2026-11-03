@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { MensagensChat } from "@/components/sala/mensagens-chat";
 
@@ -6,7 +7,8 @@ export const dynamic = "force-dynamic";
 export default async function MensagensPage() {
   const supabase = await createClient();
   const { data: u } = await supabase.auth.getUser();
-  const userId = u.user!.id;
+  if (!u.user) redirect("/sala/login");
+  const userId = u.user.id;
 
   const { data: msgs } = await supabase
     .from("case_messages")

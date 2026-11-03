@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { FileText, Download, Eye } from "lucide-react";
 
@@ -13,7 +14,8 @@ function fmtBytes(n: number | null): string {
 export default async function Documentos() {
   const supabase = await createClient();
   const { data: u } = await supabase.auth.getUser();
-  const userId = u.user!.id;
+  if (!u.user) redirect("/sala/login");
+  const userId = u.user.id;
 
   const { data: docs } = await supabase
     .from("case_documents")

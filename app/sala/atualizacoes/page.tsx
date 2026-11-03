@@ -1,3 +1,4 @@
+import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 
 export const dynamic = "force-dynamic";
@@ -13,7 +14,8 @@ const TIPO_COLOR: Record<string, { color: string; label: string }> = {
 export default async function Atualizacoes() {
   const supabase = await createClient();
   const { data: u } = await supabase.auth.getUser();
-  const userId = u.user!.id;
+  if (!u.user) redirect("/sala/login");
+  const userId = u.user.id;
 
   const { data: updates } = await supabase
     .from("case_updates")
