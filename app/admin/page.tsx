@@ -1,15 +1,41 @@
 import Link from "next/link";
+import { AlertTriangle, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
+import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatBRL } from "@/lib/utils";
+import { derivarAlerta } from "@/lib/atividades/alertas";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { CopilotoWidget } from "@/components/admin/copiloto-widget";
 
 export const dynamic = "force-dynamic";
 
+async function alertasAtividades(): Promise<{ atrasadas: number; avisos: number }> {
+  if (!isSupabaseConfigured()) return { atrasadas: 0, avisos: 0 };
+  try {
+    const admin = createAdminClient();
+    const { data, error } = await admin
+      .from("atividades")
+      .select("status, prazo")
+      .neq("status", "concluida")
+      .not("prazo", "is", null);
+    if (error || !data) return { atrasadas: 0, avisos: 0 };
+    let atrasadas = 0, avisos = 0;
+    for (const a of data) {
+      const t = derivarAlerta(a.status as string, a.prazo as string);
+      if (t === "atraso") atrasadas++;
+      else if (t === "aviso_24h" || t === "aviso_48h") avisos++;
+    }
+    return { atrasadas, avisos };
+  } catch {
+    return { atrasadas: 0, avisos: 0 };
+  }
+}
+
 export default async function AdminDashboard() {
   const supabase = await createClient();
 
-  const [stats, novosContatos, ultimasSimulacoes] = await Promise.all([
+  const [stats, novosContatos, ultimasSimulacoes, alertas] = await Promise.all([
     supabase.from("admin_dashboard_stats").select("*").single(),
     supabase
       .from("contact_submissions")
@@ -21,6 +47,7 @@ export default async function AdminDashboard() {
       .select("id, created_at, faturamento, setor, regime, total")
       .order("created_at", { ascending: false })
       .limit(5),
+    alertasAtividades(),
   ]);
 
   const s = stats.data;
@@ -37,6 +64,30 @@ export default async function AdminDashboard() {
       </div>
 
       <CopilotoWidget />
+
+      {/* Alerta de prazos da equipe */}
+      {(alertas.atrasadas > 0 || alertas.avisos > 0) && (
+        <Link
+          href="/admin/atividades"
+          className={`flex items-center gap-3 border-l-4 p-4 transition-colors ${
+            alertas.atrasadas > 0
+              ? "border-rose-600 bg-rose-50 hover:bg-rose-100/60"
+              : "border-amber-500 bg-amber-50 hover:bg-amber-100/60"
+          }`}
+        >
+          {alertas.atrasadas > 0 ? <AlertTriangle className="w-5 h-5 text-rose-700 flex-shrink-0" /> : <Clock className="w-5 h-5 text-amber-700 flex-shrink-0" />}
+          <div className="text-[13.5px]">
+            {alertas.atrasadas > 0 && (
+              <span className="font-semibold text-rose-900">{alertas.atrasadas} atividade{alertas.atrasadas > 1 ? "s" : ""} atrasada{alertas.atrasadas > 1 ? "s" : ""}</span>
+            )}
+            {alertas.atrasadas > 0 && alertas.avisos > 0 && <span className="text-[color:var(--color-ink-muted)]"> · </span>}
+            {alertas.avisos > 0 && (
+              <span className={alertas.atrasadas > 0 ? "text-[color:var(--color-ink-muted)]" : "font-semibold text-amber-900"}>{alertas.avisos} vencem em até 48h</span>
+            )}
+            <span className="text-[color:var(--color-ink-muted)]"> — ver atividades →</span>
+          </div>
+        </Link>
+      )}
 
       {/* KPIs */}
       <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">

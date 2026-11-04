@@ -4,7 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import {
   LayoutDashboard, Inbox, Calculator, Building2, Users, UserCheck,
-  Handshake, Wallet, FileText, FolderOpen, PenLine, LogOut,
+  Handshake, Wallet, FileText, FolderOpen, PenLine, LogOut, ListTodo,
 } from "lucide-react";
 import { Logo } from "@/components/brand/logo";
 
@@ -34,6 +34,7 @@ const GRUPOS: {
       { href: "/admin/clientes", label: "Clientes", icon: Users },
       { href: "/admin/colaboradores", label: "Colaboradores", icon: UserCheck },
       { href: "/admin/parceiros", label: "Supervisão", icon: Handshake },
+      { href: "/admin/atividades", label: "Atividades", icon: ListTodo },
       { href: "/admin/arquivos", label: "Arquivos", icon: FolderOpen },
     ],
   },

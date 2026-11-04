@@ -3,7 +3,19 @@
 import { useCallback, useEffect, useState } from "react";
 import {
   Upload, Loader2, ShieldQuestion, CheckCircle2, XCircle, Clock, Send, Eye,
+  FileText, Pencil, Trash2, Download, Check, X, FolderOpen,
 } from "lucide-react";
+
+interface DocCaso {
+  id: string; nome: string; storage_path: string; tamanho_bytes: number | null;
+  categoria: string | null; visibilidade: string; created_at: string;
+}
+function fmtBytes(n: number | null): string {
+  if (!n) return "";
+  if (n < 1024) return `${n} B`;
+  if (n < 1048576) return `${(n / 1024).toFixed(0)} KB`;
+  return `${(n / 1048576).toFixed(1)} MB`;
+}
 
 /**
  * Admin · página do cliente — enviar documentos (Storage) e
@@ -28,6 +40,21 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
   const [enviandoDoc, setEnviandoDoc] = useState(false);
   const [msgDoc, setMsgDoc] = useState<string | null>(null);
 
+  /* ---------- documentos já enviados (gerenciar) ---------- */
+  const [docs, setDocs] = useState<DocCaso[]>([]);
+  const [editId, setEditId] = useState<string | null>(null);
+  const [editNome, setEditNome] = useState("");
+
+  const carregarDocs = useCallback(async () => {
+    if (!caseId) { setDocs([]); return; }
+    try {
+      const r = await fetch(`/api/admin/clientes/documentos?case_id=${caseId}`, { cache: "no-store" });
+      if (r.ok) { const j = await r.json(); setDocs(j.documentos ?? []); }
+    } catch { /* silencioso */ }
+  }, [caseId]);
+
+  useEffect(() => { void carregarDocs(); }, [carregarDocs]);
+
   async function uploadDoc(file: File) {
     if (!caseId) { setMsgDoc("Crie um caso para o cliente antes de enviar documentos."); return; }
     setEnviandoDoc(true);
@@ -41,11 +68,30 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
       const r = await fetch("/api/admin/clientes/documentos", { method: "POST", body: fd });
       const j = await r.json();
       setMsgDoc(r.ok ? `✓ ${file.name} publicado ${visibilidade === "cliente" ? "— o cliente já vê na Sala" : "(interno)"}` : j.error || "Falha no upload.");
+      if (r.ok) void carregarDocs();
     } catch {
       setMsgDoc("Erro de conexão.");
     } finally {
       setEnviandoDoc(false);
     }
+  }
+
+  async function salvarNome(d: DocCaso) {
+    const nome = editNome.trim();
+    setEditId(null);
+    if (!nome || nome === d.nome) return;
+    setDocs((prev) => prev.map((x) => (x.id === d.id ? { ...x, nome } : x)));
+    await fetch("/api/admin/clientes/documentos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: d.id, nome }) });
+  }
+  async function mudarVisibilidade(d: DocCaso) {
+    const nova = d.visibilidade === "cliente" ? "interno" : "cliente";
+    setDocs((prev) => prev.map((x) => (x.id === d.id ? { ...x, visibilidade: nova } : x)));
+    await fetch("/api/admin/clientes/documentos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: d.id, visibilidade: nova }) });
+  }
+  async function excluirDoc(d: DocCaso) {
+    if (!confirm(`Excluir "${d.nome}"? O arquivo sai do Storage e da Sala do cliente.`)) return;
+    const r = await fetch(`/api/admin/clientes/documentos?id=${d.id}`, { method: "DELETE" });
+    if (r.ok) setDocs((prev) => prev.filter((x) => x.id !== d.id));
   }
 
   /* ---------- aprovações ---------- */
@@ -88,6 +134,7 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
   }
 
   return (
+    <div className="space-y-6">
     <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
       {/* Enviar documento */}
       <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6 space-y-4">
@@ -163,6 +210,55 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
           <Eye className="w-3 h-3" /> O cliente decide em Sala Arché → Aprovações; a resposta aparece aqui.
         </p>
       </div>
+    </div>
+
+    {/* Gerenciar documentos já enviados */}
+    <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
+      <h3 className="flex items-center gap-2 font-serif text-lg mb-1">
+        <FolderOpen className="w-4 h-4 text-[color:var(--color-brand)]" /> Documentos do caso
+      </h3>
+      <p className="text-[12px] text-[color:var(--color-ink-muted)] mb-4">
+        Renomeie, troque a visibilidade ou exclua os arquivos já enviados — reflete na Sala do cliente na hora.
+      </p>
+      {docs.length === 0 ? (
+        <p className="text-[13px] text-[color:var(--color-ink-faint)] py-4 text-center">
+          {caseId ? "Nenhum documento neste caso ainda." : "Selecione um caso acima."}
+        </p>
+      ) : (
+        <div className="divide-y divide-[color:var(--color-hairline)]">
+          {docs.map((d) => (
+            <div key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
+              <FileText className="w-4 h-4 text-[color:var(--color-brand)] flex-shrink-0" />
+              <div className="flex-1 min-w-[180px]">
+                {editId === d.id ? (
+                  <div className="flex items-center gap-1.5">
+                    <input autoFocus className={inputCls + " py-1"} value={editNome} onChange={(e) => setEditNome(e.target.value)}
+                      onKeyDown={(e) => { if (e.key === "Enter") void salvarNome(d); if (e.key === "Escape") setEditId(null); }} />
+                    <button onClick={() => void salvarNome(d)} className="p-1.5 text-emerald-700 hover:bg-emerald-50"><Check className="w-3.5 h-3.5" /></button>
+                    <button onClick={() => setEditId(null)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-ink)]"><X className="w-3.5 h-3.5" /></button>
+                  </div>
+                ) : (
+                  <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=ver`} target="_blank" rel="noopener noreferrer"
+                    className="text-[13.5px] font-medium text-[color:var(--color-brand)] hover:underline underline-offset-2">{d.nome}</a>
+                )}
+                <div className="font-mono text-[10px] text-[color:var(--color-ink-faint)]">
+                  {d.categoria || "geral"} · {fmtBytes(d.tamanho_bytes)} · {new Date(d.created_at).toLocaleDateString("pt-BR")}
+                </div>
+              </div>
+              <button onClick={() => void mudarVisibilidade(d)}
+                className={`font-mono text-[9px] uppercase px-2 py-1 border ${d.visibilidade === "cliente" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-[color:var(--color-ink-muted)] border-[color:var(--color-hairline)]"}`}
+                title="Clique para alternar">
+                {d.visibilidade === "cliente" ? "visível ao cliente" : "interno"}
+              </button>
+              <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=baixar`}
+                className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Baixar"><Download className="w-3.5 h-3.5" /></a>
+              <button onClick={() => { setEditId(d.id); setEditNome(d.nome); }} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Renomear"><Pencil className="w-3.5 h-3.5" /></button>
+              <button onClick={() => void excluirDoc(d)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-rose-700" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+            </div>
+          ))}
+        </div>
+      )}
+    </div>
     </div>
   );
 }
