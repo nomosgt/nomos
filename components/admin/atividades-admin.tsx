@@ -70,7 +70,7 @@ export function AtividadesAdmin() {
       if (fStatus) sp.set("status", fStatus);
       if (soAtraso) sp.set("atraso", "1");
       const r = await fetch(`/api/admin/atividades?${sp}`, { cache: "no-store" });
-      if (!r.ok) { const j = await r.json().catch(() => ({})); setErro((j as { error?: string }).error || "Falha ao carregar."); return; }
+      if (!r.ok) { const j = await r.json().catch(() => ({})); setErro((j as { error?: string }).error || "Falha ao carregar."); setAtividades([]); setOverview(null); return; }
       const j = await r.json();
       setErro(null); setAtividades(j.atividades ?? []); setOverview(j.overview ?? null);
     } catch { setErro("Erro de conexão."); }

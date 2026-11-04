@@ -25,7 +25,8 @@ async function requireAdmin(): Promise<boolean> {
 }
 
 function hint(msg: string) {
-  return msg.includes("does not exist")
+  const m = (msg || "").toLowerCase();
+  return (m.includes("does not exist") || m.includes("could not find") || m.includes("schema cache") || m.includes("relationship"))
     ? "Tabela de atividades não configurada — rode o SQL do atividades-v12 no Supabase."
     : null;
 }
