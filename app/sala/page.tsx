@@ -38,7 +38,7 @@ export default async function SalaDashboard() {
   if (!u.user) redirect("/sala/login");
   const userId = u.user.id;
 
-  const [stats, cases, updates, msgs] = await Promise.all([
+  const [stats, cases, updates, msgs, aprovPend] = await Promise.all([
     supabase.from("client_dashboard").select("*").eq("user_id", userId).maybeSingle(),
     supabase.from("client_cases").select("*").eq("client_id", userId).order("created_at", { ascending: false }),
     supabase
@@ -53,11 +53,21 @@ export default async function SalaDashboard() {
       .eq("client_id", userId)
       .eq("lido", false)
       .eq("autor_tipo", "admin"),
+    supabase
+      .from("client_aprovacoes")
+      .select("id")
+      .eq("client_id", userId)
+      .eq("status", "pendente"),
   ]);
 
   const s = stats.data;
   const totalRecuperado = s?.caixa_recuperado_total ? Number(s.caixa_recuperado_total) : 0;
   const casoAtivo = cases.data?.find((c) => c.status === "em_andamento") || cases.data?.[0];
+  // potencial agregado = soma do potencial de todos os casos (não é o mesmo que recuperado)
+  const potencialTotal = (cases.data ?? []).reduce((acc, c) => acc + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
+  const aprovacoesPendentes = aprovPend.data?.length ?? 0;
+  // última atualização real = evento mais recente no feed (não um contador fake)
+  const ultimaAtualizacao = updates.data?.[0]?.created_at ? new Date(updates.data[0].created_at) : null;
 
   return (
     <div className="space-y-10">
@@ -86,16 +96,39 @@ export default async function SalaDashboard() {
           <span className="text-[color:var(--color-paper)]/55 text-[0.4em] mr-2 align-top">R$</span>
           {formatBRL(totalRecuperado).replace(/^R\$\s*/, "")}
         </div>
-        <div className="mt-6 pt-6 border-t border-[color:var(--color-paper)]/15 grid grid-cols-2 md:grid-cols-3 gap-6 text-[13px]">
+        <div className="mt-6 pt-6 border-t border-[color:var(--color-paper)]/15 grid grid-cols-2 md:grid-cols-4 gap-6 text-[13px]">
+          {potencialTotal > 0 && <Stat label="Potencial identificado" value={formatBRL(potencialTotal, { compact: true })} />}
           <Stat label="Casos em andamento" value={String(s?.casos_em_andamento ?? 0)} />
-          <Stat label="Casos concluídos" value={String(s?.casos_concluidos ?? 0)} />
+          <Stat
+            label="Aprovações pendentes"
+            value={String(aprovacoesPendentes)}
+            highlight={aprovacoesPendentes > 0}
+          />
           <Stat
             label="Mensagens não lidas"
             value={String(msgs.data?.length ?? 0)}
             highlight={(msgs.data?.length ?? 0) > 0}
           />
         </div>
+        {ultimaAtualizacao && (
+          <div className="mt-4 font-mono text-[10px] uppercase tracking-[0.2em] text-[color:var(--color-paper)]/40">
+            Última atualização: {ultimaAtualizacao.toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
+          </div>
+        )}
       </div>
+
+      {/* Faixa de aprovações pendentes */}
+      {aprovacoesPendentes > 0 && (
+        <Link href="/sala/aprovacoes" className="flex items-center justify-between gap-4 border border-amber-300 bg-amber-50 px-6 py-4 hover:bg-amber-100/70 transition-colors">
+          <div className="flex items-center gap-3">
+            <Bell className="w-4 h-4 text-amber-700" />
+            <span className="text-[14px] text-amber-900">
+              Você tem <strong>{aprovacoesPendentes}</strong> {aprovacoesPendentes > 1 ? "decisões aguardando" : "decisão aguardando"} sua autorização.
+            </span>
+          </div>
+          <span className="font-mono text-[11px] uppercase tracking-[0.2em] text-amber-800">Revisar →</span>
+        </Link>
+      )}
 
       {/* Caso ativo */}
       {casoAtivo && (
