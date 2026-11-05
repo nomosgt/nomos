@@ -2,11 +2,12 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  Plus, Pencil, Trash2, Loader2, AlertTriangle, Clock, Filter,
+  Plus, Pencil, Trash2, Loader2, AlertTriangle, Clock, Filter, Paperclip,
 } from "lucide-react";
 import {
   Modal, Field, inputCls, selectCls, btnBrand, EmptyState,
 } from "@/components/parceiros/ui";
+import { AnexosAtividade } from "@/components/atividades/anexos-atividade";
 
 /**
  * Admin · Atividades — centro de comando do gestor.
@@ -61,6 +62,7 @@ export function AtividadesAdmin() {
   const [soAtraso, setSoAtraso] = useState(false);
 
   const [modal, setModal] = useState<Partial<Atividade> | null>(null);
+  const [anexosAberto, setAnexosAberto] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -172,8 +174,14 @@ export function AtividadesAdmin() {
               <select value={a.status} onChange={(e) => void mudarStatus(a, e.target.value)} className="border border-[color:var(--color-hairline)] bg-transparent px-2 py-1 text-[12px]">
                 {Object.entries(STATUS_LABEL).map(([k, v]) => <option key={k} value={k}>{v}</option>)}
               </select>
+              <button onClick={() => setAnexosAberto(anexosAberto === a.id ? null : a.id)} title="Anexos" className={`p-1.5 ${anexosAberto === a.id ? "text-[color:var(--color-brand)]" : "text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"}`}><Paperclip className="w-3.5 h-3.5" /></button>
               <button onClick={() => setModal(a)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"><Pencil className="w-3.5 h-3.5" /></button>
               <button onClick={() => void excluir(a)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-rose-700"><Trash2 className="w-3.5 h-3.5" /></button>
+              {anexosAberto === a.id && (
+                <div className="w-full">
+                  <AnexosAtividade atividadeId={a.id} base="/api/admin/atividades/anexos" />
+                </div>
+              )}
             </div>
           ))}
         </div>

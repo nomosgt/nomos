@@ -1,7 +1,8 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ListTodo, AlertTriangle, Clock, CheckCircle2, Circle, PlayCircle } from "lucide-react";
+import { ListTodo, AlertTriangle, Clock, CheckCircle2, Circle, PlayCircle, Paperclip } from "lucide-react";
+import { AnexosAtividade } from "@/components/atividades/anexos-atividade";
 
 /**
  * Central da Advogada · Minhas atividades — tarefas atribuídas pelo gestor,
@@ -32,6 +33,7 @@ function fmtPrazo(iso: string | null): string {
 export function AtividadesAdvogada() {
   const [atividades, setAtividades] = useState<Atividade[] | null>(null);
   const [filtro, setFiltro] = useState<"abertas" | "todas" | "atrasadas">("abertas");
+  const [anexosAberto, setAnexosAberto] = useState<string | null>(null);
 
   const carregar = useCallback(async () => {
     try {
@@ -104,10 +106,16 @@ export function AtividadesAdvogada() {
                 </div>
               </div>
               <div className="flex items-center gap-1">
+                <button onClick={() => setAnexosAberto(anexosAberto === a.id ? null : a.id)} title="Anexos" className={`inline-flex items-center justify-center w-8 h-8 border transition-colors ${anexosAberto === a.id ? "border-[color:var(--color-brand)] bg-blue-50/60 text-[color:var(--color-brand)]" : "border-[color:var(--color-hairline)] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-ink)]"}`}><Paperclip className="w-4 h-4" /></button>
                 <BotaoStatus ativo={a.status === "pendente"} onClick={() => void mudar(a, "pendente")} icon={Circle} label="Pendente" />
                 <BotaoStatus ativo={a.status === "em_andamento"} onClick={() => void mudar(a, "em_andamento")} icon={PlayCircle} label="Em andamento" cor="text-[color:var(--color-brand)]" />
                 <BotaoStatus ativo={a.status === "concluida"} onClick={() => void mudar(a, "concluida")} icon={CheckCircle2} label="Concluir" cor="text-emerald-700" />
               </div>
+              {anexosAberto === a.id && (
+                <div className="w-full">
+                  <AnexosAtividade atividadeId={a.id} base="/api/parceiros/atividades/anexos" />
+                </div>
+              )}
             </div>
           ))}
         </div>
