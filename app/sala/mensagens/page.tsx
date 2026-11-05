@@ -10,11 +10,20 @@ export default async function MensagensPage() {
   if (!u.user) redirect("/sala/login");
   const userId = u.user.id;
 
-  const { data: msgs } = await supabase
+  // inclui anexo (v16); tolera ambiente anterior à migração
+  let { data: msgs, error: msgsErr } = await supabase
     .from("case_messages")
-    .select("id, created_at, conteudo, autor_tipo, lido")
+    .select("id, created_at, conteudo, autor_tipo, lido, anexo_path, anexo_nome")
     .eq("client_id", userId)
     .order("created_at", { ascending: true });
+  if (msgsErr && /anexo|column/i.test(msgsErr.message)) {
+    const retry = await supabase
+      .from("case_messages")
+      .select("id, created_at, conteudo, autor_tipo, lido")
+      .eq("client_id", userId)
+      .order("created_at", { ascending: true });
+    msgs = retry.data as typeof msgs;
+  }
 
   // Marca como lidas as do admin não lidas
   await supabase

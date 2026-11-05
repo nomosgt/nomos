@@ -17,7 +17,7 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
     supabase.from("client_cases").select("*").eq("client_id", id).order("created_at", { ascending: false }),
     supabase
       .from("case_messages")
-      .select("id, created_at, conteudo, autor_tipo, lido")
+      .select("*")
       .eq("client_id", id)
       .order("created_at", { ascending: true }),
   ]);

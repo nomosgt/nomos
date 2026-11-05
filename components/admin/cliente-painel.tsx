@@ -1,10 +1,10 @@
 "use client";
 
-import { useState, useTransition, type FormEvent } from "react";
+import { useState, useTransition, useRef, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/utils";
-import { Save, Plus, Send, Bell, Trash2 } from "lucide-react";
+import { Save, Plus, Send, Bell, Trash2, Paperclip, FileText, X } from "lucide-react";
 
 interface Caso {
   id: string;
@@ -23,6 +23,8 @@ interface Msg {
   conteudo: string;
   autor_tipo: string;
   lido: boolean;
+  anexo_path?: string | null;
+  anexo_nome?: string | null;
 }
 
 interface Cliente {
@@ -339,27 +341,26 @@ function MsgsTab({ clienteId, mensagensIniciais }: { clienteId: string; mensagen
   const router = useRouter();
   const [msgs, setMsgs] = useState(mensagensIniciais);
   const [content, setContent] = useState("");
+  const [file, setFile] = useState<File | null>(null);
   const [pending, startTransition] = useTransition();
+  const fileRef = useRef<HTMLInputElement>(null);
 
   function send() {
-    if (!content.trim()) return;
     const text = content.trim();
-    setContent("");
+    if (!text && !file) return;
+    const anexo = file;
+    setContent(""); setFile(null);
+    if (fileRef.current) fileRef.current.value = "";
     startTransition(async () => {
-      const supabase = createClient();
-      const { data: u } = await supabase.auth.getUser();
-      const { data } = await supabase
-        .from("case_messages")
-        .insert({
-          client_id: clienteId,
-          autor_id: u.user?.id || null,
-          autor_tipo: "admin",
-          conteudo: text,
-        })
-        .select("id, created_at, conteudo, autor_tipo, lido")
-        .single();
-      if (data) setMsgs((m) => [...m, data as Msg]);
-      router.refresh();
+      const fd = new FormData();
+      fd.append("client_id", clienteId);
+      if (text) fd.append("conteudo", text);
+      if (anexo) fd.append("file", anexo);
+      try {
+        const r = await fetch("/api/admin/mensagens", { method: "POST", body: fd });
+        const j = await r.json();
+        if (r.ok && j.mensagem) { setMsgs((m) => [...m, j.mensagem as Msg]); router.refresh(); }
+      } catch { /* silencioso */ }
     });
   }
 
@@ -378,6 +379,11 @@ function MsgsTab({ clienteId, mensagensIniciais }: { clienteId: string; mensagen
                 <div className="max-w-[75%]">
                   <div className={`p-3 text-[14px] ${fromAdmin ? "bg-[color:var(--color-brand)] text-white" : "bg-[color:var(--color-surface)]"}`}>
                     <div className="whitespace-pre-wrap">{m.conteudo}</div>
+                    {m.anexo_path && m.anexo_nome && (
+                      <a href={`/api/admin/mensagens?baixar=${m.id}&modo=ver`} target="_blank" rel="noopener noreferrer" className={`mt-2 inline-flex items-center gap-1.5 text-[12px] underline ${fromAdmin ? "text-white/90" : "text-[color:var(--color-brand)]"}`}>
+                        <FileText className="w-3.5 h-3.5" /> {m.anexo_nome}
+                      </a>
+                    )}
                   </div>
                   <div className={`mt-1 text-[10px] font-mono text-[color:var(--color-ink-faint)] ${fromAdmin ? "text-right" : ""}`}>
                     {fromAdmin ? "Você (admin)" : "Cliente"} · {new Date(m.created_at).toLocaleString("pt-BR", { day: "2-digit", month: "short", hour: "2-digit", minute: "2-digit" })}
@@ -388,18 +394,28 @@ function MsgsTab({ clienteId, mensagensIniciais }: { clienteId: string; mensagen
           })
         )}
       </div>
-      <form onSubmit={(e) => { e.preventDefault(); send(); }} className="border-t border-[color:var(--color-hairline)] p-3 flex items-end gap-3">
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-          onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
-          placeholder="Responder ao cliente…"
-          rows={2}
-          className="flex-1 bg-transparent text-[14px] focus:outline-none resize-none"
-        />
-        <button type="submit" disabled={pending || !content.trim()} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand)] text-white text-[12px] font-mono uppercase tracking-[0.2em] disabled:opacity-50">
-          <Send className="w-3 h-3" /> Enviar
-        </button>
+      <form onSubmit={(e) => { e.preventDefault(); send(); }} className="border-t border-[color:var(--color-hairline)] p-3">
+        {file && (
+          <div className="mb-2 flex items-center gap-2 text-[12px] text-[color:var(--color-ink-muted)]">
+            <FileText className="w-3.5 h-3.5" /><span className="truncate max-w-[60%]">{file.name}</span>
+            <button type="button" onClick={() => { setFile(null); if (fileRef.current) fileRef.current.value = ""; }} className="hover:text-rose-700"><X className="w-3.5 h-3.5" /></button>
+          </div>
+        )}
+        <div className="flex items-end gap-3">
+          <input ref={fileRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) setFile(f); }} />
+          <button type="button" onClick={() => fileRef.current?.click()} title="Anexar arquivo" className="p-2 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"><Paperclip className="w-4 h-4" /></button>
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+            onKeyDown={(e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); send(); } }}
+            placeholder="Responder ao cliente…"
+            rows={2}
+            className="flex-1 bg-transparent text-[14px] focus:outline-none resize-none"
+          />
+          <button type="submit" disabled={pending || (!content.trim() && !file)} className="inline-flex items-center gap-1.5 px-4 py-2 bg-[color:var(--color-brand)] text-white text-[12px] font-mono uppercase tracking-[0.2em] disabled:opacity-50">
+            <Send className="w-3 h-3" /> Enviar
+          </button>
+        </div>
       </form>
     </div>
   );
