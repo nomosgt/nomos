@@ -56,7 +56,7 @@ export async function GET(req: Request) {
       return NextResponse.json({ error: "case_id invalido" }, { status: 422 });
     }
     const incluirArquivados = new URL(req.url).searchParams.get("arquivados") === "1";
-    const cols = "id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at, arquivado";
+    const cols = "id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at, arquivado, descricao, data_referencia";
     let q = admin.from("case_documents").select(cols).eq("case_id", caseId).order("created_at", { ascending: false });
     if (!incluirArquivados) q = q.eq("arquivado", false);
     let { data, error } = await q;
@@ -175,9 +175,12 @@ const patchSchema = z.object({
   nome: z.string().min(1).max(200).optional(),
   visibilidade: z.enum(["cliente", "interno"]).optional(),
   categoria: z.string().max(40).optional(),
+  descricao: z.string().max(1000).optional().nullable(),
+  data_referencia: z.string().optional().nullable(),
+  arquivado: z.boolean().optional(),         // false = restaurar
 });
 
-/** PATCH { id, nome?, visibilidade?, categoria? } → renomeia / muda visibilidade do documento. */
+/** PATCH { id, nome?, visibilidade?, categoria?, descricao?, data_referencia?, arquivado? } */
 export async function PATCH(req: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Supabase nao configurado" }, { status: 503 });
@@ -189,19 +192,40 @@ export async function PATCH(req: Request) {
   try { body = await req.json(); } catch { return NextResponse.json({ error: "JSON invalido" }, { status: 400 }); }
   const parsed = patchSchema.safeParse(body);
   if (!parsed.success) return NextResponse.json({ error: "Payload invalido" }, { status: 422 });
-  const { id, ...campos } = parsed.data;
+  const { id, data_referencia, ...rest } = parsed.data;
+
+  const campos: Record<string, unknown> = { ...rest };
+  if (data_referencia !== undefined) {
+    campos.data_referencia = data_referencia ? data_referencia : null;
+  }
+  if (rest.descricao !== undefined) campos.descricao = rest.descricao || null;
+  // restaurar → limpa arquivado_em
+  if (rest.arquivado === false) campos.arquivado_em = null;
+  if (rest.arquivado === true) campos.arquivado_em = new Date().toISOString();
   if (Object.keys(campos).length === 0) return NextResponse.json({ error: "Nada a alterar" }, { status: 422 });
 
   const admin = createAdminClient();
-  const { data: antes } = await admin.from("case_documents").select("case_id, nome, visibilidade").eq("id", id).maybeSingle();
-  const { error } = await admin.from("case_documents").update(campos).eq("id", id);
-  if (error) return NextResponse.json({ error: "Falha ao salvar" }, { status: 500 });
+  const { data: antes } = await admin.from("case_documents").select("case_id, nome, visibilidade, arquivado").eq("id", id).maybeSingle();
+  if (!antes) return NextResponse.json({ error: "Documento nao encontrado" }, { status: 404 });
 
-  if (campos.nome !== undefined && campos.nome !== antes?.nome) {
-    await auditar(admin, { documento_id: id, case_id: antes?.case_id, nome: campos.nome, evento: "renomeado", detalhe: `de "${antes?.nome ?? "?"}"`, autor: adminUser.id });
+  const { error } = await admin.from("case_documents").update(campos).eq("id", id);
+  if (error) {
+    const faltaColuna = /descricao|data_referencia|arquivado|column/i.test(error.message);
+    return NextResponse.json({ error: faltaColuna ? "Rode o SQL do documentos-v17 (e v13) no Supabase." : "Falha ao salvar" }, { status: 500 });
   }
-  if (campos.visibilidade !== undefined && campos.visibilidade !== antes?.visibilidade) {
-    await auditar(admin, { documento_id: id, case_id: antes?.case_id, nome: antes?.nome, evento: "visibilidade", detalhe: `${antes?.visibilidade ?? "?"} → ${campos.visibilidade}`, autor: adminUser.id });
+
+  if (rest.nome !== undefined && rest.nome !== antes.nome) {
+    await auditar(admin, { documento_id: id, case_id: antes.case_id, nome: rest.nome, evento: "renomeado", detalhe: `de "${antes.nome ?? "?"}"`, autor: adminUser.id });
+  }
+  if (rest.visibilidade !== undefined && rest.visibilidade !== antes.visibilidade) {
+    await auditar(admin, { documento_id: id, case_id: antes.case_id, nome: antes.nome, evento: "visibilidade", detalhe: `${antes.visibilidade ?? "?"} → ${rest.visibilidade}`, autor: adminUser.id });
+    // publicou para o cliente → avisa na Sala uma única vez
+    if (rest.visibilidade === "cliente" && antes.case_id) {
+      await admin.from("case_updates").insert({ case_id: antes.case_id, titulo: `Documento disponível: ${antes.nome}`, corpo: "Um documento foi disponibilizado para você. Veja em Documentos.", tipo: "info" }).then(() => {}, () => {});
+    }
+  }
+  if (rest.arquivado === false && antes.arquivado) {
+    await auditar(admin, { documento_id: id, case_id: antes.case_id, nome: antes.nome, evento: "restaurado", autor: adminUser.id });
   }
   return NextResponse.json({ ok: true });
 }

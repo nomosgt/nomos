@@ -2,9 +2,9 @@
 
 import { useCallback, useEffect, useState } from "react";
 import {
-  Upload, Loader2, ShieldQuestion, CheckCircle2, XCircle, Clock, Send, Eye,
-  FileText, Pencil, Trash2, Download, Check, X, FolderOpen,
+  Loader2, ShieldQuestion, CheckCircle2, XCircle, Clock, Send, Eye, FolderOpen,
 } from "lucide-react";
+import { DocumentosManager } from "@/components/admin/documentos-manager";
 
 interface DocCaso {
   id: string; nome: string; storage_path: string; tamanho_bytes: number | null;
@@ -161,45 +161,23 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
 
   return (
     <div className="space-y-6">
-    <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
-      {/* Enviar documento */}
-      <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6 space-y-4">
-        <h3 className="flex items-center gap-2 font-serif text-lg">
-          <Upload className="w-4 h-4 text-[color:var(--color-brand)]" /> Enviar documento ao cliente
-        </h3>
-        <div className="grid grid-cols-1 sm:grid-cols-3 gap-3">
-          <select className={inputCls} value={caseId} onChange={(e) => setCaseId(e.target.value)}>
-            {casos.length === 0 && <option value="">— sem casos —</option>}
-            {casos.map((c) => <option key={c.id} value={c.id}>{c.titulo}</option>)}
-          </select>
-          <select className={inputCls} value={categoria} onChange={(e) => setCategoria(e.target.value)}>
-            {["geral", "contrato", "relatorio", "despacho", "peticao", "nf", "balanco"].map((c) => (
-              <option key={c} value={c}>{c}</option>
-            ))}
-          </select>
-          <select className={inputCls} value={visibilidade} onChange={(e) => setVisibilidade(e.target.value as "cliente" | "interno")}>
-            <option value="cliente">Visível ao cliente</option>
-            <option value="interno">Interno (só admin)</option>
-          </select>
-        </div>
-        <label className="flex items-center justify-center gap-2 border-2 border-dashed border-[color:var(--color-brand)]/40 bg-blue-50/30 px-4 py-6 cursor-pointer text-[13px] font-medium text-[color:var(--color-brand)] hover:bg-blue-50/60 transition-colors">
-          {enviandoDoc ? <Loader2 className="w-4 h-4 animate-spin" /> : <Upload className="w-4 h-4" />}
-          {enviandoDoc ? "Enviando…" : "Escolher arquivo (até 20MB)"}
-          <input
-            type="file"
-            className="hidden"
-            disabled={enviandoDoc || !caseId}
-            onChange={(e) => { const f = e.target.files?.[0]; if (f) void uploadDoc(f); e.target.value = ""; }}
-          />
-        </label>
-        {msgDoc && <p className="text-[12px] text-[color:var(--color-ink-muted)]">{msgDoc}</p>}
-      </div>
+    {/* Documentos — gerenciador profissional */}
+    <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
+      <h3 className="flex items-center gap-2 font-serif text-lg mb-4">
+        <FolderOpen className="w-4 h-4 text-[color:var(--color-brand)]" /> Documentos
+      </h3>
+      <DocumentosManager casos={casos} />
+    </div>
 
       {/* Aprovações */}
       <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6 space-y-4">
         <h3 className="flex items-center gap-2 font-serif text-lg">
           <ShieldQuestion className="w-4 h-4 text-[color:var(--color-brand)]" /> Solicitar aprovação do cliente
         </h3>
+        <select className={inputCls} value={caseId} onChange={(e) => setCaseId(e.target.value)}>
+          {casos.length === 0 && <option value="">— sem casos —</option>}
+          {casos.map((c) => <option key={c.id} value={c.id}>Caso: {c.titulo}</option>)}
+        </select>
         <input className={inputCls} placeholder="Título — ex.: Autorização para ajuizar Tema 69" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
         <textarea className={inputCls} rows={3} placeholder="Descreva a decisão que o cliente precisa aprovar…" value={corpo} onChange={(e) => setCorpo(e.target.value)} />
 
@@ -272,55 +250,6 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
           <Eye className="w-3 h-3" /> O cliente decide em Sala Arché → Aprovações; a resposta aparece aqui.
         </p>
       </div>
-    </div>
-
-    {/* Gerenciar documentos já enviados */}
-    <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
-      <h3 className="flex items-center gap-2 font-serif text-lg mb-1">
-        <FolderOpen className="w-4 h-4 text-[color:var(--color-brand)]" /> Documentos do caso
-      </h3>
-      <p className="text-[12px] text-[color:var(--color-ink-muted)] mb-4">
-        Renomeie, troque a visibilidade ou exclua os arquivos já enviados — reflete na Sala do cliente na hora.
-      </p>
-      {docs.length === 0 ? (
-        <p className="text-[13px] text-[color:var(--color-ink-faint)] py-4 text-center">
-          {caseId ? "Nenhum documento neste caso ainda." : "Selecione um caso acima."}
-        </p>
-      ) : (
-        <div className="divide-y divide-[color:var(--color-hairline)]">
-          {docs.map((d) => (
-            <div key={d.id} className="flex flex-wrap items-center gap-x-3 gap-y-1.5 py-3">
-              <FileText className="w-4 h-4 text-[color:var(--color-brand)] flex-shrink-0" />
-              <div className="flex-1 min-w-[180px]">
-                {editId === d.id ? (
-                  <div className="flex items-center gap-1.5">
-                    <input autoFocus className={inputCls + " py-1"} value={editNome} onChange={(e) => setEditNome(e.target.value)}
-                      onKeyDown={(e) => { if (e.key === "Enter") void salvarNome(d); if (e.key === "Escape") setEditId(null); }} />
-                    <button onClick={() => void salvarNome(d)} className="p-1.5 text-emerald-700 hover:bg-emerald-50"><Check className="w-3.5 h-3.5" /></button>
-                    <button onClick={() => setEditId(null)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-ink)]"><X className="w-3.5 h-3.5" /></button>
-                  </div>
-                ) : (
-                  <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=ver`} target="_blank" rel="noopener noreferrer"
-                    className="text-[13.5px] font-medium text-[color:var(--color-brand)] hover:underline underline-offset-2">{d.nome}</a>
-                )}
-                <div className="font-mono text-[10px] text-[color:var(--color-ink-faint)]">
-                  {d.categoria || "geral"} · {fmtBytes(d.tamanho_bytes)} · {new Date(d.created_at).toLocaleDateString("pt-BR")}
-                </div>
-              </div>
-              <button onClick={() => void mudarVisibilidade(d)}
-                className={`font-mono text-[9px] uppercase px-2 py-1 border ${d.visibilidade === "cliente" ? "text-emerald-700 border-emerald-200 bg-emerald-50" : "text-[color:var(--color-ink-muted)] border-[color:var(--color-hairline)]"}`}
-                title="Clique para alternar">
-                {d.visibilidade === "cliente" ? "visível ao cliente" : "interno"}
-              </button>
-              <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=baixar`}
-                className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Baixar"><Download className="w-3.5 h-3.5" /></a>
-              <button onClick={() => { setEditId(d.id); setEditNome(d.nome); }} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Renomear"><Pencil className="w-3.5 h-3.5" /></button>
-              <button onClick={() => void excluirDoc(d)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-rose-700" title="Arquivar (preserva o arquivo)"><Trash2 className="w-3.5 h-3.5" /></button>
-            </div>
-          ))}
-        </div>
-      )}
-    </div>
     </div>
   );
 }
