@@ -5,6 +5,8 @@ import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/utils";
 import { ClientePainel } from "@/components/admin/cliente-painel";
 import { ClienteDocsAprovacoes } from "@/components/admin/cliente-docs-aprovacoes";
+import { FinanceiroCaso } from "@/components/admin/financeiro-caso";
+import { Wallet } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -60,6 +62,15 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
         casosIniciais={casos.data || []}
         mensagensIniciais={msgs.data || []}
       />
+
+      {(casos.data || []).length > 0 && (
+        <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
+          <h3 className="flex items-center gap-2 font-serif text-lg mb-4">
+            <Wallet className="w-4 h-4 text-[color:var(--color-brand)]" /> Financeiro do caso
+          </h3>
+          <FinanceiroCaso casos={(casos.data || []).map((c) => ({ id: c.id, titulo: c.titulo }))} />
+        </div>
+      )}
 
       <div className="flex items-center gap-3 pt-4 border-t border-[color:var(--color-hairline)]">
         <Link

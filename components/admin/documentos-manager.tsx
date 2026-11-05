@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Upload, Search, FileText, Eye, Download, Pencil, Archive, RotateCcw, X, Check, Loader2, AlertCircle } from "lucide-react";
+import { Upload, Search, FileText, Eye, Download, Pencil, Archive, RotateCcw, X, Check, Loader2, AlertCircle, History, RefreshCw } from "lucide-react";
 
 /**
  * Gerenciador de documentos do caso — upload profissional (drag-and-drop,
@@ -14,7 +14,9 @@ interface Doc {
   id: string; nome: string; storage_path: string; categoria: string | null;
   visibilidade: "cliente" | "interno"; created_at: string; arquivado?: boolean;
   descricao?: string | null; data_referencia?: string | null; tamanho_bytes?: number | null;
+  versao?: number | null;
 }
+interface Versao { id: string; nome: string; versao: number; storage_path: string; created_at: string; tamanho_bytes: number | null }
 interface FilaItem { id: string; file: File; status: "aguardando" | "enviando" | "ok" | "erro"; progresso: number; erro?: string }
 
 const CATEGORIAS = ["geral", "contrato", "relatorio", "despacho", "peticao", "nf", "balanco", "parecer", "procuracao", "atividade"];
@@ -113,6 +115,15 @@ export function DocumentosManager({ casos }: { casos: Caso[] }) {
     const r = await fetch(`/api/admin/clientes/documentos?id=${d.id}`, { method: "DELETE" });
     if (r.ok) void carregar();
   }
+  async function substituirVersao(d: Doc, file: File) {
+    if (file.size > MAX_BYTES) { alert("Arquivo acima de 20MB."); return; }
+    const fd = new FormData();
+    fd.append("file", file);
+    fd.append("replace_id", d.id);
+    const r = await fetch("/api/admin/clientes/documentos", { method: "POST", body: fd });
+    if (r.ok) void carregar();
+    else { const j = await r.json().catch(() => ({})); alert(j.error || "Falha ao substituir versão."); }
+  }
 
   /* ---------- lista filtrada ---------- */
   const visiveis = useMemo(() => {
@@ -204,21 +215,31 @@ export function DocumentosManager({ casos }: { casos: Caso[] }) {
       <div className="divide-y divide-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
         {visiveis.length === 0 ? (
           <div className="p-8 text-center text-[13px] text-[color:var(--color-ink-faint)]">Nenhum documento neste filtro.</div>
-        ) : visiveis.map((d) => <DocRow key={d.id} d={d} onPatch={patch} onArquivar={arquivar} />)}
+        ) : visiveis.map((d) => <DocRow key={d.id} d={d} onPatch={patch} onArquivar={arquivar} onSubstituir={substituirVersao} />)}
       </div>
     </div>
   );
 }
 
-function DocRow({ d, onPatch, onArquivar }: { d: Doc; onPatch: (id: string, c: Record<string, unknown>) => void; onArquivar: (d: Doc) => void }) {
+function DocRow({ d, onPatch, onArquivar, onSubstituir }: { d: Doc; onPatch: (id: string, c: Record<string, unknown>) => void; onArquivar: (d: Doc) => void; onSubstituir: (d: Doc, f: File) => void }) {
   const [editNome, setEditNome] = useState(false);
   const [nome, setNome] = useState(d.nome);
   const [editDesc, setEditDesc] = useState(false);
   const [desc, setDesc] = useState(d.descricao || "");
+  const [versoes, setVersoes] = useState<Versao[] | null>(null);
+  const replaceRef = useRef<HTMLInputElement>(null);
+
+  async function verHistorico() {
+    if (versoes) { setVersoes(null); return; }
+    const r = await fetch(`/api/admin/clientes/documentos?historico=${d.id}`, { cache: "no-store" });
+    const j = await r.json();
+    setVersoes(j.versoes ?? []);
+  }
 
   return (
     <div className={`p-3 flex flex-wrap items-center gap-x-3 gap-y-2 ${d.arquivado ? "bg-[color:var(--color-surface)]/50" : ""}`}>
       <FileText className="w-4 h-4 text-[color:var(--color-ink-muted)] flex-shrink-0" />
+      <input ref={replaceRef} type="file" className="hidden" onChange={(e) => { const f = e.target.files?.[0]; if (f) onSubstituir(d, f); if (replaceRef.current) replaceRef.current.value = ""; }} />
       <div className="flex-1 min-w-[200px]">
         {editNome ? (
           <div className="flex items-center gap-1">
@@ -229,9 +250,23 @@ function DocRow({ d, onPatch, onArquivar }: { d: Doc; onPatch: (id: string, c: R
         ) : (
           <div className="flex items-center gap-2">
             <span className="font-medium text-[13.5px] truncate">{d.nome}</span>
+            {(d.versao ?? 1) > 1 && <span className="font-mono text-[9px] uppercase px-1 py-0.5 border border-[color:var(--color-brand)]/30 text-[color:var(--color-brand)]">v{d.versao}</span>}
             {d.arquivado && <span className="font-mono text-[9px] uppercase px-1 py-0.5 border border-gray-200 bg-gray-50 text-gray-500">arquivado</span>}
           </div>
         )}
+        {versoes && versoes.length > 0 && (
+          <div className="mt-1.5 ml-1 border-l-2 border-[color:var(--color-hairline)] pl-2 space-y-1">
+            {versoes.map((v) => (
+              <div key={v.id} className="flex items-center gap-2 text-[11px] text-[color:var(--color-ink-faint)]">
+                <span className="font-mono">v{v.versao}</span>
+                <span>{new Date(v.created_at).toLocaleDateString("pt-BR")}</span>
+                <span>· {fmtBytes(v.tamanho_bytes)}</span>
+                <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(v.storage_path)}&modo=baixar`} className="text-[color:var(--color-brand)] hover:underline">baixar</a>
+              </div>
+            ))}
+          </div>
+        )}
+        {versoes && versoes.length === 0 && <div className="mt-1 text-[11px] text-[color:var(--color-ink-faint)]">Sem versões anteriores.</div>}
         {editDesc ? (
           <div className="flex items-center gap-1 mt-1">
             <input value={desc} onChange={(e) => setDesc(e.target.value)} placeholder="Descrição…" className="flex-1 border border-[color:var(--color-hairline)] px-2 py-1 text-[12px] focus:outline-none focus:border-[color:var(--color-brand)]" />
@@ -258,6 +293,8 @@ function DocRow({ d, onPatch, onArquivar }: { d: Doc; onPatch: (id: string, c: R
         <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=ver`} target="_blank" rel="noopener noreferrer" className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Abrir"><Eye className="w-3.5 h-3.5" /></a>
         <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=baixar`} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Baixar"><Download className="w-3.5 h-3.5" /></a>
         <button onClick={() => setEditNome(true)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Renomear"><Pencil className="w-3.5 h-3.5" /></button>
+        {!d.arquivado && <button onClick={() => replaceRef.current?.click()} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Substituir por nova versão"><RefreshCw className="w-3.5 h-3.5" /></button>}
+        <button onClick={() => void verHistorico()} className={`p-1.5 ${versoes ? "text-[color:var(--color-brand)]" : "text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]"}`} title="Histórico de versões"><History className="w-3.5 h-3.5" /></button>
         {d.arquivado ? (
           <button onClick={() => onPatch(d.id, { arquivado: false })} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-emerald-700" title="Restaurar"><RotateCcw className="w-3.5 h-3.5" /></button>
         ) : (

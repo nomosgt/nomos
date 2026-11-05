@@ -49,14 +49,32 @@ export async function GET(req: Request) {
   if (!adminUser) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
 
   const admin = createAdminClient();
+  const sp = new URL(req.url).searchParams;
 
-  const caseId = new URL(req.url).searchParams.get("case_id");
+  // histórico de versões anteriores de um documento (encadeado por substituido_por)
+  const historicoId = sp.get("historico");
+  if (historicoId) {
+    if (!/^[0-9a-f-]{36}$/i.test(historicoId)) return NextResponse.json({ error: "id invalido" }, { status: 422 });
+    const versoes: { id: string; nome: string; versao: number; storage_path: string; created_at: string; tamanho_bytes: number | null }[] = [];
+    let alvo = historicoId;
+    for (let i = 0; i < 30; i++) {
+      const { data: pred } = await admin.from("case_documents")
+        .select("id, nome, versao, storage_path, created_at, tamanho_bytes")
+        .eq("substituido_por", alvo).maybeSingle();
+      if (!pred) break;
+      versoes.push({ id: pred.id, nome: pred.nome, versao: pred.versao ?? 1, storage_path: pred.storage_path, created_at: pred.created_at, tamanho_bytes: pred.tamanho_bytes });
+      alvo = pred.id;
+    }
+    return NextResponse.json({ versoes });
+  }
+
+  const caseId = sp.get("case_id");
   if (caseId) {
     if (!/^[0-9a-f-]{36}$/i.test(caseId)) {
       return NextResponse.json({ error: "case_id invalido" }, { status: 422 });
     }
-    const incluirArquivados = new URL(req.url).searchParams.get("arquivados") === "1";
-    const cols = "id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at, arquivado, descricao, data_referencia";
+    const incluirArquivados = sp.get("arquivados") === "1";
+    const cols = "id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at, arquivado, descricao, data_referencia, versao";
     let q = admin.from("case_documents").select(cols).eq("case_id", caseId).order("created_at", { ascending: false });
     if (!incluirArquivados) q = q.eq("arquivado", false);
     let { data, error } = await q;
@@ -120,18 +138,65 @@ export async function POST(req: Request) {
   const caseId = String(form.get("case_id") || "");
   const categoria = String(form.get("categoria") || "geral").slice(0, 40);
   const visibilidade = form.get("visibilidade") === "interno" ? "interno" : "cliente";
+  const replaceId = String(form.get("replace_id") || "");
 
   if (!(file instanceof File)) {
     return NextResponse.json({ error: "Arquivo obrigatorio" }, { status: 422 });
-  }
-  if (!/^[0-9a-f-]{36}$/i.test(caseId)) {
-    return NextResponse.json({ error: "case_id invalido" }, { status: 422 });
   }
   if (file.size > MAX_BYTES) {
     return NextResponse.json({ error: "Arquivo acima de 20MB" }, { status: 413 });
   }
 
   const admin = createAdminClient();
+
+  // ---- SUBSTITUIR POR NOVA VERSÃO ----
+  // cria um novo registro (versão+1) herdando os metadados; a versão anterior é
+  // preservada (arquivada) e aponta para a nova via substituido_por. Nada é apagado.
+  if (replaceId) {
+    if (!/^[0-9a-f-]{36}$/i.test(replaceId)) return NextResponse.json({ error: "replace_id invalido" }, { status: 422 });
+    const { data: atual } = await admin.from("case_documents")
+      .select("id, case_id, nome, categoria, visibilidade, descricao, data_referencia, versao, arquivado, substituido_por")
+      .eq("id", replaceId).maybeSingle();
+    if (!atual) return NextResponse.json({ error: "Documento a substituir nao encontrado" }, { status: 404 });
+    if (atual.substituido_por) return NextResponse.json({ error: "Este documento já foi substituído por uma versão mais nova." }, { status: 409 });
+
+    const safe = file.name.replace(/[^\w.\-()]+/g, "_").slice(0, 120);
+    const novoPath = `${atual.case_id}/${Date.now()}-${safe}`;
+    const buf0 = Buffer.from(await file.arrayBuffer());
+    const up0 = await admin.storage.from(BUCKET).upload(novoPath, buf0, { contentType: file.type || "application/octet-stream" });
+    if (up0.error) return NextResponse.json({ error: "Falha no upload." }, { status: 500 });
+
+    const novaVersao = (atual.versao ?? 1) + 1;
+    const { data: nova, error: insErr } = await admin.from("case_documents").insert({
+      case_id: atual.case_id,
+      uploaded_by: adminUser.id,
+      nome: atual.nome,                 // mantém o nome de exibição
+      storage_path: novoPath,
+      tipo_mime: file.type || null,
+      tamanho_bytes: file.size,
+      categoria: atual.categoria,
+      visibilidade: atual.visibilidade, // herda visibilidade (não republica silenciosamente)
+      descricao: atual.descricao ?? null,
+      data_referencia: atual.data_referencia ?? null,
+      versao: novaVersao,
+    }).select("id").single();
+    if (insErr || !nova) {
+      await admin.storage.from(BUCKET).remove([novoPath]).catch(() => {});
+      const faltaColuna = /versao|descricao|column|schema cache/i.test(insErr?.message || "");
+      return NextResponse.json({ error: faltaColuna ? "Rode o SQL do documentos-v17 no Supabase." : "Falha ao registrar a nova versão." }, { status: 500 });
+    }
+    // versão anterior: preservada, arquivada e encadeada (guarda anti-corrida com substituido_por null)
+    const { error: updErr } = await admin.from("case_documents")
+      .update({ substituido_por: nova.id, arquivado: true, arquivado_em: new Date().toISOString() })
+      .eq("id", replaceId).is("substituido_por", null);
+    if (updErr) { /* nova já existe; segue — encadeamento best-effort */ }
+    await auditar(admin, { documento_id: nova.id, case_id: atual.case_id, nome: atual.nome, evento: "nova_versao", detalhe: `v${novaVersao} (substitui v${atual.versao ?? 1})`, autor: adminUser.id });
+    return NextResponse.json({ ok: true, id: nova.id, versao: novaVersao });
+  }
+
+  if (!/^[0-9a-f-]{36}$/i.test(caseId)) {
+    return NextResponse.json({ error: "case_id invalido" }, { status: 422 });
+  }
   const { data: caso } = await admin
     .from("client_cases")
     .select("id")
