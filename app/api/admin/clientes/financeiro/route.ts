@@ -99,7 +99,12 @@ export async function POST(req: Request) {
   if (!parsed.success) return NextResponse.json({ error: "Payload invalido" }, { status: 422 });
   const d = parsed.data;
 
-  const valorNum = typeof d.valor === "number" ? d.valor : Number(String(d.valor).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, ""));
+  let valorNum: number;
+  if (typeof d.valor === "number") valorNum = d.valor;
+  else {
+    const limpo = String(d.valor).replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+    valorNum = /\d/.test(limpo) ? Number(limpo) : NaN;   // sem dígito → inválido (não vira 0)
+  }
   if (isNaN(valorNum)) return NextResponse.json({ error: "Valor inválido" }, { status: 422 });
   if (d.tipo === "ajuste") {
     if (!(d.justificativa || "").trim()) return NextResponse.json({ error: "Ajuste exige justificativa." }, { status: 422 });

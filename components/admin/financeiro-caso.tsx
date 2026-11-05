@@ -25,7 +25,8 @@ const TIPOS: { v: string; label: string; cor: string }[] = [
 const LABEL: Record<string, string> = Object.fromEntries(TIPOS.map((t) => [t.v, t.label]));
 
 function parseValor(s: string): number {
-  return Number(s.replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, ""));
+  const limpo = s.replace(/\./g, "").replace(",", ".").replace(/[^\d.-]/g, "");
+  return /\d/.test(limpo) ? Number(limpo) : NaN;   // sem dígito → inválido (não vira 0)
 }
 
 export function FinanceiroCaso({ casos }: { casos: Caso[] }) {
