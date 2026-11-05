@@ -4,7 +4,7 @@ import { useState, useTransition, type FormEvent } from "react";
 import { useRouter } from "next/navigation";
 import { createClient } from "@/lib/supabase/client";
 import { formatBRL } from "@/lib/utils";
-import { Save, Plus, Send, Bell } from "lucide-react";
+import { Save, Plus, Send, Bell, Trash2 } from "lucide-react";
 
 interface Caso {
   id: string;
@@ -123,6 +123,17 @@ function CasosTab({ clienteId, cliente, casos }: { clienteId: string; cliente: C
     router.refresh();
   }
 
+  async function excluirCaso(c: Caso) {
+    if (!confirm(`Excluir a oportunidade "${c.titulo}"?\n\nIsso remove em definitivo o caso, suas atualizações, documentos e mensagens vinculadas. As atividades ligadas a ele são desvinculadas (não são apagadas). Esta ação não tem desfazer.`)) return;
+    const r = await fetch(`/api/admin/clientes/casos?id=${c.id}`, { method: "DELETE" });
+    if (r.ok) {
+      router.refresh();
+    } else {
+      const j = await r.json().catch(() => ({}));
+      alert(j.error || "Falha ao excluir o caso.");
+    }
+  }
+
   return (
     <div className="space-y-6">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-4 p-5 border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)]">
@@ -157,18 +168,38 @@ function CasosTab({ clienteId, cliente, casos }: { clienteId: string; cliente: C
         <h3 className="font-mono text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-ink-muted)]">Casos</h3>
         {casos.map((c) => (
           <div key={c.id} className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-5">
-            <div className="flex items-start justify-between mb-3 flex-wrap gap-2">
-              <div>
-                <div className="font-serif text-lg">{c.titulo}</div>
-                {c.tese && <div className="text-[12px] text-[color:var(--color-ink-muted)]">{c.tese}</div>}
+            <div className="flex items-start justify-between mb-3 gap-3">
+              <div className="flex-1 min-w-0 space-y-1.5">
+                <input
+                  defaultValue={c.titulo}
+                  onBlur={(e) => { const v = e.target.value.trim(); if (v && v !== c.titulo) updateCaso(c.id, { titulo: v }); }}
+                  placeholder="Título da oportunidade"
+                  className="w-full font-serif text-lg bg-transparent border-b border-transparent hover:border-[color:var(--color-hairline)] focus:border-[color:var(--color-ink)] focus:outline-none py-0.5"
+                />
+                <input
+                  defaultValue={c.tese || ""}
+                  onBlur={(e) => updateCaso(c.id, { tese: e.target.value.trim() || null })}
+                  placeholder="Tese (opcional)"
+                  className="w-full text-[12px] text-[color:var(--color-ink-muted)] bg-transparent border-b border-transparent hover:border-[color:var(--color-hairline)] focus:border-[color:var(--color-ink)] focus:outline-none py-0.5"
+                />
               </div>
-              <select
-                defaultValue={c.status}
-                onChange={(e) => updateCaso(c.id, { status: e.target.value })}
-                className="p-1.5 border border-[color:var(--color-hairline)] text-[11px] font-mono uppercase tracking-wider focus:outline-none"
-              >
-                {STATUS_CASO.map((s) => <option key={s} value={s}>{s}</option>)}
-              </select>
+              <div className="flex items-center gap-2 flex-shrink-0">
+                <select
+                  defaultValue={c.status}
+                  onChange={(e) => updateCaso(c.id, { status: e.target.value })}
+                  className="p-1.5 border border-[color:var(--color-hairline)] text-[11px] font-mono uppercase tracking-wider focus:outline-none"
+                >
+                  {STATUS_CASO.map((s) => <option key={s} value={s}>{s}</option>)}
+                </select>
+                <button
+                  type="button"
+                  onClick={() => excluirCaso(c)}
+                  title="Excluir oportunidade"
+                  className="p-2 border border-[color:var(--color-hairline)] text-[color:var(--color-ink-faint)] hover:text-rose-700 hover:border-rose-300 transition-colors"
+                >
+                  <Trash2 className="w-3.5 h-3.5" />
+                </button>
+              </div>
             </div>
             <div className="grid grid-cols-2 md:grid-cols-4 gap-3 text-[12px]">
               <div>
@@ -187,7 +218,16 @@ function CasosTab({ clienteId, cliente, casos }: { clienteId: string; cliente: C
                   className="w-full p-1.5 border border-[color:var(--color-hairline)] text-[13px] font-mono focus:outline-none focus:border-[color:var(--color-ink)]"
                 />
               </div>
-              <div className="col-span-2">
+              <div>
+                <div className="text-[10px] uppercase font-mono text-[color:var(--color-ink-muted)] mb-1">Potencial (R$)</div>
+                <input
+                  type="number" min={0} defaultValue={c.potencial_estimado != null ? Number(c.potencial_estimado) : ""}
+                  onBlur={(e) => updateCaso(c.id, { potencial_estimado: e.target.value === "" ? null : Number(e.target.value) })}
+                  placeholder="—"
+                  className="w-full p-1.5 border border-[color:var(--color-hairline)] text-[13px] font-mono focus:outline-none focus:border-[color:var(--color-ink)]"
+                />
+              </div>
+              <div>
                 <div className="text-[10px] uppercase font-mono text-[color:var(--color-ink-muted)] mb-1">Próxima ação</div>
                 <input
                   defaultValue={c.proxima_acao || ""}
@@ -197,7 +237,7 @@ function CasosTab({ clienteId, cliente, casos }: { clienteId: string; cliente: C
                 />
               </div>
             </div>
-            {c.potencial_estimado && (
+            {c.potencial_estimado != null && Number(c.potencial_estimado) > 0 && (
               <div className="mt-3 text-[11px] font-mono text-[color:var(--color-ink-faint)]">
                 Potencial: {formatBRL(Number(c.potencial_estimado), { compact: true })}
               </div>
