@@ -38,6 +38,7 @@ export function FinanceiroCaso({ casos }: { casos: Caso[] }) {
 
   // form
   const [tipo, setTipo] = useState("recuperado");
+  const [estagioAlvo, setEstagioAlvo] = useState("recuperado");
   const [valor, setValor] = useState("");
   const [dataRef, setDataRef] = useState("");
   const [descricao, setDescricao] = useState("");
@@ -67,7 +68,7 @@ export function FinanceiroCaso({ casos }: { casos: Caso[] }) {
     try {
       const r = await fetch("/api/admin/clientes/financeiro", {
         method: "POST", headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ case_id: caseId, tipo, valor: v, data_referencia: dataRef || null, descricao: descricao || null, justificativa: justificativa || null }),
+        body: JSON.stringify({ case_id: caseId, tipo, estagio_alvo: tipo === "ajuste" ? estagioAlvo : null, valor: v, data_referencia: dataRef || null, descricao: descricao || null, justificativa: justificativa || null }),
       });
       const j = await r.json();
       if (!r.ok) { setErro(j.error || "Falha ao lançar."); setSalvando(false); return; }
@@ -122,6 +123,14 @@ export function FinanceiroCaso({ casos }: { casos: Caso[] }) {
           </div>
           <input type="date" value={dataRef} onChange={(e) => setDataRef(e.target.value)} className={inp} />
         </div>
+        {tipo === "ajuste" && (
+          <label className="flex items-center gap-2 text-[11px] font-mono uppercase tracking-wider text-[color:var(--color-ink-muted)]">
+            Corrige o estágio:
+            <select value={estagioAlvo} onChange={(e) => setEstagioAlvo(e.target.value)} className={inp}>
+              {TIPOS.filter((t) => t.v !== "ajuste").map((t) => <option key={t.v} value={t.v}>{t.label}</option>)}
+            </select>
+          </label>
+        )}
         <input value={descricao} onChange={(e) => setDescricao(e.target.value)} placeholder="Descrição (opcional) — ex.: PER/DCOMP competência 11/2026" className={inp} />
         <input value={justificativa} onChange={(e) => setJustificativa(e.target.value)} placeholder={tipo === "ajuste" ? "Justificativa (obrigatória para ajuste)" : "Justificativa (opcional)"} className={inp} />
         {erro && <p className="text-[12px] text-rose-700">{erro}</p>}
