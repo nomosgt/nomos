@@ -27,6 +27,7 @@ interface Aprovacao {
   id: string; created_at: string; titulo: string; corpo: string;
   status: string; origem: string; origem_nome: string | null;
   resposta: string | null; respondido_em: string | null;
+  ajuste_motivo?: string | null; protocolo?: string | null;
 }
 
 const inputCls =
@@ -100,6 +101,9 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
   const [corpo, setCorpo] = useState("");
   const [enviandoApr, setEnviandoApr] = useState(false);
   const [msgApr, setMsgApr] = useState<string | null>(null);
+  const [aprMais, setAprMais] = useState(false);
+  const [aprF, setAprF] = useState<Record<string, string>>({});
+  const setAF = (k: string, v: string) => setAprF((p) => ({ ...p, [k]: v }));
 
   const carregarAprovacoes = useCallback(async () => {
     try {
@@ -119,11 +123,23 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
       const r = await fetch("/api/admin/aprovacoes", {
         method: "POST",
         headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ client_id: clienteId, case_id: caseId || null, titulo: titulo.trim(), corpo: corpo.trim() }),
+        body: JSON.stringify({
+          client_id: clienteId, case_id: caseId || null, titulo: titulo.trim(), corpo: corpo.trim(),
+          valor_credito: aprF.valor_credito || null,
+          tributos: aprF.tributos || null,
+          periodo_apuracao: aprF.periodo_apuracao || null,
+          modalidade: aprF.modalidade || null,
+          inicio_previsto: aprF.inicio_previsto || null,
+          impacto_caixa: aprF.impacto_caixa || null,
+          fundamentacao: aprF.fundamentacao || null,
+          risco: aprF.risco || null,
+          honorarios: aprF.honorarios || null,
+          prazo_decisao: aprF.prazo_decisao || null,
+        }),
       });
       const j = await r.json();
       if (!r.ok) { setMsgApr(j.error || "Falha ao enviar."); return; }
-      setTitulo(""); setCorpo("");
+      setTitulo(""); setCorpo(""); setAprF({});
       setMsgApr("✓ Enviada — o cliente decide na aba Aprovações da Sala.");
       void carregarAprovacoes();
     } catch {
@@ -131,6 +147,16 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
     } finally {
       setEnviandoApr(false);
     }
+  }
+
+  async function reapresentar(id: string) {
+    if (!confirm("Reapresentar esta aprovação ao cliente? Ela volta a ficar pendente (nova revisão).")) return;
+    const r = await fetch("/api/admin/aprovacoes", {
+      method: "PATCH", headers: { "Content-Type": "application/json" },
+      body: JSON.stringify({ id, acao: "reapresentar" }),
+    });
+    if (r.ok) void carregarAprovacoes();
+    else { const j = await r.json().catch(() => ({})); alert(j.error || "Falha ao reapresentar."); }
   }
 
   return (
@@ -176,6 +202,32 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
         </h3>
         <input className={inputCls} placeholder="Título — ex.: Autorização para ajuizar Tema 69" value={titulo} onChange={(e) => setTitulo(e.target.value)} />
         <textarea className={inputCls} rows={3} placeholder="Descreva a decisão que o cliente precisa aprovar…" value={corpo} onChange={(e) => setCorpo(e.target.value)} />
+
+        <button type="button" onClick={() => setAprMais((v) => !v)} className="text-[11px] font-mono uppercase tracking-wider text-[color:var(--color-brand)] hover:underline">
+          {aprMais ? "− Menos detalhes" : "+ Adicionar detalhes (valor, tributos, risco, honorários, prazo…)"}
+        </button>
+        {aprMais && (
+          <div className="grid grid-cols-1 sm:grid-cols-2 gap-2.5 border border-[color:var(--color-hairline)] p-3">
+            <input className={inputCls} placeholder="Valor do crédito (R$)" value={aprF.valor_credito || ""} onChange={(e) => setAF("valor_credito", e.target.value)} />
+            <input className={inputCls} placeholder="Tributos — ex.: PIS e COFINS" value={aprF.tributos || ""} onChange={(e) => setAF("tributos", e.target.value)} />
+            <input className={inputCls} placeholder="Período apurado — ex.: mar/2017 a fev/2022" value={aprF.periodo_apuracao || ""} onChange={(e) => setAF("periodo_apuracao", e.target.value)} />
+            <input className={inputCls} placeholder="Modalidade — ex.: Compensação via PER/DCOMP" value={aprF.modalidade || ""} onChange={(e) => setAF("modalidade", e.target.value)} />
+            <input className={inputCls} placeholder="Início previsto — ex.: novembro/2026" value={aprF.inicio_previsto || ""} onChange={(e) => setAF("inicio_previsto", e.target.value)} />
+            <input className={inputCls} placeholder="Impacto no caixa" value={aprF.impacto_caixa || ""} onChange={(e) => setAF("impacto_caixa", e.target.value)} />
+            <input className={inputCls} placeholder="Honorários — ex.: 18% sobre o compensado" value={aprF.honorarios || ""} onChange={(e) => setAF("honorarios", e.target.value)} />
+            <select className={inputCls} value={aprF.risco || ""} onChange={(e) => setAF("risco", e.target.value)}>
+              <option value="">Risco (opcional)</option>
+              <option value="baixo">Baixo</option>
+              <option value="medio">Médio</option>
+              <option value="alto">Alto</option>
+            </select>
+            <input className={`${inputCls} sm:col-span-2`} placeholder="Fundamentação — ex.: RE 574.706 — Tema 69/STF" value={aprF.fundamentacao || ""} onChange={(e) => setAF("fundamentacao", e.target.value)} />
+            <label className="sm:col-span-2 text-[11px] font-mono uppercase tracking-wider text-[color:var(--color-ink-muted)] flex items-center gap-2">
+              Prazo p/ decisão
+              <input type="datetime-local" className={inputCls} value={aprF.prazo_decisao || ""} onChange={(e) => setAF("prazo_decisao", e.target.value)} />
+            </label>
+          </div>
+        )}
         <div className="flex items-center gap-3">
           <button
             onClick={() => void enviarAprovacao()}
@@ -198,10 +250,20 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
                     {a.origem === "parceiro" ? `por ${a.origem_nome}` : "pela equipe"} · {new Date(a.created_at).toLocaleDateString("pt-BR")}
                   </div>
                   {a.resposta && <div className="text-[12px] text-[color:var(--color-ink-muted)]">&ldquo;{a.resposta}&rdquo;</div>}
+                  {a.status === "ajuste_solicitado" && a.ajuste_motivo && <div className="text-[12px] text-amber-800">Ajuste pedido: &ldquo;{a.ajuste_motivo}&rdquo;</div>}
+                  {a.status === "aprovada" && a.protocolo && <div className="font-mono text-[10px] text-emerald-700">protocolo {a.protocolo}</div>}
                 </div>
-                {a.status === "pendente" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-amber-700"><Clock className="w-3 h-3" />pendente</span>}
-                {a.status === "aprovada" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-emerald-700"><CheckCircle2 className="w-3 h-3" />aprovada</span>}
-                {a.status === "recusada" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-red-700"><XCircle className="w-3 h-3" />recusada</span>}
+                <div className="flex-shrink-0 flex flex-col items-end gap-1">
+                  {a.status === "pendente" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-amber-700"><Clock className="w-3 h-3" />pendente</span>}
+                  {a.status === "aprovada" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-emerald-700"><CheckCircle2 className="w-3 h-3" />aprovada</span>}
+                  {a.status === "recusada" && <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-red-700"><XCircle className="w-3 h-3" />recusada</span>}
+                  {a.status === "ajuste_solicitado" && (
+                    <>
+                      <span className="inline-flex items-center gap-1 font-mono text-[10px] uppercase text-amber-700">ajuste</span>
+                      <button onClick={() => void reapresentar(a.id)} className="font-mono text-[10px] uppercase tracking-wider text-[color:var(--color-brand)] hover:underline">reapresentar</button>
+                    </>
+                  )}
+                </div>
               </div>
             ))}
           </div>

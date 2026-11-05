@@ -10,14 +10,31 @@ export default async function Aprovacoes() {
   if (!u.user) redirect("/sala/login");
   const userId = u.user.id;
 
-  const { data: aprovacoes } = await supabase
+  const { data: aprovacoesRaw } = await supabase
     .from("client_aprovacoes")
     .select("*")
     .eq("client_id", userId)
     .order("created_at", { ascending: false });
 
-  const pendentes = (aprovacoes ?? []).filter((a) => a.status === "pendente");
-  const respondidas = (aprovacoes ?? []).filter((a) => a.status !== "pendente");
+  // anexos visíveis de cada aprovação (RLS garante que são do próprio cliente)
+  const ids = (aprovacoesRaw ?? []).map((a) => a.id);
+  const anexosPorApr: Record<string, { id: string; nome: string; storage_path: string }[]> = {};
+  if (ids.length) {
+    const { data: docs } = await supabase
+      .from("case_documents")
+      .select("id, nome, storage_path, aprovacao_id")
+      .in("aprovacao_id", ids)
+      .eq("visibilidade", "cliente")
+      .eq("arquivado", false);
+    for (const d of docs ?? []) {
+      const k = d.aprovacao_id as string;
+      (anexosPorApr[k] ||= []).push({ id: d.id, nome: d.nome, storage_path: d.storage_path });
+    }
+  }
+  const aprovacoes = (aprovacoesRaw ?? []).map((a) => ({ ...a, anexos: anexosPorApr[a.id] ?? [] }));
+
+  const pendentes = aprovacoes.filter((a) => a.status === "pendente");
+  const respondidas = aprovacoes.filter((a) => a.status !== "pendente");
 
   return (
     <div className="space-y-10 max-w-4xl">
