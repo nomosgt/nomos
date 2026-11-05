@@ -2,11 +2,13 @@ import Link from "next/link";
 import { notFound } from "next/navigation";
 import { ArrowLeft, MessageCircle } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
+import { createAdminClient } from "@/lib/supabase/admin";
 import { formatBRL } from "@/lib/utils";
 import { ClientePainel } from "@/components/admin/cliente-painel";
 import { ClienteDocsAprovacoes } from "@/components/admin/cliente-docs-aprovacoes";
 import { FinanceiroCaso } from "@/components/admin/financeiro-caso";
-import { Wallet } from "lucide-react";
+import { ClienteCadastro } from "@/components/admin/cliente-cadastro";
+import { Wallet, Building2 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -26,6 +28,14 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
 
   if (!cli.data) notFound();
   const cliente = cli.data;
+
+  // e-mail de login (auth) — somente leitura no cadastro
+  let email: string | null = null;
+  try {
+    const adminCli = createAdminClient();
+    const { data: authUser } = await adminCli.auth.admin.getUserById(id);
+    email = authUser.user?.email ?? null;
+  } catch { /* indisponível */ }
 
   return (
     <div className="space-y-8 max-w-5xl">
@@ -49,6 +59,13 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
             {formatBRL(Number(cliente.caixa_recuperado_total))}
           </div>
         </div>
+      </div>
+
+      <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
+        <h3 className="flex items-center gap-2 font-serif text-lg mb-4">
+          <Building2 className="w-4 h-4 text-[color:var(--color-brand)]" /> Cadastro da empresa
+        </h3>
+        <ClienteCadastro perfil={{ ...cliente, email }} />
       </div>
 
       <ClienteDocsAprovacoes
