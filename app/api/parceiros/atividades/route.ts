@@ -69,7 +69,7 @@ export async function PATCH(req: Request) {
   // a atividade precisa ser deste colaborador
   const { data: ativ } = await ctx.admin
     .from("atividades")
-    .select("id, status, titulo, case_id, visivel_cliente, parceiro_id")
+    .select("id, status, titulo, case_id, visivel_cliente, parceiro_id, publicado_portal")
     .eq("id", parsed.data.id)
     .maybeSingle();
   if (!ativ || ativ.parceiro_id !== ctx.parceiro.id) {
@@ -93,13 +93,15 @@ export async function PATCH(req: Request) {
     autor: ctx.parceiro.nome,
   });
 
-  if (concluindoAgora && ativ.visivel_cliente && ativ.case_id) {
-    await ctx.admin.from("case_updates").insert({
+  const jaPublicada = (ativ as { publicado_portal?: boolean }).publicado_portal === true;
+  if (concluindoAgora && ativ.visivel_cliente && ativ.case_id && !jaPublicada) {
+    const { error: pubErr } = await ctx.admin.from("case_updates").insert({
       case_id: ativ.case_id,
       titulo: ativ.titulo,
       corpo: "Etapa concluída pela equipe Arché.",
       tipo: "marco",
     });
+    if (!pubErr) await ctx.admin.from("atividades").update({ publicado_portal: true }).eq("id", parsed.data.id);
   }
 
   return NextResponse.json({ ok: true });

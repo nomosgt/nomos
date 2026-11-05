@@ -89,7 +89,7 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
     await fetch("/api/admin/clientes/documentos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id: d.id, visibilidade: nova }) });
   }
   async function excluirDoc(d: DocCaso) {
-    if (!confirm(`Excluir "${d.nome}"? O arquivo sai do Storage e da Sala do cliente.`)) return;
+    if (!confirm(`Arquivar "${d.nome}"? Ele sai da Sala do cliente e desta lista, mas o arquivo é preservado e a ação fica registrada na trilha de auditoria.`)) return;
     const r = await fetch(`/api/admin/clientes/documentos?id=${d.id}`, { method: "DELETE" });
     if (r.ok) setDocs((prev) => prev.filter((x) => x.id !== d.id));
   }
@@ -253,7 +253,7 @@ export function ClienteDocsAprovacoes({ clienteId, casos }: { clienteId: string;
               <a href={`/api/sala/documentos/baixar?path=${encodeURIComponent(d.storage_path)}&modo=baixar`}
                 className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Baixar"><Download className="w-3.5 h-3.5" /></a>
               <button onClick={() => { setEditId(d.id); setEditNome(d.nome); }} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-brand)]" title="Renomear"><Pencil className="w-3.5 h-3.5" /></button>
-              <button onClick={() => void excluirDoc(d)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-rose-700" title="Excluir"><Trash2 className="w-3.5 h-3.5" /></button>
+              <button onClick={() => void excluirDoc(d)} className="p-1.5 text-[color:var(--color-ink-faint)] hover:text-rose-700" title="Arquivar (preserva o arquivo)"><Trash2 className="w-3.5 h-3.5" /></button>
             </div>
           ))}
         </div>

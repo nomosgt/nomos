@@ -10,6 +10,21 @@ export const maxDuration = 30;
 const BUCKET = "case-documents";
 const MAX_BYTES = 20 * 1024 * 1024;
 
+/**
+ * Registra um evento na trilha de auditoria de documentos. Tolerante: se a
+ * tabela case_document_audit ainda não existir (pré-v13), não quebra a operação.
+ */
+async function auditar(
+  admin: ReturnType<typeof createAdminClient>,
+  row: { documento_id?: string | null; case_id?: string | null; nome?: string | null; evento: string; detalhe?: string | null; autor?: string | null },
+) {
+  try {
+    await admin.from("case_document_audit").insert(row);
+  } catch {
+    /* tabela ausente antes do v13 — ignora */
+  }
+}
+
 async function requireAdmin() {
   const supabase = await createClient();
   const { data: u } = await supabase.auth.getUser();
@@ -40,11 +55,20 @@ export async function GET(req: Request) {
     if (!/^[0-9a-f-]{36}$/i.test(caseId)) {
       return NextResponse.json({ error: "case_id invalido" }, { status: 422 });
     }
-    const { data } = await admin
-      .from("case_documents")
-      .select("id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at")
-      .eq("case_id", caseId)
-      .order("created_at", { ascending: false });
+    const incluirArquivados = new URL(req.url).searchParams.get("arquivados") === "1";
+    const cols = "id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at, arquivado";
+    let q = admin.from("case_documents").select(cols).eq("case_id", caseId).order("created_at", { ascending: false });
+    if (!incluirArquivados) q = q.eq("arquivado", false);
+    let { data, error } = await q;
+    // tolera ambiente anterior ao v13 (sem coluna arquivado)
+    if (error && /arquivado|column/i.test(error.message)) {
+      const retry = await admin
+        .from("case_documents")
+        .select("id, nome, storage_path, tipo_mime, tamanho_bytes, categoria, visibilidade, created_at")
+        .eq("case_id", caseId)
+        .order("created_at", { ascending: false });
+      data = retry.data as typeof data;
+    }
     return NextResponse.json({ documentos: data ?? [] });
   }
 
@@ -129,7 +153,7 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: hint }, { status: 500 });
   }
 
-  const { error: dbErr } = await admin.from("case_documents").insert({
+  const { data: inserido, error: dbErr } = await admin.from("case_documents").insert({
     case_id: caseId,
     uploaded_by: adminUser.id,
     nome: file.name,
@@ -138,10 +162,11 @@ export async function POST(req: Request) {
     tamanho_bytes: file.size,
     categoria,
     visibilidade,
-  });
+  }).select("id").single();
   if (dbErr) {
     return NextResponse.json({ error: "Arquivo subiu mas falhou o registro" }, { status: 500 });
   }
+  await auditar(admin, { documento_id: inserido?.id, case_id: caseId, nome: file.name, evento: "criado", detalhe: `${visibilidade} · ${categoria}`, autor: adminUser.id });
   return NextResponse.json({ ok: true, path });
 }
 
@@ -168,12 +193,25 @@ export async function PATCH(req: Request) {
   if (Object.keys(campos).length === 0) return NextResponse.json({ error: "Nada a alterar" }, { status: 422 });
 
   const admin = createAdminClient();
+  const { data: antes } = await admin.from("case_documents").select("case_id, nome, visibilidade").eq("id", id).maybeSingle();
   const { error } = await admin.from("case_documents").update(campos).eq("id", id);
   if (error) return NextResponse.json({ error: "Falha ao salvar" }, { status: 500 });
+
+  if (campos.nome !== undefined && campos.nome !== antes?.nome) {
+    await auditar(admin, { documento_id: id, case_id: antes?.case_id, nome: campos.nome, evento: "renomeado", detalhe: `de "${antes?.nome ?? "?"}"`, autor: adminUser.id });
+  }
+  if (campos.visibilidade !== undefined && campos.visibilidade !== antes?.visibilidade) {
+    await auditar(admin, { documento_id: id, case_id: antes?.case_id, nome: antes?.nome, evento: "visibilidade", detalhe: `${antes?.visibilidade ?? "?"} → ${campos.visibilidade}`, autor: adminUser.id });
+  }
   return NextResponse.json({ ok: true });
 }
 
-/** DELETE ?id= → remove o registro E o arquivo do Storage. */
+/**
+ * DELETE ?id=        → ARQUIVA o documento (exclusão lógica: some das listas,
+ *                       mas o arquivo e o histórico são preservados).
+ * DELETE ?id=&hard=1 → exclusão física definitiva (remove do Storage + registro).
+ *                       Reservado p/ expurgo intencional; sempre audita antes.
+ */
 export async function DELETE(req: Request) {
   if (!isSupabaseConfigured()) {
     return NextResponse.json({ error: "Supabase nao configurado" }, { status: 503 });
@@ -181,15 +219,36 @@ export async function DELETE(req: Request) {
   const adminUser = await requireAdmin();
   if (!adminUser) return NextResponse.json({ error: "Sem permissao" }, { status: 403 });
 
-  const id = new URL(req.url).searchParams.get("id") || "";
+  const sp = new URL(req.url).searchParams;
+  const id = sp.get("id") || "";
+  const hard = sp.get("hard") === "1";
   if (!/^[0-9a-f-]{36}$/i.test(id)) return NextResponse.json({ error: "id invalido" }, { status: 422 });
 
   const admin = createAdminClient();
-  const { data: doc } = await admin.from("case_documents").select("storage_path").eq("id", id).maybeSingle();
-  if (doc?.storage_path) {
-    await admin.storage.from(BUCKET).remove([doc.storage_path]).catch(() => {});
+  const { data: doc } = await admin.from("case_documents").select("storage_path, case_id, nome").eq("id", id).maybeSingle();
+  if (!doc) return NextResponse.json({ error: "Documento nao encontrado" }, { status: 404 });
+
+  if (hard) {
+    // expurgo definitivo — registra ANTES de apagar (trilha sobrevive sem FK)
+    await auditar(admin, { documento_id: id, case_id: doc.case_id, nome: doc.nome, evento: "excluido", detalhe: "exclusão física definitiva", autor: adminUser.id });
+    if (doc.storage_path) await admin.storage.from(BUCKET).remove([doc.storage_path]).catch(() => {});
+    const { error } = await admin.from("case_documents").delete().eq("id", id);
+    if (error) return NextResponse.json({ error: "Falha ao excluir" }, { status: 500 });
+    return NextResponse.json({ ok: true, modo: "excluido" });
   }
-  const { error } = await admin.from("case_documents").delete().eq("id", id);
-  if (error) return NextResponse.json({ error: "Falha ao excluir" }, { status: 500 });
-  return NextResponse.json({ ok: true });
+
+  // padrão: arquivamento lógico (tolerante a ambiente pré-v13)
+  const { error } = await admin
+    .from("case_documents")
+    .update({ arquivado: true, arquivado_em: new Date().toISOString() })
+    .eq("id", id);
+  if (error) {
+    const faltaColuna = /arquivado|column/i.test(error.message);
+    return NextResponse.json(
+      { error: faltaColuna ? "Arquivamento indisponível — rode o SQL do auditoria-v13 no Supabase." : "Falha ao arquivar" },
+      { status: 500 },
+    );
+  }
+  await auditar(admin, { documento_id: id, case_id: doc.case_id, nome: doc.nome, evento: "arquivado", autor: adminUser.id });
+  return NextResponse.json({ ok: true, modo: "arquivado" });
 }

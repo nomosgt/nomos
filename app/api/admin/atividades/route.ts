@@ -164,7 +164,7 @@ export async function PATCH(req: Request) {
   const { id, ...campos } = parsed.data;
 
   const admin = createAdminClient();
-  const { data: atual } = await admin.from("atividades").select("status, titulo, case_id, visivel_cliente").eq("id", id).maybeSingle();
+  const { data: atual } = await admin.from("atividades").select("status, titulo, case_id, visivel_cliente, publicado_portal").eq("id", id).maybeSingle();
   if (!atual) return NextResponse.json({ error: "Atividade nao encontrada" }, { status: 404 });
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -202,16 +202,19 @@ export async function PATCH(req: Request) {
     await admin.from("atividade_historico").insert(eventos.map((evento) => ({ atividade_id: id, evento, autor: "admin" })));
   }
 
-  // conclusão visível → atualização no portal do cliente
+  // conclusão visível → atualização no portal do cliente (publica NO MÁXIMO uma vez)
   const caseId = (updates.case_id as string | undefined) ?? atual.case_id;
   const visivel = (updates.visivel_cliente as boolean | undefined) ?? atual.visivel_cliente;
-  if (concluindoAgora && visivel && caseId) {
-    await admin.from("case_updates").insert({
+  const jaPublicada = (atual as { publicado_portal?: boolean }).publicado_portal === true;
+  if (concluindoAgora && visivel && caseId && !jaPublicada) {
+    const { error: pubErr } = await admin.from("case_updates").insert({
       case_id: caseId,
       titulo: (updates.titulo as string) || atual.titulo,
       corpo: "Etapa concluída pela equipe Arché.",
       tipo: "marco",
     });
+    // marca como publicada só se a inserção no portal funcionou (evita duplicar numa reabertura/reconclusão)
+    if (!pubErr) await admin.from("atividades").update({ publicado_portal: true }).eq("id", id);
   }
 
   return NextResponse.json({ ok: true });

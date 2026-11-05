@@ -6,8 +6,11 @@ import { sincronizarLedger } from "@/lib/atividades/alertas";
 export const runtime = "nodejs";
 
 /**
- * Cron de alertas — roda de hora em hora (Vercel Cron, ver vercel.json).
- * Reconhece atrasos e avisos 24/48h SEM ninguém abrir a página.
+ * Cron de alertas — roda 1x/dia às 08:00 UTC (Vercel Cron, ver vercel.json;
+ * no plano Hobby o máximo é diário). Reconhece atrasos e avisos 24/48h SEM
+ * ninguém abrir a página. Além disso, o GET do admin de atividades chama
+ * sincronizarLedger a cada abertura, então o ledger nunca fica mais defasado
+ * que o intervalo entre acessos do gestor.
  * Idempotente e sem duplicar (dedup no ledger atividade_alertas).
  *
  * Segurança: se CRON_SECRET estiver definido, exige

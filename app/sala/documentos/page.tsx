@@ -17,14 +17,25 @@ export default async function Documentos() {
   if (!u.user) redirect("/sala/login");
   const userId = u.user.id;
 
-  const { data: docs } = await supabase
+  const cols =
+    "id, created_at, nome, storage_path, tipo_mime, tamanho_bytes, categoria, case_id, client_cases!inner(client_id, titulo)";
+  // exclui documentos arquivados; tolera ambiente anterior ao v13 (sem a coluna)
+  let { data: docs, error: docsErr } = await supabase
     .from("case_documents")
-    .select(
-      "id, created_at, nome, storage_path, tipo_mime, tamanho_bytes, categoria, case_id, client_cases!inner(client_id, titulo)",
-    )
+    .select(cols)
     .eq("client_cases.client_id", userId)
     .eq("visibilidade", "cliente")
+    .eq("arquivado", false)
     .order("created_at", { ascending: false });
+  if (docsErr && /arquivado|column/i.test(docsErr.message)) {
+    const retry = await supabase
+      .from("case_documents")
+      .select(cols)
+      .eq("client_cases.client_id", userId)
+      .eq("visibilidade", "cliente")
+      .order("created_at", { ascending: false });
+    docs = retry.data as typeof docs;
+  }
 
   return (
     <div className="space-y-8 max-w-4xl">
