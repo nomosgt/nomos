@@ -112,29 +112,41 @@ export async function POST(req: Request) {
   }
 
   const admin = createAdminClient();
-  const { data: caso } = await admin.from("client_cases").select("id, client_id, titulo").eq("id", d.case_id).maybeSingle();
+  const { data: caso } = await admin.from("client_cases").select("id, client_id").eq("id", d.case_id).maybeSingle();
   if (!caso) return NextResponse.json({ error: "Caso nao encontrado" }, { status: 404 });
 
+  const estagioAlvo = d.tipo === "ajuste" ? d.estagio_alvo : null;
+
+  // caminho PREFERIDO: RPC atômico (insert + recálculo numa única transação)
+  const rpc = await admin.rpc("financeiro_lancar", {
+    p_case_id: d.case_id, p_tipo: d.tipo, p_estagio_alvo: estagioAlvo, p_valor: valorNum,
+    p_data_referencia: d.data_referencia || null, p_descricao: d.descricao || null,
+    p_justificativa: d.justificativa || null, p_autor: adminUser.id, p_autor_nome: adminUser.nome,
+  });
+  if (!rpc.error) {
+    const r = (rpc.data || {}) as { recuperado?: number; potencial?: number; totalCliente?: number };
+    return NextResponse.json({ ok: true, atomico: true, recuperado: r.recuperado, potencial: r.potencial, totalCliente: r.totalCliente });
+  }
+  // se a função ainda não existe (pré-v21), cai no caminho compatível
+  const semRpc = /function .*financeiro_lancar.* does not exist|could not find the function|schema cache/i.test(rpc.error.message);
+  if (!semRpc) {
+    if (/caso_nao_encontrado/.test(rpc.error.message)) return NextResponse.json({ error: "Caso nao encontrado" }, { status: 404 });
+    return NextResponse.json({ error: "Falha ao lançar (transação)." }, { status: 500 });
+  }
+
+  // ---- FALLBACK (compatível antes do v21): insert + recálculo idempotente ----
   const { error } = await admin.from("case_financeiro").insert({
-    case_id: d.case_id,
-    client_id: caso.client_id,
-    case_titulo: caso.titulo,                    // snapshot (sobrevive à exclusão do caso)
-    tipo: d.tipo,
-    estagio_alvo: d.tipo === "ajuste" ? d.estagio_alvo : null,
-    valor: valorNum,
-    data_referencia: d.data_referencia || null,
-    descricao: d.descricao || null,
-    justificativa: d.justificativa || null,
-    autor: adminUser.id,
-    autor_nome: adminUser.nome,
+    case_id: d.case_id, client_id: caso.client_id, case_titulo: null,
+    tipo: d.tipo, estagio_alvo: estagioAlvo, valor: valorNum,
+    data_referencia: d.data_referencia || null, descricao: d.descricao || null,
+    justificativa: d.justificativa || null, autor: adminUser.id, autor_nome: adminUser.nome,
   });
   if (error) {
     const falta = /does not exist|schema cache|relation|estagio_alvo|case_titulo/i.test(error.message);
     return NextResponse.json({ error: falta ? "Rode o SQL do financeiro-v18/v19 no Supabase." : "Falha ao lançar" }, { status: falta ? 503 : 500 });
   }
-
-  const sync = await sincronizar(admin, d.case_id);   // sincronização AUTOMÁTICA e idempotente
-  return NextResponse.json({ ok: true, ...sync });
+  const sync = await sincronizar(admin, d.case_id);
+  return NextResponse.json({ ok: true, atomico: false, ...sync });
 }
 
 const syncSchema = z.object({ case_id: z.string().uuid(), acao: z.literal("sincronizar") });
