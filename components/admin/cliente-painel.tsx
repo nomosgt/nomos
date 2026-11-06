@@ -119,9 +119,19 @@ function CasosTab({ clienteId, cliente, casos }: { clienteId: string; cliente: C
     }
   }
 
+  // campos auditados (com timeline em mudança de etapa) vão pela API; financeiros ficam inline
+  const CAMPOS_API = new Set(["titulo", "tese", "descricao", "etapa", "status", "proxima_acao", "responsavel", "periodo_apuracao"]);
   async function updateCaso(id: string, patch: Record<string, unknown>) {
-    const supabase = createClient();
-    await supabase.from("client_cases").update(patch).eq("id", id);
+    const viaApi: Record<string, unknown> = {};
+    const viaDb: Record<string, unknown> = {};
+    for (const [k, v] of Object.entries(patch)) (CAMPOS_API.has(k) ? viaApi : viaDb)[k] = v;
+    if (Object.keys(viaApi).length) {
+      await fetch("/api/admin/clientes/casos", { method: "PATCH", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ id, ...viaApi }) });
+    }
+    if (Object.keys(viaDb).length) {
+      const supabase = createClient();
+      await supabase.from("client_cases").update(viaDb).eq("id", id);
+    }
     router.refresh();
   }
 
