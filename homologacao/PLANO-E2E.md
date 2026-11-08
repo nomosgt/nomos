@@ -49,6 +49,14 @@ Executado contra o **deploy de homologação** (nunca produção), com os dados 
 | 29 | Navegação integrada | colaborador → tarefa → análise → empresa navegáveis e consistentes |
 | 30 | Concorrência | aprovar + solicitar ajustes simultâneos na mesma análise → uma decisão vence, outra recebe 409; estado final único |
 
+## Central de Comando 2.0 — fechamento (v25)
+
+| # | Fluxo | Critério de PASS |
+|---|-------|------------------|
+| 31 | Notificações internas | enviar análise → aviso ao admin; ajustes/aprovação → aviso ao colaborador; nova tarefa/prazo → aviso ao colaborador; **reemitir o mesmo evento não duplica** (dedup_key); marcar lida persiste; colaborador não lê aviso alheio |
+| 32 | Painel de Empresas | /admin/empresas lista todas; faturamento mostra último período com origem/validação ou "Sem dados" (nunca zero fictício); contadores batem; navegação ao detalhe funciona; sem mistura com recuperação tributária |
+| 33 | Snapshot de versão | admin solicita ajustes → cria snapshot arquivado da versão revisada (encadeado); colaborador edita e reenvia (rev+1); admin consulta a versão revisada anterior **com o conteúdo original intacto** |
+
 ## Pós-execução
 - Registrar PASS/FAIL com evidência (status + corpo da resposta) por item.
 - Defeitos P0/P1 encontrados → corrigir, redeployar homolog, reexecutar o item.

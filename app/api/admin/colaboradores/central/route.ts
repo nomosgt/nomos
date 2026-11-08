@@ -104,12 +104,26 @@ export async function GET(req: Request) {
     const casosSet = new Map<string, string>();
     for (const a of lista) if (a.case_id && (a as { client_cases?: { titulo: string } | null }).client_cases?.titulo) casosSet.set(a.case_id, (a as { client_cases?: { titulo: string } | null }).client_cases!.titulo);
 
+    // análises técnicas do colaborador (tolerante pré-v23)
+    let analises: { id: string; titulo: string; status: string; versao: number; updated_at: string; cliente: string | null }[] = [];
+    try {
+      const { data: ans } = await admin.from("analises")
+        .select("id, titulo, status, versao, updated_at, client_profiles ( nome )")
+        .eq("parceiro_id", perfilId)
+        .neq("status", "arquivada")
+        .order("updated_at", { ascending: false })
+        .limit(50);
+      analises = ((ans ?? []) as unknown as { id: string; titulo: string; status: string; versao: number; updated_at: string; client_profiles?: { nome: string } | null }[])
+        .map((x) => ({ id: x.id, titulo: x.titulo, status: x.status, versao: x.versao, updated_at: x.updated_at, cliente: x.client_profiles?.nome ?? null }));
+    } catch { /* v23 ausente */ }
+
     return NextResponse.json({
       colaborador: colab,
       stats: statsDe(lista),
       tarefas,
       historico,
       casos: [...casosSet].map(([id, titulo]) => ({ id, titulo })),
+      analises,
     });
   }
 

@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { notificar } from "@/lib/notificacoes";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -159,6 +160,12 @@ export async function PATCH(req: Request) {
       analise_id: id, evento: reenvio ? "reenviada" : "enviada",
       detalhe: reenvio ? `revisão ${(atual.versao ?? 1) + 1}` : null, autor: ctx.parceiro.nome,
     }).then(() => {}, () => {});
+    await notificar(ctx.admin, {
+      destinatario_tipo: "admin", evento: "analise_enviada",
+      titulo: `${ctx.parceiro.nome} enviou análise para revisão${reenvio ? ` (rev ${(atual.versao ?? 1) + 1})` : ""}`,
+      referencia_tipo: "analise", referencia_id: id,
+      dedup_key: `analise_enviada:${id}:v${reenvio ? (atual.versao ?? 1) + 1 : atual.versao ?? 1}`,
+    });
     return NextResponse.json({ ok: true, status: "enviada" });
   }
 

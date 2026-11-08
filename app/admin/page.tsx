@@ -7,6 +7,7 @@ import { formatBRL } from "@/lib/utils";
 import { derivarAlerta } from "@/lib/atividades/alertas";
 import { StatusBadge } from "@/components/admin/status-badge";
 import { CopilotoWidget } from "@/components/admin/copiloto-widget";
+import { NotificacoesAdmin } from "@/components/admin/notificacoes-admin";
 
 export const dynamic = "force-dynamic";
 
@@ -54,6 +55,7 @@ export default async function AdminDashboard() {
 
   return (
     <div className="space-y-12">
+      <NotificacoesAdmin />
       <div>
         <h1 className="font-serif text-3xl lg:text-4xl tracking-tight mb-2">
           Visão geral

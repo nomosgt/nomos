@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { notificar } from "@/lib/notificacoes";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -113,7 +114,7 @@ export async function PATCH(req: Request) {
   }
 
   const admin = createAdminClient();
-  const { data: atual } = await admin.from("analises").select("id, status").eq("id", id).maybeSingle();
+  const { data: atual } = await admin.from("analises").select("*").eq("id", id).maybeSingle();
   if (!atual) return NextResponse.json({ error: "Nao encontrada" }, { status: 404 });
   if (!PODE[acao].includes(atual.status)) {
     return NextResponse.json({ error: `Transição inválida: ${atual.status} não permite "${acao}".` }, { status: 409 });
@@ -126,10 +127,48 @@ export async function PATCH(req: Request) {
   if (acao === "aprovar") { updates.status = "aprovada"; updates.revisada_em = agora; updates.revisada_por = adminUser.nome; }
   if (acao === "arquivar") updates.status = "arquivada";
 
+  // INTEGRIDADE DE VERSÕES: ao solicitar ajustes, congela um snapshot da versão
+  // revisada (arquivada, encadeada via versao_anterior) ANTES de o colaborador
+  // editar em cima — a revisão anterior permanece consultável, nunca sobrescrita.
+  if (acao === "ajustes") {
+    const a = atual as Record<string, unknown>;
+    const { data: snap } = await admin.from("analises").insert({
+      parceiro_id: a.parceiro_id, parceiro_nome: a.parceiro_nome,
+      client_id: a.client_id, case_id: a.case_id, atividade_id: a.atividade_id,
+      titulo: `${a.titulo} (versão ${a.versao ?? 1} — revisada)`,
+      periodo_analisado: a.periodo_analisado, objetivo: a.objetivo, dados_utilizados: a.dados_utilizados,
+      diagnostico: a.diagnostico, oportunidades: a.oportunidades, riscos: a.riscos,
+      recomendacoes: a.recomendacoes, conclusao: a.conclusao,
+      status: "arquivada", versao: a.versao ?? 1,
+      versao_anterior: a.versao_anterior ?? null,
+      enviada_em: a.enviada_em,
+    }).select("id").single();
+    if (snap?.id) updates.versao_anterior = snap.id;  // o registro vivo encadeia ao snapshot
+  }
+
   // anti-corrida: só aplica se o status ainda for o lido (duas decisões simultâneas → uma ganha, outra 409)
   const { data: ok, error } = await admin.from("analises").update(updates).eq("id", id).eq("status", atual.status).select("id");
   if (error) return NextResponse.json({ error: "Falha ao salvar" }, { status: 500 });
   if (!ok || !ok.length) return NextResponse.json({ error: "A análise mudou de estado — recarregue antes de decidir." }, { status: 409 });
+
+  // notificações internas idempotentes ao colaborador
+  const pid = (atual as { parceiro_id?: string | null }).parceiro_id;
+  if (pid && acao === "ajustes") {
+    await notificar(admin, {
+      destinatario_tipo: "parceiro", destinatario_id: pid, evento: "analise_ajustes",
+      titulo: `Ajustes solicitados na análise "${(atual as { titulo?: string }).titulo}"`,
+      referencia_tipo: "analise", referencia_id: id,
+      dedup_key: `analise_ajustes:${id}:v${(atual as { versao?: number }).versao ?? 1}`,
+    });
+  }
+  if (pid && acao === "aprovar") {
+    await notificar(admin, {
+      destinatario_tipo: "parceiro", destinatario_id: pid, evento: "analise_aprovada",
+      titulo: `Análise aprovada: "${(atual as { titulo?: string }).titulo}"`,
+      referencia_tipo: "analise", referencia_id: id,
+      dedup_key: `analise_aprovada:${id}`,
+    });
+  }
 
   const EVENTO: Record<string, string> = { iniciar_revisao: "em_revisao", ajustes: "ajustes_solicitados", aprovar: "aprovada", arquivar: "arquivada" };
   await admin.from("analise_eventos").insert({

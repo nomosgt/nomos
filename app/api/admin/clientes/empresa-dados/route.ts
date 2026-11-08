@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
+import { notificar } from "@/lib/notificacoes";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -86,13 +87,23 @@ export async function POST(req: Request) {
   const { data: dup } = await admin.from("empresa_dados").select("id").eq("client_id", d.client_id).eq("tipo", d.tipo).eq("periodo", d.periodo.trim()).eq("valor", valorNum).limit(1);
   if (dup && dup.length) return NextResponse.json({ error: "Registro idêntico já existe para este tipo/período." }, { status: 409 });
 
-  const { error } = await admin.from("empresa_dados").insert({
+  const { data: novo, error } = await admin.from("empresa_dados").insert({
     client_id: d.client_id, tipo: d.tipo, periodo: d.periodo.trim(), valor: valorNum,
     origem: d.origem || "declarado", observacao: d.observacao || null,
     autor_tipo: "admin", autor_nome: adminUser.nome,
     validado: d.origem === "validado",   // dado declarado NUNCA nasce validado
-  });
+  }).select("id").single();
   if (error) return NextResponse.json({ error: hintV23(error.message) || "Falha ao salvar" }, { status: 503 });
+
+  // dado não validado → aviso interno (idempotente por registro)
+  if (novo && d.origem !== "validado") {
+    await notificar(admin, {
+      destinatario_tipo: "admin", evento: "empresa_dado",
+      titulo: `Dado empresarial aguardando validação (${d.tipo} · ${d.periodo.trim()})`,
+      referencia_tipo: "cliente", referencia_id: d.client_id,
+      dedup_key: `empresa_dado:${novo.id}`,
+    });
+  }
   return NextResponse.json({ ok: true });
 }
 

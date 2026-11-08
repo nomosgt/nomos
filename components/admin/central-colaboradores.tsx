@@ -27,7 +27,20 @@ interface Perfil {
   tarefas: { id: string; titulo: string; status: string; prazo: string | null; prioridade: string; cliente: string | null; caso: string | null; alerta: string | null }[];
   historico: { evento: string; autor: string | null; created_at: string; atividade: string }[];
   casos: { id: string; titulo: string }[];
+  analises?: { id: string; titulo: string; status: string; versao: number; updated_at: string; cliente: string | null }[];
 }
+
+const ANALISE_ST: Record<string, string> = {
+  rascunho: "text-gray-600 border-gray-200 bg-gray-50",
+  enviada: "text-blue-700 border-blue-200 bg-blue-50",
+  em_revisao: "text-indigo-700 border-indigo-200 bg-indigo-50",
+  ajustes_solicitados: "text-amber-700 border-amber-200 bg-amber-50",
+  aprovada: "text-emerald-700 border-emerald-200 bg-emerald-50",
+};
+const ANALISE_LABEL: Record<string, string> = {
+  rascunho: "Rascunho", enviada: "Enviada", em_revisao: "Em revisão",
+  ajustes_solicitados: "Ajustes", aprovada: "Aprovada",
+};
 
 const STATUS_LABEL: Record<string, string> = {
   pendente: "Pendente", em_andamento: "Em andamento", aguardando_revisao: "Aguard. revisão",
@@ -215,6 +228,24 @@ export function CentralColaboradores() {
                         </div>
                       )}
                     </div>
+
+                    {/* análises técnicas */}
+                    {perfil.analises && perfil.analises.length > 0 && (
+                      <div>
+                        <div className="font-mono text-[10px] uppercase tracking-[0.2em] text-[color:var(--color-ink-muted)] mb-2">Análises técnicas ({perfil.analises.length})</div>
+                        <div className="divide-y divide-[color:var(--color-hairline)] border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] max-h-48 overflow-y-auto">
+                          {perfil.analises.map((an) => (
+                            <Link key={an.id} href={`/admin/analises?abrir=${an.id}`} className="px-3 py-2 flex flex-wrap items-center gap-x-3 gap-y-1 text-[12.5px] hover:bg-[color:var(--color-surface)]/60">
+                              <span className="flex-1 min-w-[160px] font-medium">{an.titulo}</span>
+                              {an.cliente && <span className="text-[color:var(--color-ink-muted)]">{an.cliente}</span>}
+                              {an.versao > 1 && <span className="font-mono text-[9px] text-[color:var(--color-brand)]">rev {an.versao}</span>}
+                              <span className={`font-mono text-[9px] uppercase px-1.5 py-0.5 border ${ANALISE_ST[an.status] || "border-[color:var(--color-hairline)]"}`}>{ANALISE_LABEL[an.status] || an.status}</span>
+                              <span className="font-mono text-[10px] text-[color:var(--color-ink-faint)]">{new Date(an.updated_at).toLocaleDateString("pt-BR")}</span>
+                            </Link>
+                          ))}
+                        </div>
+                      </div>
+                    )}
 
                     {/* casos vinculados */}
                     {perfil.casos.length > 0 && (

@@ -57,6 +57,17 @@ export function AnalisesAdmin() {
   useEffect(() => { void carregar(); }, [carregar]);
   useEffect(() => { const t = setInterval(() => void carregar(), 45000); return () => clearInterval(t); }, [carregar]);
 
+  // deep-link: /admin/analises?abrir=<id> (vindo do perfil do colaborador ou de notificação)
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    const id = q.get("abrir");
+    if (id && /^[0-9a-f-]{36}$/i.test(id)) {
+      void abrir(id);
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
+
   async function abrir(id: string) {
     const r = await fetch(`/api/admin/analises?id=${id}`, { cache: "no-store" });
     if (r.ok) { setAberta(await r.json()); setComentario(""); setErro(null); }

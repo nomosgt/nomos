@@ -3,6 +3,7 @@ import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { derivarAlerta, sincronizarLedger } from "@/lib/atividades/alertas";
+import { notificar } from "@/lib/notificacoes";
 import { z } from "zod";
 
 export const runtime = "nodejs";
@@ -143,6 +144,14 @@ export async function POST(req: Request) {
   if (error || !data) return NextResponse.json({ error: hint(error?.message || "") || "Falha ao criar" }, { status: 500 });
 
   await admin.from("atividade_historico").insert({ atividade_id: data.id, evento: "Atividade criada", autor: "admin" });
+  if (parsed.data.parceiro_id) {
+    await notificar(admin, {
+      destinatario_tipo: "parceiro", destinatario_id: parsed.data.parceiro_id, evento: "tarefa_nova",
+      titulo: `Nova tarefa: ${parsed.data.titulo.trim()}`,
+      referencia_tipo: "atividade", referencia_id: data.id,
+      dedup_key: `tarefa_nova:${data.id}`,
+    });
+  }
   return NextResponse.json({ ok: true, id: data.id });
 }
 
@@ -207,6 +216,19 @@ export async function PATCH(req: Request) {
   if (campos.parceiro_id !== undefined) eventos.push("Responsável alterado");
   if (eventos.length) {
     await admin.from("atividade_historico").insert(eventos.map((evento) => ({ atividade_id: id, evento, autor: "admin" })));
+  }
+
+  // prazo alterado → aviso interno ao responsável (idempotente por novo prazo)
+  if (campos.prazo !== undefined) {
+    const { data: resp } = await admin.from("atividades").select("parceiro_id, titulo").eq("id", id).maybeSingle();
+    if (resp?.parceiro_id) {
+      await notificar(admin, {
+        destinatario_tipo: "parceiro", destinatario_id: resp.parceiro_id, evento: "tarefa_prazo",
+        titulo: `Prazo alterado: ${resp.titulo}`,
+        referencia_tipo: "atividade", referencia_id: id,
+        dedup_key: `tarefa_prazo:${id}:${String(updates.prazo ?? "sem")}`,
+      });
+    }
   }
 
   // conclusão visível → atualização no portal do cliente (publica NO MÁXIMO uma vez)
