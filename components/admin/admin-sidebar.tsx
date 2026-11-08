@@ -35,6 +35,7 @@ const GRUPOS: {
       { href: "/admin/colaboradores", label: "Colaboradores", icon: UserCheck },
       { href: "/admin/parceiros", label: "Supervisão", icon: Handshake },
       { href: "/admin/atividades", label: "Atividades", icon: ListTodo },
+      { href: "/admin/analises", label: "Análises", icon: PenLine },
       { href: "/admin/arquivos", label: "Arquivos", icon: FolderOpen },
     ],
   },

@@ -25,6 +25,7 @@ import { AprovacoesParceiro } from "@/components/parceiros/aprovacoes-parceiro";
 import { DocumentosDrive } from "@/components/parceiros/documentos-drive";
 import { TarefasArche } from "@/components/parceiros/tarefas-arche";
 import { AtividadesAdvogada } from "@/components/parceiros/atividades-advogada";
+import { AnalisesColaborador } from "@/components/parceiros/analises-colaborador";
 import {
   Modal, Field, Badge, UrgencyDot, EmptyState,
   inputCls, selectCls, btnBrand, btnGhost, btnDanger,
@@ -198,6 +199,7 @@ function Painel({ db, setTab }: { db: DB; setTab: (t: Tab) => void }) {
       <TarefasArche />
 
       <AtividadesAdvogada />
+      <AnalisesColaborador />
 
       <FinanceiroCard />
 

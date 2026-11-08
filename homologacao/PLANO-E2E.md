@@ -34,6 +34,21 @@ Executado contra o **deploy de homologação** (nunca produção), com os dados 
 | 19 | Aguardando revisão | ADV clica "Enviar p/ revisão" | status `aguardando_revisao` persiste; badge amarelo no admin; contador "Revisão" sobe; histórico registra a transição; ADV **não** consegue `cancelada` (422) |
 | 20 | Cancelar (só admin) | ADMIN cancela uma tarefa | status `cancelada`; some de "abertas" do colaborador; histórico registra; indicadores não contam cancelada como concluída |
 
+## Análises técnicas e Inteligência Empresarial (v23/v24)
+
+| # | Fluxo | Critério de PASS |
+|---|-------|------------------|
+| 21 | Criar análise (ADV) | registro persistido vinculado a tarefa/empresa; rascunho visível só ao autor e ao admin |
+| 22 | Enviar p/ revisão | status `enviada`; aparece em /admin/analises; evento único em `analise_eventos`; admin vê conteúdo+anexos |
+| 23 | Solicitar ajustes | sem comentário → 422; com → status `ajustes_solicitados`, colaborador vê o comentário e volta a poder editar |
+| 24 | Reenvio/versionamento | corrigir e reenviar → `enviada` com versao+1; evento `reenviada`; histórico preservado |
+| 25 | Aprovação | status `aprovada` + revisada_por/em; análise fica **imutável** p/ colaborador (PATCH → 409); 2ª decisão simultânea → 409 |
+| 26 | Faturamento | registrar faturamento mensal c/ período → persiste; nasce **não validado**; registro idêntico duplicado → 409 |
+| 27 | Correção empresarial | corrigir valor sem justificativa → 422; com → novo valor + `empresa_dados_audit` com anterior; **caixa recuperado inalterado** |
+| 28 | Isolamento análises | ADV tenta análise/empresa de outro → 404/403; anexo alheio → 404 |
+| 29 | Navegação integrada | colaborador → tarefa → análise → empresa navegáveis e consistentes |
+| 30 | Concorrência | aprovar + solicitar ajustes simultâneos na mesma análise → uma decisão vence, outra recebe 409; estado final único |
+
 ## Pós-execução
 - Registrar PASS/FAIL com evidência (status + corpo da resposta) por item.
 - Defeitos P0/P1 encontrados → corrigir, redeployar homolog, reexecutar o item.

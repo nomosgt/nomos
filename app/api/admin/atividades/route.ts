@@ -119,21 +119,27 @@ export async function POST(req: Request) {
   }
 
   const admin = createAdminClient();
-  const { data, error } = await admin
+  const baseInsert = {
+    titulo: parsed.data.titulo.trim(),
+    descricao: parsed.data.descricao || null,
+    parceiro_id: parsed.data.parceiro_id || null,
+    client_id: parsed.data.client_id || null,
+    case_id: parsed.data.case_id || null,
+    prioridade: parsed.data.prioridade || "media",
+    prazo: prazoISO ? prazoISO.toISOString() : null,
+    visivel_cliente: !!parsed.data.visivel_cliente,
+    criado_por: "admin",
+  };
+  // prazo_original imutável (pontualidade original); tolera ambiente pré-v24
+  let { data, error } = await admin
     .from("atividades")
-    .insert({
-      titulo: parsed.data.titulo.trim(),
-      descricao: parsed.data.descricao || null,
-      parceiro_id: parsed.data.parceiro_id || null,
-      client_id: parsed.data.client_id || null,
-      case_id: parsed.data.case_id || null,
-      prioridade: parsed.data.prioridade || "media",
-      prazo: prazoISO ? prazoISO.toISOString() : null,
-      visivel_cliente: !!parsed.data.visivel_cliente,
-      criado_por: "admin",
-    })
+    .insert({ ...baseInsert, prazo_original: prazoISO ? prazoISO.toISOString() : null })
     .select("id")
     .single();
+  if (error && /prazo_original|column|schema cache/i.test(error.message)) {
+    const retry = await admin.from("atividades").insert(baseInsert).select("id").single();
+    data = retry.data; error = retry.error;
+  }
   if (error || !data) return NextResponse.json({ error: hint(error?.message || "") || "Falha ao criar" }, { status: 500 });
 
   await admin.from("atividade_historico").insert({ atividade_id: data.id, evento: "Atividade criada", autor: "admin" });
@@ -164,7 +170,7 @@ export async function PATCH(req: Request) {
   const { id, ...campos } = parsed.data;
 
   const admin = createAdminClient();
-  const { data: atual } = await admin.from("atividades").select("status, titulo, case_id, visivel_cliente, publicado_portal").eq("id", id).maybeSingle();
+  const { data: atual } = await admin.from("atividades").select("status, titulo, case_id, visivel_cliente, publicado_portal, prazo").eq("id", id).maybeSingle();
   if (!atual) return NextResponse.json({ error: "Atividade nao encontrada" }, { status: 404 });
 
   const updates: Record<string, unknown> = { updated_at: new Date().toISOString() };
@@ -193,10 +199,11 @@ export async function PATCH(req: Request) {
   const { error } = await admin.from("atividades").update(updates).eq("id", id);
   if (error) return NextResponse.json({ error: "Falha ao salvar" }, { status: 500 });
 
-  // histórico
+  // histórico com valores de→para (preserva a linha do tempo dos prazos)
+  const fmtH = (iso: unknown) => (iso ? new Date(String(iso)).toLocaleString("pt-BR", { day: "2-digit", month: "2-digit", year: "numeric", hour: "2-digit", minute: "2-digit" }) : "sem prazo");
   const eventos: string[] = [];
-  if (campos.status) eventos.push(`Status → ${campos.status}`);
-  if (campos.prazo !== undefined) eventos.push("Prazo alterado");
+  if (campos.status) eventos.push(`Status: ${atual.status} → ${campos.status}`);
+  if (campos.prazo !== undefined) eventos.push(`Prazo: ${fmtH((atual as { prazo?: string }).prazo)} → ${fmtH(updates.prazo)}`);
   if (campos.parceiro_id !== undefined) eventos.push("Responsável alterado");
   if (eventos.length) {
     await admin.from("atividade_historico").insert(eventos.map((evento) => ({ atividade_id: id, evento, autor: "admin" })));

@@ -8,7 +8,8 @@ import { ClientePainel } from "@/components/admin/cliente-painel";
 import { ClienteDocsAprovacoes } from "@/components/admin/cliente-docs-aprovacoes";
 import { FinanceiroCaso } from "@/components/admin/financeiro-caso";
 import { ClienteCadastro } from "@/components/admin/cliente-cadastro";
-import { Wallet, Building2 } from "lucide-react";
+import { EmpresaDados } from "@/components/admin/empresa-dados";
+import { Wallet, Building2, BarChart3 } from "lucide-react";
 
 export const dynamic = "force-dynamic";
 
@@ -88,6 +89,16 @@ export default async function ClienteDetalhe({ params }: { params: Promise<{ id:
           <FinanceiroCaso casos={(casos.data || []).map((c) => ({ id: c.id, titulo: c.titulo }))} />
         </div>
       )}
+
+      <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)] p-6">
+        <h3 className="flex items-center gap-2 font-serif text-lg mb-1">
+          <BarChart3 className="w-4 h-4 text-[color:var(--color-brand)]" /> Inteligência Empresarial
+        </h3>
+        <p className="text-[12px] text-[color:var(--color-ink-muted)] mb-4">
+          Faturamento e dados econômicos da empresa — rastreáveis, com origem e validação. Separado do livro tributário.
+        </p>
+        <EmpresaDados clienteId={id} />
+      </div>
 
       <div className="flex items-center gap-3 pt-4 border-t border-[color:var(--color-hairline)]">
         <Link
