@@ -1,7 +1,7 @@
 "use client";
 
 import { useCallback, useEffect, useState } from "react";
-import { ListTodo, AlertTriangle, Clock, CheckCircle2, Circle, PlayCircle, Paperclip } from "lucide-react";
+import { ListTodo, AlertTriangle, Clock, CheckCircle2, Circle, PlayCircle, Paperclip, Eye } from "lucide-react";
 import { AnexosAtividade } from "@/components/atividades/anexos-atividade";
 
 /**
@@ -58,7 +58,7 @@ export function AtividadesAdvogada() {
 
   const atrasadas = atividades.filter((a) => a.alerta === "atraso").length;
   const vis = atividades.filter((a) =>
-    filtro === "todas" ? true : filtro === "atrasadas" ? a.alerta === "atraso" : a.status !== "concluida",
+    filtro === "todas" ? true : filtro === "atrasadas" ? a.alerta === "atraso" : (a.status !== "concluida" && a.status !== "cancelada"),
   );
 
   return (
@@ -109,6 +109,7 @@ export function AtividadesAdvogada() {
                 <button onClick={() => setAnexosAberto(anexosAberto === a.id ? null : a.id)} title="Anexos" className={`inline-flex items-center justify-center w-8 h-8 border transition-colors ${anexosAberto === a.id ? "border-[color:var(--color-brand)] bg-blue-50/60 text-[color:var(--color-brand)]" : "border-[color:var(--color-hairline)] text-[color:var(--color-ink-faint)] hover:text-[color:var(--color-ink)]"}`}><Paperclip className="w-4 h-4" /></button>
                 <BotaoStatus ativo={a.status === "pendente"} onClick={() => void mudar(a, "pendente")} icon={Circle} label="Pendente" />
                 <BotaoStatus ativo={a.status === "em_andamento"} onClick={() => void mudar(a, "em_andamento")} icon={PlayCircle} label="Em andamento" cor="text-[color:var(--color-brand)]" />
+                <BotaoStatus ativo={a.status === "aguardando_revisao"} onClick={() => void mudar(a, "aguardando_revisao")} icon={Eye} label="Enviar p/ revisão" cor="text-amber-700" />
                 <BotaoStatus ativo={a.status === "concluida"} onClick={() => void mudar(a, "concluida")} icon={CheckCircle2} label="Concluir" cor="text-emerald-700" />
               </div>
               {anexosAberto === a.id && (

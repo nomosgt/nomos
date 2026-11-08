@@ -32,7 +32,10 @@ const PRIO_CLS: Record<string, string> = {
   media: "text-amber-700 border-amber-200 bg-amber-50",
   baixa: "text-gray-600 border-gray-200 bg-gray-50",
 };
-const STATUS_LABEL: Record<string, string> = { pendente: "Pendente", em_andamento: "Em andamento", concluida: "Concluída" };
+const STATUS_LABEL: Record<string, string> = {
+  pendente: "Pendente", em_andamento: "Em andamento", aguardando_revisao: "Aguard. revisão",
+  concluida: "Concluída", cancelada: "Cancelada",
+};
 const ALERTA_LABEL: Record<string, string> = { atraso: "Atrasada", aviso_24h: "Vence em 24h", aviso_48h: "Vence em 48h" };
 
 function isoLocal(iso: string | null): string {
@@ -63,6 +66,15 @@ export function AtividadesAdmin() {
 
   const [modal, setModal] = useState<Partial<Atividade> | null>(null);
   const [anexosAberto, setAnexosAberto] = useState<string | null>(null);
+
+  // deep-link da Central de Comando: /admin/atividades?novo=1&parceiro=<id>
+  useEffect(() => {
+    const q = new URLSearchParams(window.location.search);
+    if (q.get("novo") === "1") {
+      setModal({ ...vazia(), parceiro_id: q.get("parceiro") || null });
+      window.history.replaceState({}, "", window.location.pathname);
+    }
+  }, []);
 
   const carregar = useCallback(async () => {
     try {

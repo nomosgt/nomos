@@ -51,9 +51,10 @@ export async function GET(req: Request) {
   return NextResponse.json({ atividades });
 }
 
+// colaborador pode iniciar, pedir revisão e concluir — NÃO pode cancelar (só admin)
 const patchSchema = z.object({
   id: z.string().uuid(),
-  status: z.enum(["pendente", "em_andamento", "concluida"]),
+  status: z.enum(["pendente", "em_andamento", "aguardando_revisao", "concluida"]),
 });
 
 export async function PATCH(req: Request) {

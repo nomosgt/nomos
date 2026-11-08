@@ -24,6 +24,16 @@ Executado contra o **deploy de homologação** (nunca produção), com os dados 
 | 14 | Isolamento | criar 2º cliente fictício; CLIENTE A tenta recursos de B | toda rota de leitura/escrita cruzada → 404/403; listas não vazam |
 | 15 | Permissões | ADV (código) tenta rotas financeiras/cadastrais/casos | 401/403 em todas; ADV só acessa as próprias atividades/anexos |
 
+## Central de Comando · Colaboradores (v23)
+
+| # | Fluxo | Passos | Critério de PASS |
+|---|-------|--------|------------------|
+| 16 | Central consolidada | ADMIN abre /admin/colaboradores | cards (colaboradores/abertas/prazos 7d/atrasadas/revisão/concluídas 30d) batem com contagem manual das atividades do banco; agenda lista atrasadas/hoje/semana corretas |
+| 17 | Perfil expansível | clicar num colaborador | expande com tarefas, histórico real (atividade_historico), indicadores (no prazo/fora/tempo médio) e casos vinculados; colaborador sem dados mostra "dados insuficientes", não zero inventado |
+| 18 | Nova tarefa via perfil | botão "+ Nova tarefa/deadline" | abre /admin/atividades com modal pré-selecionado no colaborador; salvar → tarefa aparece na Central do colaborador e nas stats do perfil |
+| 19 | Aguardando revisão | ADV clica "Enviar p/ revisão" | status `aguardando_revisao` persiste; badge amarelo no admin; contador "Revisão" sobe; histórico registra a transição; ADV **não** consegue `cancelada` (422) |
+| 20 | Cancelar (só admin) | ADMIN cancela uma tarefa | status `cancelada`; some de "abertas" do colaborador; histórico registra; indicadores não contam cancelada como concluída |
+
 ## Pós-execução
 - Registrar PASS/FAIL com evidência (status + corpo da resposta) por item.
 - Defeitos P0/P1 encontrados → corrigir, redeployar homolog, reexecutar o item.

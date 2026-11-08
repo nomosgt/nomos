@@ -148,7 +148,7 @@ const patchSchema = z.object({
   client_id: z.string().uuid().optional().nullable(),
   case_id: z.string().uuid().optional().nullable(),
   prioridade: z.enum(["baixa", "media", "alta"]).optional(),
-  status: z.enum(["pendente", "em_andamento", "concluida"]).optional(),
+  status: z.enum(["pendente", "em_andamento", "aguardando_revisao", "concluida", "cancelada"]).optional(),
   prazo: z.string().optional().nullable(),
   visivel_cliente: z.boolean().optional(),
 });
