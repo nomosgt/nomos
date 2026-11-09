@@ -174,8 +174,9 @@ export function ParceirosCentral() {
       if (!r.ok) throw new Error(j.error || "erro");
       setParceiros(j.parceiros ?? []);
       setCases(j.cases ?? []);
-    } catch {
-      setErro("Não foi possível carregar. Rodou o SQL do parceiros-v2 no Supabase?");
+    } catch (e) {
+      // mostra o erro REAL do backend — nunca mascarar como "nenhum colaborador"
+      setErro(e instanceof Error && e.message !== "erro" ? e.message : "Erro de conexão ou de backend ao listar colaboradores.");
     } finally {
       setLoading(false);
     }
@@ -266,7 +267,8 @@ export function ParceirosCentral() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ case_id: pub.caseId, titulo: pub.titulo, corpo: pub.corpo }),
       });
-      setPubMsg(r.ok ? "Publicado na Sala do Cliente ✓" : "Falha ao publicar.");
+      const j = await r.json().catch(() => ({} as { error?: string }));
+      setPubMsg(r.ok ? "Publicado na Sala do Cliente ✓" : (j.error || "Falha ao publicar."));
       if (r.ok) setPub({ caseId: "", titulo: "", corpo: "" });
     } finally {
       setSalvando(false);
@@ -282,8 +284,17 @@ export function ParceirosCentral() {
   }
   if (erro) {
     return (
-      <div className="flex items-start gap-2 p-4 border border-amber-200 bg-amber-50 text-[13px] text-amber-900">
-        <AlertTriangle className="w-4 h-4 mt-0.5" /> {erro}
+      <div className="p-4 border border-amber-200 bg-amber-50 text-[13px] text-amber-900 space-y-3">
+        <div className="flex items-start gap-2">
+          <AlertTriangle className="w-4 h-4 mt-0.5 flex-shrink-0" />
+          <span><strong>Falha ao carregar os colaboradores.</strong> {erro}</span>
+        </div>
+        <button
+          onClick={() => void carregar()}
+          className="inline-flex items-center gap-1.5 px-3 py-1.5 border border-amber-400 text-[11px] font-mono uppercase tracking-wider hover:bg-amber-100"
+        >
+          <RefreshCw className="w-3 h-3" /> Tentar novamente
+        </button>
       </div>
     );
   }

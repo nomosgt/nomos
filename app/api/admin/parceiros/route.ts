@@ -38,8 +38,8 @@ export async function GET() {
   const [codigos, dados, cases, financeiro] = await Promise.all([
     admin
       .from("parceiros_codigos")
-      .select("id, codigo, nome, percentual, ativo, papel, ultimo_acesso, created_at")
-      .order("created_at", { ascending: false }),
+      .select("id, codigo, nome, percentual, ativo, papel, ultimo_acesso, criado_em")
+      .order("criado_em", { ascending: false }),
     admin.from("parceiro_dados").select("parceiro_id, dados, updated_at, updated_by"),
     admin
       .from("client_cases")
@@ -51,6 +51,15 @@ export async function GET() {
       .from("parceiro_financeiro")
       .select("parceiro_id, percentual, pendente, proximo_pagamento, proximo_valor, historico, observacoes"),
   ]);
+
+  // NUNCA mascarar erro de consulta como lista vazia: se a query principal
+  // falhou, devolve erro real (a UI mostra "falha ao carregar", não "nenhum colaborador").
+  if (codigos.error) {
+    return NextResponse.json(
+      { error: `Falha ao listar colaboradores: ${codigos.error.message}` },
+      { status: 500 },
+    );
+  }
 
   const dadosMap = new Map(
     (dados.data ?? []).map((d) => [d.parceiro_id, d]),
@@ -183,11 +192,15 @@ export async function POST(req: Request) {
     return NextResponse.json({ error: "Payload invalido" }, { status: 422 });
   }
   const admin = createAdminClient();
+  // valida o caso antes de publicar (evita 500 opaco por FK)
+  const { data: caso } = await admin.from("client_cases").select("id").eq("id", parsed.data.case_id).maybeSingle();
+  if (!caso) return NextResponse.json({ error: "Caso nao encontrado" }, { status: 404 });
+
   const { error } = await admin.from("case_updates").insert({
     case_id: parsed.data.case_id,
     titulo: parsed.data.titulo,
     corpo: parsed.data.corpo,
-    tipo: "update",
+    tipo: "info",   // BUG corrigido: "update" violava o check (info|marco|recebimento|pendencia|risco)
   });
   if (error) return NextResponse.json({ error: "Falha ao publicar" }, { status: 500 });
   return NextResponse.json({ ok: true });
