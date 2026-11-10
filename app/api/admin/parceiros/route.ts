@@ -52,11 +52,14 @@ export async function GET() {
       .select("parceiro_id, percentual, pendente, proximo_pagamento, proximo_valor, historico, observacoes"),
   ]);
 
-  // NUNCA mascarar erro de consulta como lista vazia: se a query principal
-  // falhou, devolve erro real (a UI mostra "falha ao carregar", não "nenhum colaborador").
+  // NUNCA mascarar erro de consulta como lista vazia — mas também NUNCA expor
+  // a mensagem bruta do Postgres ao frontend: detalhe fica no log interno,
+  // o cliente recebe mensagem segura + ID de correlação para rastrear.
   if (codigos.error) {
+    const correlacao = Math.random().toString(36).slice(2, 10);
+    console.error(`[admin/parceiros][${correlacao}] erro ao listar colaboradores:`, codigos.error.message);
     return NextResponse.json(
-      { error: `Falha ao listar colaboradores: ${codigos.error.message}` },
+      { error: `Não foi possível carregar os colaboradores. (ref: ${correlacao})` },
       { status: 500 },
     );
   }

@@ -57,6 +57,13 @@ Executado contra o **deploy de homologação** (nunca produção), com os dados 
 | 32 | Painel de Empresas | /admin/empresas lista todas; faturamento mostra último período com origem/validação ou "Sem dados" (nunca zero fictício); contadores batem; navegação ao detalhe funciona; sem mistura com recuperação tributária |
 | 33 | Snapshot de versão | admin solicita ajustes → cria snapshot arquivado da versão revisada (encadeado); colaborador edita e reenvia (rev+1); admin consulta a versão revisada anterior **com o conteúdo original intacto** |
 
+## Central do Parceiro — correção 6a27352 (pendentes de execução real)
+
+| # | Fluxo | Critério de PASS | Status |
+|---|-------|------------------|--------|
+| 34 | Listagem de colaboradores | Admin autenticado abre /admin/parceiros e vê **Júlia e Gabriela** listados com snapshot/financeiro; nenhum estado vazio falso; em caso de falha de backend, aparece "Não foi possível carregar os colaboradores (ref: …)" com botão de tentar novamente — nunca "Nenhum colaborador" | **PENDENTE — não executado** |
+| 35 | Publicar atualização na Sala | Publicar num **caso fictício de homologação** → `case_updates` recebe **exatamente 1** registro `tipo=info`; aparece uma única vez na Sala; feedback de sucesso; duplo clique não duplica | **PENDENTE — não executado** |
+
 ## Pós-execução
 - Registrar PASS/FAIL com evidência (status + corpo da resposta) por item.
 - Defeitos P0/P1 encontrados → corrigir, redeployar homolog, reexecutar o item.
