@@ -1,10 +1,9 @@
 import type { Metadata } from "next";
-import Link from "next/link";
 import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { SetupNotice } from "@/components/admin/setup-notice";
-import { SalaNav } from "@/components/sala/sala-nav";
+import { ShellSala } from "@/components/shell/shell-sala";
 import { AssistenteChat } from "@/components/sala/assistente-chat";
 
 export const metadata: Metadata = {
@@ -42,45 +41,11 @@ export default async function SalaLayout({
   }
 
   return (
-    <div className="min-h-screen bg-[color:var(--color-background)] flex flex-col">
-      <header className="border-b border-[color:var(--color-hairline)] bg-[color:var(--color-paper)]">
-        <div className="max-w-7xl mx-auto px-6 py-4 flex items-center justify-between gap-4 flex-wrap">
-          <div className="flex items-center gap-6">
-            <Link
-              href="/sala"
-              className="font-mono text-[13px] tracking-tight text-[color:var(--color-ink)] hover:text-[color:var(--color-brand)]"
-            >
-              ◇ Sala Arché
-            </Link>
-            <SalaNav />
-          </div>
-          <div className="flex items-center gap-4">
-            <div className="text-[12px] text-[color:var(--color-ink-muted)] hidden sm:block">
-              {client.nome}
-              {client.empresa && (
-                <>
-                  {" "}
-                  <span className="text-[color:var(--color-ink-faint)]">
-                    · {client.empresa}
-                  </span>
-                </>
-              )}
-            </div>
-            <form action="/sala/sair" method="POST">
-              <button
-                type="submit"
-                className="text-[12px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-ink-muted)] hover:text-[color:var(--color-brand)]"
-              >
-                Sair
-              </button>
-            </form>
-          </div>
-        </div>
-      </header>
-      <main className="flex-1 max-w-7xl w-full mx-auto px-6 py-10">
+    <>
+      <ShellSala nome={client.nome || "Cliente"} empresa={client.empresa}>
         {children}
-      </main>
+      </ShellSala>
       <AssistenteChat />
-    </div>
+    </>
   );
 }

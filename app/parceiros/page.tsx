@@ -10,10 +10,10 @@ import { useRouter } from "next/navigation";
 import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, ClipboardCheck, Percent,
-  FileText, ScrollText, LogOut, Plus, Download, Pencil, Trash2,
-  Search, Menu, X, BookOpen,
+  FileText, ScrollText, Plus, Download, Pencil, Trash2,
+  Search, BookOpen,
 } from "lucide-react";
-import { Logo } from "@/components/brand/logo";
+import { ArcheShell, type ShellGroup } from "@/components/shell/arche-shell";
 import {
   loadDB, saveDB, uid, fmtDate, diffDays, urgencia, exportCSV,
   fetchCentral,
@@ -50,7 +50,6 @@ export default function ParceirosPage() {
   const router = useRouter();
   const [tab, setTab] = useState<Tab>("painel");
   const [db, setDb] = useState<DB | null>(null);
-  const [mobileNav, setMobileNav] = useState(false);
   const [busca, setBusca] = useState("");
 
   useEffect(() => {
@@ -92,95 +91,49 @@ export default function ParceirosPage() {
     );
   }
 
+  const pendentes = db.trabalhos.filter((t) => t.status === "pendente").length;
+  const groups: ShellGroup[] = [
+    {
+      titulo: "Central",
+      itens: NAV.map((n) => ({
+        key: n.id,
+        label: n.label,
+        icon: n.icon,
+        badge: n.id === "trabalhos" ? pendentes : undefined,
+      })),
+    },
+  ];
+
   return (
-    <div className="min-h-screen bg-[color:var(--color-surface)] flex">
-      <aside className="hidden lg:flex w-64 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex-col px-5 py-8 flex-shrink-0 sticky top-0 h-screen">
-        <SidebarContent tab={tab} setTab={setTab} logout={logout} />
-      </aside>
-
-      <div className="lg:hidden fixed top-0 inset-x-0 z-40 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex items-center justify-between px-4 h-14">
-        <Logo variant="full" className="h-8 w-auto text-[color:var(--color-paper)]" />
-        <button onClick={() => setMobileNav(true)} aria-label="Abrir menu" className="p-2">
-          <Menu className="w-5 h-5" />
-        </button>
-      </div>
-
-      <AnimatePresence>
-        {mobileNav && (
-          <motion.div
-            initial={{ opacity: 0 }}
-            animate={{ opacity: 1 }}
-            exit={{ opacity: 0 }}
-            className="lg:hidden fixed inset-0 z-50 bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex flex-col px-5 py-8"
-          >
-            <button onClick={() => setMobileNav(false)} className="absolute top-4 right-4 p-2" aria-label="Fechar menu">
-              <X className="w-5 h-5" />
-            </button>
-            <SidebarContent tab={tab} setTab={(t) => { setTab(t); setMobileNav(false); }} logout={logout} />
-          </motion.div>
-        )}
+    <ArcheShell
+      area="Central do parceiro"
+      groups={groups}
+      userName="Colaborador Arché"
+      userSub="Acesso por código"
+      activeKey={tab}
+      onGo={(k) => setTab(k as Tab)}
+      onLogout={logout}
+      crumb={`Central do parceiro · ${NAV.find((n) => n.id === tab)?.label ?? ""}`}
+    >
+      <AnimatePresence mode="wait">
+        <motion.div
+          key={tab}
+          initial={{ opacity: 0, y: 10 }}
+          animate={{ opacity: 1, y: 0 }}
+          exit={{ opacity: 0, y: -6 }}
+          transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
+        >
+          {tab === "painel" && <Painel db={db} setTab={setTab} />}
+          {tab === "clientes" && <Clientes db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
+          {tab === "projetos" && <Projetos db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
+          {tab === "trabalhos" && <Trabalhos db={db} mutate={mutate} />}
+          {tab === "diario" && <Diario db={db} mutate={mutate} />}
+          {tab === "comissoes" && <Comissoes db={db} />}
+          {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
+          {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
+        </motion.div>
       </AnimatePresence>
-
-      <main className="flex-1 min-w-0 px-4 lg:px-10 pt-20 lg:pt-10 pb-24">
-        <AnimatePresence mode="wait">
-          <motion.div
-            key={tab}
-            initial={{ opacity: 0, y: 10 }}
-            animate={{ opacity: 1, y: 0 }}
-            exit={{ opacity: 0, y: -6 }}
-            transition={{ duration: 0.35, ease: [0.22, 1, 0.36, 1] }}
-          >
-            {tab === "painel" && <Painel db={db} setTab={setTab} />}
-            {tab === "clientes" && <Clientes db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
-            {tab === "projetos" && <Projetos db={db} mutate={mutate} busca={busca} setBusca={setBusca} />}
-            {tab === "trabalhos" && <Trabalhos db={db} mutate={mutate} />}
-            {tab === "diario" && <Diario db={db} mutate={mutate} />}
-            {tab === "comissoes" && <Comissoes db={db} />}
-            {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
-            {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
-          </motion.div>
-        </AnimatePresence>
-      </main>
-    </div>
-  );
-}
-
-function SidebarContent({ tab, setTab, logout }: { tab: Tab; setTab: (t: Tab) => void; logout: () => void }) {
-  const items = NAV;
-  return (
-    <>
-      <div className="mb-10">
-        <Logo variant="full" className="h-10 w-auto text-[color:var(--color-paper)]" />
-        <div className="mt-3 font-mono text-[9px] uppercase tracking-[0.3em] text-[color:var(--color-paper)]/45">
-          Central do Parceiro
-        </div>
-      </div>
-
-      <nav className="flex-1 space-y-1">
-        {items.map((item) => (
-          <button
-            key={item.id}
-            onClick={() => setTab(item.id)}
-            className={`w-full flex items-center gap-3 px-3 py-2.5 text-left text-[13px] font-medium transition-colors ${
-              tab === item.id
-                ? "bg-[color:var(--color-paper)]/12 text-[color:var(--color-paper)]"
-                : "text-[color:var(--color-paper)]/60 hover:bg-[color:var(--color-paper)]/6 hover:text-[color:var(--color-paper)]"
-            }`}
-          >
-            <item.icon className="w-4 h-4 flex-shrink-0" />
-            {item.label}
-          </button>
-        ))}
-      </nav>
-
-      <button
-        onClick={logout}
-        className="mt-8 flex items-center gap-3 px-3 py-2.5 text-[13px] text-[color:var(--color-paper)]/50 hover:text-[color:var(--color-paper)] transition-colors"
-      >
-        <LogOut className="w-4 h-4" />
-        Sair da central
-      </button>
-    </>
+    </ArcheShell>
   );
 }
 
