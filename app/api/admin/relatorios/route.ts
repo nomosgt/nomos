@@ -129,7 +129,7 @@ const SYNC_SCRIPT = `<script>
   function criarPainel() {
     painel = document.createElement("div");
     painel.id = "arche-pub-sala";
-    painel.style.cssText = "position:fixed;bottom:46px;right:16px;z-index:9999;width:300px;background:#fff;color:#161A22;border:1px solid #DBDCDE;border-top:3px solid #1B2A5C;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:14px;font:13px/1.45 'IBM Plex Sans',system-ui,sans-serif;border-radius:3px";
+    painel.style.cssText = "position:fixed;bottom:46px;right:16px;z-index:9999;width:300px;background:#fff;color:#161A22;border:1px solid #DBDCDE;border-top:3px solid #1B2A5C;box-shadow:0 8px 24px rgba(0,0,0,.18);padding:14px;font:13px/1.45 'Open Sans',system-ui,sans-serif;border-radius:3px";
     painel.innerHTML =
       '<div style="display:flex;justify-content:space-between;align-items:center;margin-bottom:8px">' +
         '<strong style="font-size:13px">Publicar na Sala do cliente</strong>' +

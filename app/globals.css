@@ -23,10 +23,10 @@
   --color-paper: #EAEBEF;          /* off-white levemente azulado — texto em fundo escuro (não conflita com shadcn) */
   --color-paper-dim: #B8BAC2;      /* cinza claro acinzentado p/ texto secundário em fundo escuro */
 
-  /* Fonts ARCHÉ — serif editorial nos títulos, sans limpa no corpo (padrão big-4) */
-  --font-sans: var(--font-geist), ui-sans-serif, system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: var(--font-fraunces), Georgia, "Times New Roman", serif;
-  --font-mono: var(--font-geist-mono), ui-monospace, "SF Mono", Menlo, monospace;
+  /* Fonts ARCHÉ — Open Sans única (protótipo oficial: serif/sans/mono = Open Sans) */
+  --font-sans: var(--font-opensans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: var(--font-opensans), system-ui, sans-serif;
+  --font-mono: var(--font-opensans), system-ui, sans-serif;
 
   /* Type scale (display) */
   --text-display-2xl: clamp(4.5rem, 11vw, 11rem);
@@ -158,8 +158,12 @@
   /* Default heading font */
   h1, h2, h3, h4, h5, h6 {
     font-family: var(--font-serif);
-    font-weight: 400;
+    font-weight: 300;
     letter-spacing: -0.02em;
+  }
+  h4, h5, h6 {
+    font-weight: 600;
+    letter-spacing: -0.01em;
   }
 
   /* Number/mono */

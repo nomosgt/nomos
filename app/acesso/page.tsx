@@ -7,47 +7,74 @@ export const metadata: Metadata = {
   robots: { index: false, follow: false },
 };
 
+/**
+ * Seletor de acesso — réplica do overlay "Como você quer entrar?" do
+ * protótipo oficial (ov.acc + roles): fundo #0b1129, grid radial,
+ * título com itálico iris e cards de perfil com seta animada.
+ */
 export default function AcessoPage() {
   return (
-    <div className="min-h-screen bg-[color:var(--color-ink)] text-[color:var(--color-paper)] flex items-center justify-center px-6 py-16">
-      <div className="w-full max-w-5xl">
-        <div className="text-center mb-12 lg:mb-16">
-          <div className="font-mono text-[11px] uppercase tracking-[0.35em] text-[color:var(--color-paper)]/50 mb-4">
-            ARCHÉ · Acesso restrito
+    <div className="relative min-h-screen overflow-auto bg-[#0b1129] text-white">
+      {/* gridbg do protótipo */}
+      <div
+        aria-hidden
+        className="pointer-events-none fixed inset-0"
+        style={{
+          backgroundImage:
+            "linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px)",
+          backgroundSize: "64px 64px",
+          maskImage: "radial-gradient(ellipse at center,#000 30%,transparent 75%)",
+          WebkitMaskImage: "radial-gradient(ellipse at center,#000 30%,transparent 75%)",
+        }}
+      />
+
+      <div className="relative mx-auto flex min-h-screen max-w-[1340px] flex-col justify-center px-[clamp(20px,5vw,88px)] pb-16 pt-24">
+        <div className="mb-14 text-center">
+          <div className="font-mono text-[11px] uppercase tracking-[0.18em] opacity-55">
+            Arché · Acesso restrito
           </div>
-          <h1 className="font-serif text-4xl lg:text-5xl tracking-tight">
-            Como você quer entrar?
-          </h1>
+          <h2
+            className="mt-4 font-serif font-light tracking-[-0.01em]"
+            style={{ fontSize: "clamp(44px,5vw,76px)" }}
+          >
+            Como você quer{" "}
+            <em className="italic text-[#8f95ff]">entrar?</em>
+          </h2>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[color:var(--color-paper)]/10 border border-[color:var(--color-paper)]/10">
-          <Card
+        <div className="grid grid-cols-1 overflow-hidden rounded-2xl border border-white/[0.12] bg-white/[0.015] md:grid-cols-3">
+          <RoleCard
             href="/sala/login"
             icon={Users}
             tag="Cliente"
             title="Sala Arché"
-            description="Acompanhe seu caso, mensagens, documentos e suporte direto."
+            description="Acompanhe seus projetos, deadline, aprovações, documentos e financeiro em tempo real."
           />
-          <Card
+          <RoleCard
             href="/parceiros/login"
             icon={Handshake}
             tag="Parceiro"
             title="Central do Parceiro"
-            description="Projetos, demandas, financeiro e documentos da sua parceria."
+            description="Demandas, trabalhos para aprovação, projetos e materiais compartilhados pela Arché."
           />
-          <Card
+          <RoleCard
             href="/admin/login"
             icon={Shield}
             tag="Equipe Arché"
             title="Administração"
-            description="Painel interno: contatos, simulações, blog, clientes, análises."
+            description="CRM interno: projetos, delegação, deadline, financeiro, usuários e permissões."
+            last
           />
         </div>
 
-        <div className="mt-12 text-center">
+        <p className="mt-9 text-center font-mono text-[11px] uppercase tracking-[0.18em] opacity-40">
+          Conexão criptografada · Acesso individual
+        </p>
+
+        <div className="mt-10 text-center">
           <Link
             href="/"
-            className="text-[12px] font-mono uppercase tracking-[0.25em] text-[color:var(--color-paper)]/40 hover:text-[color:var(--color-brand-soft)] transition-colors"
+            className="font-mono text-[11px] uppercase tracking-[0.25em] text-white/40 transition-colors hover:text-[#8f95ff]"
           >
             ← Voltar ao site
           </Link>
@@ -57,38 +84,40 @@ export default function AcessoPage() {
   );
 }
 
-function Card({
+function RoleCard({
   href,
   icon: Icon,
   tag,
   title,
   description,
+  last,
 }: {
   href: string;
   icon: React.ComponentType<{ className?: string; strokeWidth?: number }>;
   tag: string;
   title: string;
   description: string;
+  last?: boolean;
 }) {
   return (
     <Link
       href={href}
-      className="group bg-[color:var(--color-ink)] p-8 lg:p-12 transition-colors duration-300 hover:bg-[color:var(--color-paper)]/5 flex flex-col"
+      className={`group relative flex min-h-[290px] flex-col px-8 pb-10 pt-9 text-left transition-colors duration-500 hover:bg-white/[0.04] ${
+        last ? "" : "border-b border-white/[0.12] md:border-b-0 md:border-r"
+      }`}
     >
-      <div className="flex items-start justify-between mb-10">
-        <Icon
-          className="w-6 h-6 text-[color:var(--color-brand-soft)]"
-          strokeWidth={1.3}
+      <div className="mb-auto flex items-start justify-between opacity-75">
+        <Icon className="h-[22px] w-[22px]" strokeWidth={1.4} />
+        <ArrowUpRight
+          className="h-[22px] w-[22px] transition-transform duration-500 group-hover:-translate-y-1 group-hover:translate-x-1"
+          strokeWidth={1.4}
         />
-        <ArrowUpRight className="w-5 h-5 text-[color:var(--color-paper)]/30 transition-transform group-hover:translate-x-1 group-hover:-translate-y-1 group-hover:text-[color:var(--color-brand-soft)]" />
       </div>
-      <div className="font-mono text-[10px] uppercase tracking-[0.3em] text-[color:var(--color-brand-soft)] mb-4">
-        ◇ {tag}
+      <div className="mb-3.5 mt-12 flex items-center gap-2 font-mono text-[11px] uppercase tracking-[0.18em] text-[#8f95ff]">
+        {tag}
       </div>
-      <h2 className="font-serif text-3xl tracking-tight mb-3">{title}</h2>
-      <p className="text-[14px] leading-relaxed text-[color:var(--color-paper)]/55 flex-1">
-        {description}
-      </p>
+      <b className="font-serif text-[34px] font-normal leading-[1.1]">{title}</b>
+      <p className="mt-3 max-w-[300px] text-[14px] leading-relaxed opacity-60">{description}</p>
     </Link>
   );
 }

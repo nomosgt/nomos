@@ -1,27 +1,21 @@
 import type { Metadata } from "next";
-import { Geist, Geist_Mono, Fraunces } from "next/font/google";
+import { Open_Sans, Inter } from "next/font/google";
 import "./globals.css";
 import { ConditionalNavbar, ConditionalFooter } from "@/components/conditional-chrome";
 
-// Geist Sans — corpo e UI (padrão big-4: sans limpa e neutra).
-const geist = Geist({
-  subsets: ["latin"],
-  variable: "--font-geist",
-  display: "swap",
-});
-
-// Geist Mono — eyebrows técnicos, números, tags.
-const geistMono = Geist_Mono({
-  subsets: ["latin"],
-  variable: "--font-geist-mono",
-  display: "swap",
-});
-
-// Fraunces — serif editorial dos títulos e do wordmark ARCHÉ.
-const fraunces = Fraunces({
+// Open Sans — fonte única da identidade Arché (protótipo oficial:
+// --serif/--sans/--mono apontam todos para Open Sans).
+const openSans = Open_Sans({
   subsets: ["latin"],
   style: ["normal", "italic"],
-  variable: "--font-fraunces",
+  variable: "--font-opensans",
+  display: "swap",
+});
+
+// Inter — usada apenas no subtexto da logo (como no protótipo).
+const inter = Inter({
+  subsets: ["latin"],
+  variable: "--font-inter",
   display: "swap",
 });
 
@@ -64,7 +58,7 @@ export default function RootLayout({
   return (
     <html
       lang="pt-BR"
-      className={`${geist.variable} ${geistMono.variable} ${fraunces.variable}`}
+      className={`${openSans.variable} ${inter.variable}`}
     >
       <body className="min-h-screen flex flex-col antialiased">
         <ConditionalNavbar />

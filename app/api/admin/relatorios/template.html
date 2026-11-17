@@ -6,7 +6,7 @@
 <title>Arché — Gerador de Relatórios</title>
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-<link href="https://fonts.googleapis.com/css2?family=Fraunces:ital,opsz,wght@0,9..144,400;0,9..144,500;0,9..144,600;1,9..144,500&family=IBM+Plex+Sans:wght@400;500;600&family=IBM+Plex+Mono:wght@400;500&display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Open+Sans:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500&display=swap" rel="stylesheet">
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf/2.5.1/jspdf.umd.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/jspdf-autotable/3.8.2/jspdf.plugin.autotable.min.js"></script>
 <script src="https://cdnjs.cloudflare.com/ajax/libs/PapaParse/5.4.1/papaparse.min.js"></script>
@@ -30,9 +30,9 @@
     --risk-baixo:#3E7A52;
     --risk-baixo-bg:#E3F0E6;
     --shadow: 0 1px 2px rgba(24,31,28,0.06), 0 8px 24px rgba(24,31,28,0.06);
-    --font-display:'Fraunces', Georgia, serif;
-    --font-body:'IBM Plex Sans', system-ui, sans-serif;
-    --font-mono:'IBM Plex Mono', ui-monospace, monospace;
+    --font-display:'Open Sans', Georgia, serif;
+    --font-body:'Open Sans', system-ui, sans-serif;
+    --font-mono:'Open Sans', ui-monospace, monospace;
   }
   :root:not([data-theme="light"]){
     @media (prefers-color-scheme: dark){
@@ -2142,7 +2142,7 @@
 
   /* ---------------- Charts ---------------- */
   var CW = 620, CHH = 300;
-  var CH_FONT = '"IBM Plex Sans","Helvetica Neue",Arial,sans-serif';
+  var CH_FONT = '"Open Sans","Helvetica Neue",Arial,sans-serif';
   var CH_PALETTE = ["#002661","#7A8FB8","#8E9095","#B0812E","#3E7A52","#B4392F","#5E4B8B","#2E8B9A"];
   var NAT_COLORS = { verde:"#3E7A52", amarelo:"#C9962B", vermelho:"#B4392F", none:"#8E9095" };
   var CH_INK = "#181F1C", CH_SOFT = "#565F5A", CH_FAINT = "#8B928D", CH_GRID = "#E4E1D6", CH_BAR = "#002661";
