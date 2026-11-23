@@ -8,7 +8,7 @@
 import type { ReactNode } from "react";
 import {
   LayoutDashboard, Newspaper, CircleCheckBig, FileText, MessageCircle, LifeBuoy,
-  Clock3, CalendarClock, KeyRound,
+  Clock3, CalendarClock, KeyRound, Briefcase, Route, TrendingUp, BarChart3, User,
 } from "lucide-react";
 import { ArcheShell, type ShellGroup } from "./arche-shell";
 
@@ -17,10 +17,13 @@ const GROUPS: ShellGroup[] = [
     titulo: "Meu espaço",
     itens: [
       { key: "visao", label: "Visão geral", icon: LayoutDashboard, href: "/sala" },
+      { key: "projetos", label: "Meus projetos", icon: Briefcase, href: "/sala/projetos" },
+      { key: "deadline", label: "Deadline", icon: Route, href: "/sala/deadline" },
       { key: "atualizacoes", label: "Atualizações", icon: Newspaper, href: "/sala/atualizacoes" },
       { key: "aprovacoes", label: "Aprovações", icon: CircleCheckBig, href: "/sala/aprovacoes" },
       { key: "documentos", label: "Documentos", icon: FileText, href: "/sala/documentos" },
       { key: "mensagens", label: "Mensagens", icon: MessageCircle, href: "/sala/mensagens" },
+      { key: "financeiro", label: "Financeiro", icon: TrendingUp, href: "/sala/financeiro" },
       { key: "horas", label: "Horas técnicas", icon: Clock3, href: "/sala/horas" },
       { key: "reunioes", label: "Reuniões", icon: CalendarClock, href: "/sala/reunioes" },
     ],
@@ -29,6 +32,8 @@ const GROUPS: ShellGroup[] = [
     titulo: "Conta",
     itens: [
       { key: "seguranca", label: "Segurança financeira", icon: KeyRound, href: "/sala/seguranca" },
+      { key: "relatorios", label: "Relatórios", icon: BarChart3, href: "/sala/relatorios" },
+      { key: "conta", label: "Minha conta", icon: User, href: "/sala/conta" },
       { key: "suporte", label: "Suporte", icon: LifeBuoy, href: "/sala/suporte" },
     ],
   },

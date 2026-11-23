@@ -9,6 +9,7 @@ import {
   LayoutDashboard, Inbox, Calculator, Building2, Users, UserCheck,
   Handshake, Wallet, FileText, FolderOpen, PenLine, ListTodo, Landmark, Globe,
   Briefcase, Route, CalendarClock, HandCoins, Clock3, KeyRound,
+  MessageCircle, Lock, ScrollText, User,
 } from "lucide-react";
 import { ArcheShell, type ShellGroup } from "./arche-shell";
 
@@ -49,9 +50,13 @@ const GROUPS: ShellGroup[] = [
   {
     titulo: "Administração",
     itens: [
+      { key: "mensagens", label: "Mensagens", icon: MessageCircle, href: "/admin/mensagens" },
       { key: "teses", label: "Teses", icon: FileText, href: "/admin/teses" },
       { key: "relatorios", label: "Relatórios", icon: FileText, href: "/admin/relatorios" },
       { key: "blog", label: "Conteúdo do site", icon: Globe, href: "/admin/blog" },
+      { key: "usuarios", label: "Usuários e permissões", icon: Lock, href: "/admin/usuarios" },
+      { key: "auditoria", label: "Auditoria", icon: ScrollText, href: "/admin/auditoria" },
+      { key: "conta", label: "Minha conta", icon: User, href: "/admin/conta" },
     ],
   },
 ];

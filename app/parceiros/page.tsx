@@ -11,11 +11,12 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, ClipboardCheck, Percent,
   FileText, ScrollText, Plus, Download, Pencil, Trash2,
-  Search, BookOpen, UserPlus, CalendarClock,
+  Search, BookOpen, UserPlus, CalendarClock, UserRound,
 } from "lucide-react";
 import { ArcheShell, type ShellGroup } from "@/components/shell/arche-shell";
 import { IndicacoesParceiro } from "@/components/parceiros/indicacoes-parceiro";
 import { ReunioesParceiro } from "@/components/parceiros/reunioes-parceiro";
+import { ContaParceiro } from "@/components/parceiros/conta-parceiro";
 import {
   loadDB, saveDB, uid, fmtDate, diffDays, urgencia, exportCSV,
   fetchCentral,
@@ -35,7 +36,7 @@ import {
 } from "@/components/parceiros/ui";
 import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
-type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios" | "indicar" | "reunioes";
+type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios" | "indicar" | "reunioes" | "conta";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "painel", label: "Dashboard", icon: LayoutDashboard },
@@ -48,6 +49,7 @@ const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: str
   { id: "relatorios", label: "Relatórios", icon: ScrollText },
   { id: "indicar", label: "Indicar clientes", icon: UserPlus },
   { id: "reunioes", label: "Reuniões", icon: CalendarClock },
+  { id: "conta", label: "Minha conta", icon: UserRound },
 ];
 
 export default function ParceirosPage() {
@@ -137,6 +139,7 @@ export default function ParceirosPage() {
           {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
           {tab === "indicar" && <IndicacoesParceiro />}
           {tab === "reunioes" && <ReunioesParceiro />}
+          {tab === "conta" && <ContaParceiro />}
         </motion.div>
       </AnimatePresence>
     </ArcheShell>
