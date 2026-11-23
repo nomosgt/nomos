@@ -63,9 +63,11 @@ export default async function SalaDashboard() {
 
   const s = stats.data;
   const totalRecuperado = s?.caixa_recuperado_total ? Number(s.caixa_recuperado_total) : 0;
-  const casoAtivo = cases.data?.find((c) => c.status === "em_andamento") || cases.data?.[0];
+  // v27: casos marcados como não-visíveis saem do portal (filtro tolerante)
+  const casesVisiveis = (cases.data ?? []).filter((c) => (c as { visivel_cliente?: boolean }).visivel_cliente !== false);
+  const casoAtivo = casesVisiveis.find((c) => c.status === "em_andamento") || casesVisiveis[0];
   // potencial agregado = soma do potencial de todos os casos (não é o mesmo que recuperado)
-  const potencialTotal = (cases.data ?? []).reduce((acc, c) => acc + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
+  const potencialTotal = casesVisiveis.reduce((acc, c) => acc + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
   const aprovacoesPendentes = aprovPend.data?.length ?? 0;
   // última atualização real = evento mais recente no feed (não um contador fake)
   const ultimaAtualizacao = updates.data?.[0]?.created_at ? new Date(updates.data[0].created_at) : null;

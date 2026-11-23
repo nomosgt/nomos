@@ -23,7 +23,7 @@ export default async function SalaFinanceiroPage() {
 
   const [dash, cases, ledger] = await Promise.all([
     supabase.from("client_dashboard").select("*").eq("user_id", uid).maybeSingle(),
-    supabase.from("client_cases").select("id, titulo, potencial_estimado, valor_recuperado").eq("client_id", uid).neq("status", "arquivado"),
+    supabase.from("client_cases").select("*").eq("client_id", uid).neq("status", "arquivado"),
     supabase
       .from("case_financeiro")
       .select("id, created_at, tipo, valor, descricao, case_titulo")
@@ -32,7 +32,8 @@ export default async function SalaFinanceiroPage() {
       .limit(200),
   ]);
 
-  const potencialTotal = (cases.data ?? []).reduce((a, c) => a + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
+  const casosVisiveis = (cases.data ?? []).filter((c) => (c as { visivel_cliente?: boolean }).visivel_cliente !== false);
+  const potencialTotal = casosVisiveis.reduce((a, c) => a + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
   const recuperadoTotal = dash.data?.caixa_recuperado_total ? Number(dash.data.caixa_recuperado_total) : 0;
   const lanc = ledger.data ?? [];
 

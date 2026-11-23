@@ -19,7 +19,7 @@ export default async function SalaDeadlinePage() {
   const uid = u.user.id;
 
   const [cases, aprovs, horas, reunioes] = await Promise.all([
-    supabase.from("client_cases").select("id, titulo, etapa, status, data_estimada_conclusao").eq("client_id", uid).neq("status", "arquivado"),
+    supabase.from("client_cases").select("*").eq("client_id", uid).neq("status", "arquivado"),
     supabase.from("client_aprovacoes").select("id, titulo, created_at").eq("client_id", uid).eq("status", "pendente").order("created_at"),
     supabase.from("horas_estimativas").select("id, titulo, criado_em").eq("client_id", uid).eq("status", "aguardando_aprovacao").order("criado_em"),
     supabase.from("reunioes").select("id, titulo, data_confirmada").eq("client_id", uid).eq("status", "confirmada").order("data_confirmada"),
@@ -31,6 +31,7 @@ export default async function SalaDeadlinePage() {
   ];
   const confirmadas = (reunioes.data ?? []).filter((r) => r.data_confirmada);
   const previsoes = (cases.data ?? [])
+    .filter((c) => (c as { visivel_cliente?: boolean }).visivel_cliente !== false)
     .filter((c) => c.data_estimada_conclusao)
     .sort((a, b) => String(a.data_estimada_conclusao).localeCompare(String(b.data_estimada_conclusao)));
 

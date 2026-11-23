@@ -24,7 +24,8 @@ export default async function SalaProjetosPage() {
       .limit(60),
   ]);
 
-  const casos = cases.data ?? [];
+  // v27: respeita o "visível ao cliente" marcado pelo admin (tolerante pré-v27)
+  const casos = (cases.data ?? []).filter((c) => (c as { visivel_cliente?: boolean }).visivel_cliente !== false);
   const eventosPorCaso = new Map<string, { id: string; created_at: string; titulo: string; tipo: string }[]>();
   for (const e of updates.data ?? []) {
     const arr = eventosPorCaso.get(e.case_id as string) || [];
