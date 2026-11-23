@@ -1,249 +1,242 @@
 import Link from "next/link";
-import { AlertTriangle, Clock } from "lucide-react";
 import { createClient } from "@/lib/supabase/server";
 import { createAdminClient } from "@/lib/supabase/admin";
 import { isSupabaseConfigured } from "@/lib/supabase/config";
 import { formatBRL } from "@/lib/utils";
 import { derivarAlerta } from "@/lib/atividades/alertas";
-import { StatusBadge } from "@/components/admin/status-badge";
 import { CopilotoWidget } from "@/components/admin/copiloto-widget";
 import { NotificacoesAdmin } from "@/components/admin/notificacoes-admin";
+import { Kc, Cd, Barra, StTag, saudacao, dataLonga, fmtData } from "@/components/shell/proto-ui";
 
 export const dynamic = "force-dynamic";
 
-async function alertasAtividades(): Promise<{ atrasadas: number; avisos: number }> {
-  if (!isSupabaseConfigured()) return { atrasadas: 0, avisos: 0 };
+const ETAPAS = ["—", "Reunião Preliminar", "NDA assinado", "Envios & Habilitação", "Análise Estratégica", "Apresentação Estratégica", "Contrato Assinado", "Em Execução"];
+
+async function seguro<T>(p: PromiseLike<{ data: T | null; error: { message: string } | null }>): Promise<T | null> {
   try {
-    const admin = createAdminClient();
-    const { data, error } = await admin
-      .from("atividades")
-      .select("status, prazo")
-      .neq("status", "concluida")
-      .not("prazo", "is", null);
-    if (error || !data) return { atrasadas: 0, avisos: 0 };
-    let atrasadas = 0, avisos = 0;
-    for (const a of data) {
-      const t = derivarAlerta(a.status as string, a.prazo as string);
-      if (t === "atraso") atrasadas++;
-      else if (t === "aviso_24h" || t === "aviso_48h") avisos++;
-    }
-    return { atrasadas, avisos };
+    const r = await p;
+    return r.error ? null : r.data;
   } catch {
-    return { atrasadas: 0, avisos: 0 };
+    return null;
   }
 }
 
 export default async function AdminDashboard() {
+  if (!isSupabaseConfigured()) return null;
   const supabase = await createClient();
+  const { data: u } = await supabase.auth.getUser();
+  const { data: prof } = u.user
+    ? await supabase.from("admin_profiles").select("nome").eq("user_id", u.user.id).maybeSingle()
+    : { data: null };
+  const primeiroNome = (prof?.nome || "Arché").split(" ")[0];
 
-  const [stats, novosContatos, ultimasSimulacoes, alertas] = await Promise.all([
-    supabase.from("admin_dashboard_stats").select("*").single(),
-    supabase
-      .from("contact_submissions")
-      .select("id, created_at, nome, empresa, status, origem")
-      .order("created_at", { ascending: false })
-      .limit(5),
-    supabase
-      .from("simulator_runs")
-      .select("id, created_at, faturamento, setor, regime, total")
-      .order("created_at", { ascending: false })
-      .limit(5),
-    alertasAtividades(),
+  const admin = createAdminClient();
+  const [casos, atividades, analises, aprovs, reunioes, indicacoes] = await Promise.all([
+    seguro(admin.from("client_cases").select("id, titulo, status, etapa, potencial_estimado, valor_recuperado, client_id, client_profiles ( nome, empresa )").neq("status", "arquivado").limit(400)),
+    seguro(admin.from("atividades").select("id, titulo, status, prazo, parceiros_codigos ( nome )").not("status", "in", "(concluida,cancelada)").limit(400)),
+    seguro(admin.from("analises").select("id, titulo, status").eq("status", "enviada").limit(100)),
+    seguro(admin.from("client_aprovacoes").select("id").eq("status", "pendente").limit(200)),
+    seguro(admin.from("reunioes").select("id, titulo, solicitante_nome, data_sugerida, criado_em").eq("status", "solicitada").order("criado_em", { ascending: false }).limit(5)),
+    seguro(admin.from("indicacoes").select("id, empresa, parceiro_nome, criado_em").eq("status", "recebida").order("criado_em", { ascending: false }).limit(5)),
   ]);
 
-  const s = stats.data;
+  const listaCasos = casos ?? [];
+  const ativos = listaCasos.filter((c) => c.status === "em_andamento");
+  const potencialTotal = listaCasos.reduce((a, c) => a + (c.potencial_estimado ? Number(c.potencial_estimado) : 0), 0);
+  const recuperadoTotal = listaCasos.reduce((a, c) => a + (c.valor_recuperado ? Number(c.valor_recuperado) : 0), 0);
+
+  // carteira por etapa (1..7)
+  const porEtapa = [0, 0, 0, 0, 0, 0, 0, 0];
+  for (const c of listaCasos) if (c.etapa >= 1 && c.etapa <= 7) porEtapa[c.etapa]++;
+  const maxEtapa = Math.max(1, ...porEtapa);
+
+  // atenção: atrasadas + trabalhos em revisão
+  const abertas = atividades ?? [];
+  const atrasadas = abertas.filter((a) => derivarAlerta(a.status as string, a.prazo as string) === "atraso");
+  const emRevisao = abertas.filter((a) => a.status === "aguardando_revisao");
+  const alertas = [
+    ...atrasadas.slice(0, 4).map((a) => ({
+      id: a.id as string, titulo: a.titulo as string, tipo: "atraso" as const,
+      sub: `Demanda atrasada · ${(a.parceiros_codigos as unknown as { nome: string } | null)?.nome || "Equipe"} · prazo ${a.prazo ? fmtData(a.prazo as string) : "—"}`,
+    })),
+    ...(analises ?? []).slice(0, 3).map((t) => ({
+      id: t.id as string, titulo: t.titulo as string, tipo: "revisao" as const,
+      sub: "Trabalho aguardando revisão",
+    })),
+  ];
+
+  // carga da equipe: demandas abertas por responsável
+  const carga = new Map<string, number>();
+  for (const a of abertas) {
+    const nome = (a.parceiros_codigos as unknown as { nome: string } | null)?.nome || "Equipe Arché";
+    carga.set(nome, (carga.get(nome) || 0) + 1);
+  }
+  const cargaLista = [...carga.entries()].sort((x, y) => y[1] - x[1]).slice(0, 6);
+  const maxCarga = Math.max(1, ...cargaLista.map(([, n]) => n));
+
+  const emAndamento = ativos
+    .slice()
+    .sort((a, b) => Number(b.potencial_estimado || 0) - Number(a.potencial_estimado || 0))
+    .slice(0, 6);
 
   return (
-    <div className="space-y-12">
+    <div className="space-y-6">
       <NotificacoesAdmin />
-      <div>
-        <h1 className="font-serif text-3xl lg:text-4xl tracking-tight mb-2">
-          Visão geral
-        </h1>
-        <p className="text-[14px] text-[color:var(--color-ink-muted)]">
-          Snapshot do que está entrando na Arché.
-        </p>
+
+      {/* Saudação do protótipo */}
+      <div className="flex flex-wrap items-end justify-between gap-5">
+        <div>
+          <div className="mb-2 font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#7a7c95]">{dataLonga()}</div>
+          <h1 className="font-serif text-[clamp(32px,3vw,44px)] font-normal leading-[1.05] tracking-[-0.01em] text-[#0f1240]">
+            {saudacao()}, <em className="italic text-[#3a40c9]">{primeiroNome}</em>.
+          </h1>
+          <p className="mt-2 text-[13.5px] text-[#6b6e88]">Visão consolidada da carteira, da equipe e das autorizações.</p>
+        </div>
+        <div className="flex gap-2">
+          <Link href="/admin/relatorios" className="inline-flex h-[38px] items-center gap-2 rounded-[9px] border border-[#dedbd3] bg-white px-4 text-[13px] font-semibold text-[#14173d] transition-colors hover:border-[#0f1240]">Relatórios</Link>
+          <Link href="/admin/clientes" className="inline-flex h-[38px] items-center gap-2 rounded-[9px] bg-[#0f1240] px-4 text-[13px] font-semibold text-white transition-colors hover:bg-[#3a40c9]">+ Novo projeto</Link>
+        </div>
+      </div>
+
+      {/* KPIs */}
+      <div className="grid grid-cols-2 gap-3.5 lg:grid-cols-4">
+        <Kc dark label="Potencial identificado" value={formatBRL(potencialTotal, { compact: true })} sub={`${ativos.length} projetos ativos`} />
+        <Kc label="Recuperado para clientes" value={formatBRL(recuperadoTotal, { compact: true })} sub="acumulado da carteira" />
+        <Kc label="Autorizações" value={String(aprovs?.length ?? 0)} sub="pendentes com cliente" tone={(aprovs?.length ?? 0) > 0 ? "warn" : "ok"} />
+        <Kc label="Em revisão interna" value={String(emRevisao.length + (analises?.length ?? 0))} sub={`${emRevisao.length} demandas · ${analises?.length ?? 0} trabalhos`} tone={emRevisao.length + (analises?.length ?? 0) > 0 ? "warn" : "ok"} />
+      </div>
+
+      {/* Indicações novas + Reuniões solicitadas */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-2">
+        <Cd title="Indicações novas" mono={<LinkVer href="/admin/indicacoes" />}>
+          {(indicacoes ?? []).length === 0 ? (
+            <p className="text-[13px] text-[#8a8ca3]">Nenhuma pendente.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {(indicacoes ?? []).map((i) => (
+                <Link key={i.id} href="/admin/indicacoes" className="block">
+                  <div className="text-[14px] font-semibold text-[#0f1240]">{i.empresa}</div>
+                  <div className="font-mono text-[11px] text-[#8a8ca3]">{i.parceiro_nome || "Parceiro"} · {fmtData(i.criado_em)}</div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Cd>
+        <Cd title="Reuniões solicitadas" mono={<LinkVer href="/admin/reunioes" />}>
+          {(reunioes ?? []).length === 0 ? (
+            <p className="text-[13px] text-[#8a8ca3]">Nenhuma pendente.</p>
+          ) : (
+            <div className="space-y-2.5">
+              {(reunioes ?? []).map((r) => (
+                <Link key={r.id} href="/admin/reunioes" className="block">
+                  <div className="text-[14px] font-semibold text-[#0f1240]">{r.titulo}</div>
+                  <div className="font-mono text-[11px] text-[#8a8ca3]">
+                    {r.solicitante_nome || "—"}{r.data_sugerida ? ` · ${fmtData(r.data_sugerida, true)}` : ""}
+                  </div>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Cd>
+      </div>
+
+      {/* Carteira por etapa + Atenção */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <Cd title="Carteira por etapa" mono={`${listaCasos.length} projetos`}>
+          <div className="space-y-3">
+            {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+              <div key={n} className="flex items-center gap-4">
+                <span className="w-[180px] flex-none text-[13px] text-[#14173d]">{ETAPAS[n]}</span>
+                <Barra pct={(porEtapa[n] / maxEtapa) * 100} />
+                <span className="w-6 flex-none text-right font-mono text-[12.5px] text-[#6b6e88]">{porEtapa[n]}</span>
+              </div>
+            ))}
+          </div>
+        </Cd>
+        <Cd title="Atenção" mono={`${alertas.length} alertas`}>
+          {alertas.length === 0 ? (
+            <p className="text-[13px] text-[#8a8ca3]">Nada urgente agora.</p>
+          ) : (
+            <div className="space-y-3">
+              {alertas.map((a) => (
+                <Link key={a.id} href={a.tipo === "atraso" ? "/admin/atividades" : "/admin/analises"} className="flex items-start gap-3">
+                  <span className={`mt-1 h-2 w-2 flex-none rounded-full ${a.tipo === "atraso" ? "bg-rose-500" : "bg-amber-400"}`} />
+                  <span>
+                    <span className="block text-[13.5px] font-semibold text-[#0f1240]">{a.titulo}</span>
+                    <span className="block font-mono text-[11px] text-[#8a8ca3]">{a.sub}</span>
+                  </span>
+                </Link>
+              ))}
+            </div>
+          )}
+        </Cd>
+      </div>
+
+      {/* Projetos em andamento + Carga da equipe */}
+      <div className="grid grid-cols-1 gap-4 lg:grid-cols-[1.6fr_1fr]">
+        <Cd title="Projetos em andamento" mono={<LinkVer href="/admin/projetos" rotulo="Ver todos" />}>
+          {emAndamento.length === 0 ? (
+            <p className="text-[13px] text-[#8a8ca3]">Nenhum projeto em andamento.</p>
+          ) : (
+            <div className="space-y-4">
+              {emAndamento.map((c) => {
+                const cp = c.client_profiles as unknown as { nome: string; empresa: string | null } | null;
+                return (
+                  <Link key={c.id} href={`/admin/clientes/${c.client_id}`} className="block">
+                    <div className="flex flex-wrap items-center gap-3">
+                      <div className="min-w-0 flex-1">
+                        <div className="truncate text-[14.5px] font-semibold text-[#0f1240]">{c.titulo}</div>
+                        <div className="font-mono text-[11px] text-[#8a8ca3]">{cp?.empresa || cp?.nome || "—"} · {ETAPAS[c.etapa] || "—"}</div>
+                      </div>
+                      {c.potencial_estimado != null && (
+                        <span className="font-serif text-[17px] text-[#0f1240]">{formatBRL(Number(c.potencial_estimado), { compact: true })}</span>
+                      )}
+                      {Number(c.valor_recuperado) > 0 && (
+                        <span className="text-[13px] font-semibold text-[#1d8a5a]">{formatBRL(Number(c.valor_recuperado), { compact: true })}</span>
+                      )}
+                    </div>
+                    <div className="mt-2 flex gap-1">
+                      {[1, 2, 3, 4, 5, 6, 7].map((n) => (
+                        <div key={n} className={`h-1 flex-1 rounded-full ${n <= c.etapa ? "bg-[#0f1240]" : "bg-[#ebe8e1]"}`} />
+                      ))}
+                    </div>
+                  </Link>
+                );
+              })}
+            </div>
+          )}
+        </Cd>
+        <Cd title="Carga da equipe" mono="demandas abertas">
+          {cargaLista.length === 0 ? (
+            <p className="text-[13px] text-[#8a8ca3]">Nenhuma demanda aberta.</p>
+          ) : (
+            <div className="space-y-3">
+              {cargaLista.map(([nome, n]) => (
+                <div key={nome} className="flex items-center gap-3">
+                  <span className="w-[120px] flex-none truncate text-[13px] text-[#14173d]">{nome}</span>
+                  <Barra pct={(n / maxCarga) * 100} />
+                  <span className="w-5 flex-none text-right font-mono text-[12.5px] text-[#6b6e88]">{n}</span>
+                </div>
+              ))}
+            </div>
+          )}
+          {atrasadas.length > 0 && (
+            <div className="mt-4 border-t border-[#f1eee8] pt-3">
+              <StTag tone="bad">{atrasadas.length} atrasada(s)</StTag>
+            </div>
+          )}
+        </Cd>
       </div>
 
       <CopilotoWidget />
-
-      {/* Alerta de prazos da equipe */}
-      {(alertas.atrasadas > 0 || alertas.avisos > 0) && (
-        <Link
-          href="/admin/atividades"
-          className={`flex items-center gap-3 border-l-4 p-4 transition-colors ${
-            alertas.atrasadas > 0
-              ? "border-rose-600 bg-rose-50 hover:bg-rose-100/60"
-              : "border-amber-500 bg-amber-50 hover:bg-amber-100/60"
-          }`}
-        >
-          {alertas.atrasadas > 0 ? <AlertTriangle className="w-5 h-5 text-rose-700 flex-shrink-0" /> : <Clock className="w-5 h-5 text-amber-700 flex-shrink-0" />}
-          <div className="text-[13.5px]">
-            {alertas.atrasadas > 0 && (
-              <span className="font-semibold text-rose-900">{alertas.atrasadas} atividade{alertas.atrasadas > 1 ? "s" : ""} atrasada{alertas.atrasadas > 1 ? "s" : ""}</span>
-            )}
-            {alertas.atrasadas > 0 && alertas.avisos > 0 && <span className="text-[color:var(--color-ink-muted)]"> · </span>}
-            {alertas.avisos > 0 && (
-              <span className={alertas.atrasadas > 0 ? "text-[color:var(--color-ink-muted)]" : "font-semibold text-amber-900"}>{alertas.avisos} vencem em até 48h</span>
-            )}
-            <span className="text-[color:var(--color-ink-muted)]"> — ver atividades →</span>
-          </div>
-        </Link>
-      )}
-
-      {/* KPIs */}
-      <div className="grid grid-cols-2 lg:grid-cols-4 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
-        <Kpi
-          label="Contatos novos"
-          value={String(s?.contatos_novos ?? 0)}
-          href="/admin/contatos?status=novo"
-        />
-        <Kpi
-          label="Contatos (total)"
-          value={String(s?.contatos_total ?? 0)}
-          href="/admin/contatos"
-        />
-        <Kpi
-          label="Simulações 30d"
-          value={String(s?.simulacoes_30d ?? 0)}
-          href="/admin/simulacoes"
-        />
-        <Kpi
-          label="Ticket médio 30d"
-          value={formatBRL(Number(s?.ticket_medio_30d ?? 0), { compact: true })}
-          href="/admin/simulacoes"
-        />
-      </div>
-
-      {/* Recentes */}
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-        <Card title="Últimos contatos" href="/admin/contatos">
-          {novosContatos.data && novosContatos.data.length > 0 ? (
-            <ul className="divide-y divide-[color:var(--color-hairline)]">
-              {novosContatos.data.map((c) => (
-                <li key={c.id}>
-                  <Link
-                    href={`/admin/contatos/${c.id}`}
-                    className="block px-5 py-4 hover:bg-[color:var(--color-surface)] transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="font-medium text-[14px]">{c.nome}</div>
-                      <StatusBadge status={c.status} />
-                    </div>
-                    <div className="text-[12px] text-[color:var(--color-ink-muted)] flex items-center gap-3">
-                      <span>{c.empresa || "—"}</span>
-                      <span className="text-[color:var(--color-ink-faint)]">·</span>
-                      <span>{relativeTime(c.created_at)}</span>
-                      <span className="text-[color:var(--color-ink-faint)]">·</span>
-                      <span className="font-mono uppercase tracking-wider text-[10px]">
-                        {c.origem}
-                      </span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Empty>Nenhum contato ainda.</Empty>
-          )}
-        </Card>
-
-        <Card title="Últimas simulações" href="/admin/simulacoes">
-          {ultimasSimulacoes.data && ultimasSimulacoes.data.length > 0 ? (
-            <ul className="divide-y divide-[color:var(--color-hairline)]">
-              {ultimasSimulacoes.data.map((r) => (
-                <li key={r.id}>
-                  <Link
-                    href={`/admin/simulacoes/${r.id}`}
-                    className="block px-5 py-4 hover:bg-[color:var(--color-surface)] transition-colors"
-                  >
-                    <div className="flex items-center justify-between mb-1">
-                      <div className="font-medium text-[14px] capitalize">
-                        {r.setor} · {r.regime === "real" ? "Lucro Real" : "Lucro Presumido"}
-                      </div>
-                      <div className="font-mono text-[13px] text-[color:var(--color-brand)]">
-                        {formatBRL(Number(r.total), { compact: true })}
-                      </div>
-                    </div>
-                    <div className="text-[12px] text-[color:var(--color-ink-muted)] flex items-center gap-3">
-                      <span>Faturamento: {formatBRL(Number(r.faturamento), { compact: true })}</span>
-                      <span className="text-[color:var(--color-ink-faint)]">·</span>
-                      <span>{relativeTime(r.created_at)}</span>
-                    </div>
-                  </Link>
-                </li>
-              ))}
-            </ul>
-          ) : (
-            <Empty>Nenhuma simulação ainda.</Empty>
-          )}
-        </Card>
-      </div>
     </div>
   );
 }
 
-function Kpi({ label, value, href }: { label: string; value: string; href: string }) {
+function LinkVer({ href, rotulo = "Ver" }: { href: string; rotulo?: string }) {
   return (
-    <Link
-      href={href}
-      className="bg-[color:var(--color-paper)] p-6 hover:bg-[color:var(--color-surface)] transition-colors block"
-    >
-      <div className="font-mono text-[10px] uppercase tracking-[0.25em] text-[color:var(--color-ink-muted)] mb-3">
-        {label}
-      </div>
-      <div className="font-mono text-3xl lg:text-4xl tracking-tight text-[color:var(--color-ink)] leading-none">
-        {value}
-      </div>
+    <Link href={href} className="font-sans text-[12px] font-semibold normal-case tracking-normal text-[#3a40c9] hover:underline">
+      {rotulo} →
     </Link>
   );
-}
-
-function Card({
-  title,
-  href,
-  children,
-}: {
-  title: string;
-  href: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <div className="border border-[color:var(--color-hairline)] bg-[color:var(--color-paper)]">
-      <div className="flex items-center justify-between px-5 py-3 border-b border-[color:var(--color-hairline)]">
-        <h2 className="font-mono text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-ink-muted)]">
-          {title}
-        </h2>
-        <Link
-          href={href}
-          className="text-[11px] font-mono uppercase tracking-[0.2em] text-[color:var(--color-brand)] hover:underline"
-        >
-          Ver todos →
-        </Link>
-      </div>
-      {children}
-    </div>
-  );
-}
-
-function Empty({ children }: { children: React.ReactNode }) {
-  return (
-    <div className="px-5 py-12 text-center text-[13px] text-[color:var(--color-ink-faint)]">
-      {children}
-    </div>
-  );
-}
-
-function relativeTime(iso: string): string {
-  const date = new Date(iso);
-  const diffMs = Date.now() - date.getTime();
-  const sec = Math.floor(diffMs / 1000);
-  if (sec < 60) return "agora";
-  const min = Math.floor(sec / 60);
-  if (min < 60) return `há ${min} min`;
-  const h = Math.floor(min / 60);
-  if (h < 24) return `há ${h}h`;
-  const d = Math.floor(h / 24);
-  if (d < 30) return `há ${d}d`;
-  return date.toLocaleDateString("pt-BR");
 }

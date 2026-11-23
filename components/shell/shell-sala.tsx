@@ -8,6 +8,7 @@
 import type { ReactNode } from "react";
 import {
   LayoutDashboard, Newspaper, CircleCheckBig, FileText, MessageCircle, LifeBuoy,
+  Clock3, CalendarClock, KeyRound,
 } from "lucide-react";
 import { ArcheShell, type ShellGroup } from "./arche-shell";
 
@@ -20,11 +21,16 @@ const GROUPS: ShellGroup[] = [
       { key: "aprovacoes", label: "Aprovações", icon: CircleCheckBig, href: "/sala/aprovacoes" },
       { key: "documentos", label: "Documentos", icon: FileText, href: "/sala/documentos" },
       { key: "mensagens", label: "Mensagens", icon: MessageCircle, href: "/sala/mensagens" },
+      { key: "horas", label: "Horas técnicas", icon: Clock3, href: "/sala/horas" },
+      { key: "reunioes", label: "Reuniões", icon: CalendarClock, href: "/sala/reunioes" },
     ],
   },
   {
     titulo: "Conta",
-    itens: [{ key: "suporte", label: "Suporte", icon: LifeBuoy, href: "/sala/suporte" }],
+    itens: [
+      { key: "seguranca", label: "Segurança financeira", icon: KeyRound, href: "/sala/seguranca" },
+      { key: "suporte", label: "Suporte", icon: LifeBuoy, href: "/sala/suporte" },
+    ],
   },
 ];
 

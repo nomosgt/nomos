@@ -3,6 +3,7 @@ import { redirect } from "next/navigation";
 import { createClient } from "@/lib/supabase/server";
 import { formatBRL } from "@/lib/utils";
 import { ArrowUpRight, Bell, FileText, MessageCircle, TrendingUp, Clock } from "lucide-react";
+import { saudacao, dataLonga } from "@/components/shell/proto-ui";
 
 export const dynamic = "force-dynamic";
 
@@ -71,18 +72,16 @@ export default async function SalaDashboard() {
 
   return (
     <div className="space-y-10">
-      {/* Boas-vindas */}
+      {/* Boas-vindas — saudação do protótipo */}
       <div>
-        <div className="font-mono text-[11px] uppercase tracking-[0.25em] text-[color:var(--color-ink-muted)] mb-3">
-          Painel
+        <div className="font-mono text-[10.5px] uppercase tracking-[0.2em] text-[#7a7c95] mb-2">
+          {dataLonga()}
         </div>
-        <h1 className="font-serif text-3xl lg:text-4xl tracking-tight">
-          Olá, {s?.nome?.split(" ")[0] || "cliente"}.
+        <h1 className="font-serif text-[clamp(32px,3vw,44px)] font-light tracking-[-0.01em] leading-[1.05] text-[#0f1240]">
+          {saudacao()}, <em className="italic text-[#3a40c9]">{s?.nome?.split(" ")[0] || "cliente"}</em>.
         </h1>
         {s?.empresa && (
-          <p className="mt-2 text-[14px] text-[color:var(--color-ink-muted)]">
-            {s.empresa}
-          </p>
+          <p className="mt-2 text-[13.5px] text-[#6b6e88]">{s.empresa}</p>
         )}
       </div>
 
@@ -274,6 +273,9 @@ export default async function SalaDashboard() {
       <div className="grid grid-cols-1 md:grid-cols-3 gap-px bg-[color:var(--color-hairline)] border border-[color:var(--color-hairline)]">
         <Shortcut href="/sala/documentos" icon={FileText} title="Documentos" />
         <Shortcut href="/sala/mensagens" icon={MessageCircle} title="Mensagens" />
+        <Shortcut href="/sala/horas" icon={Clock} title="Horas técnicas" />
+        <Shortcut href="/sala/reunioes" icon={Bell} title="Reuniões" />
+        <Shortcut href="/sala/seguranca" icon={TrendingUp} title="Segurança financeira" />
         <Shortcut href="/sala/suporte" icon={MessageCircle} title="Suporte direto" />
       </div>
     </div>

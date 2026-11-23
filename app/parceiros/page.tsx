@@ -11,9 +11,11 @@ import { motion, AnimatePresence } from "framer-motion";
 import {
   LayoutDashboard, Users, FolderKanban, ClipboardCheck, Percent,
   FileText, ScrollText, Plus, Download, Pencil, Trash2,
-  Search, BookOpen,
+  Search, BookOpen, UserPlus, CalendarClock,
 } from "lucide-react";
 import { ArcheShell, type ShellGroup } from "@/components/shell/arche-shell";
+import { IndicacoesParceiro } from "@/components/parceiros/indicacoes-parceiro";
+import { ReunioesParceiro } from "@/components/parceiros/reunioes-parceiro";
 import {
   loadDB, saveDB, uid, fmtDate, diffDays, urgencia, exportCSV,
   fetchCentral,
@@ -33,7 +35,7 @@ import {
 } from "@/components/parceiros/ui";
 import { InsightsWidget } from "@/components/parceiros/insights-widget";
 
-type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios";
+type Tab = "painel" | "clientes" | "projetos" | "trabalhos" | "diario" | "comissoes" | "documentos" | "relatorios" | "indicar" | "reunioes";
 
 const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: string }> }[] = [
   { id: "painel", label: "Dashboard", icon: LayoutDashboard },
@@ -44,6 +46,8 @@ const NAV: { id: Tab; label: string; icon: React.ComponentType<{ className?: str
   { id: "comissoes", label: "Financeiro", icon: Percent },
   { id: "documentos", label: "Documentos", icon: FileText },
   { id: "relatorios", label: "Relatórios", icon: ScrollText },
+  { id: "indicar", label: "Indicar clientes", icon: UserPlus },
+  { id: "reunioes", label: "Reuniões", icon: CalendarClock },
 ];
 
 export default function ParceirosPage() {
@@ -131,6 +135,8 @@ export default function ParceirosPage() {
           {tab === "comissoes" && <Comissoes db={db} />}
           {tab === "documentos" && <Documentos db={db} mutate={mutate} />}
           {tab === "relatorios" && <Relatorios db={db} mutate={mutate} />}
+          {tab === "indicar" && <IndicacoesParceiro />}
+          {tab === "reunioes" && <ReunioesParceiro />}
         </motion.div>
       </AnimatePresence>
     </ArcheShell>
