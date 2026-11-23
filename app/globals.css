@@ -2,6 +2,48 @@
 
 @custom-variant dark (&:is(.dark *));
 
+/* ============================================================
+   Fontes OFICIAIS do protótipo (Site Oficial Arché.html) —
+   binários extraídos do próprio arquivo, servidos 1:1.
+   "Arché Sans" = os woff2 que o HTML embute como Open Sans;
+   "Arché Inter" = os woff2 que o HTML embute como Inter.
+   ============================================================ */
+@font-face {
+  font-family: "Arche Sans";
+  src: url("/fonts/arche-sans-300.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Arche Sans";
+  src: url("/fonts/arche-sans-400.woff2") format("woff2");
+  font-weight: 400;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Arche Sans";
+  src: url("/fonts/arche-sans-600.woff2") format("woff2");
+  font-weight: 600;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Arche Inter";
+  src: url("/fonts/arche-inter-300.woff2") format("woff2");
+  font-weight: 300;
+  font-style: normal;
+  font-display: swap;
+}
+@font-face {
+  font-family: "Arche Inter";
+  src: url("/fonts/arche-inter-500.woff2") format("woff2");
+  font-weight: 500;
+  font-style: normal;
+  font-display: swap;
+}
+
 @theme {
   /* Color palette ARCHÉ — branco frio big-4 + navy profundo + aço + dourado discreto */
   --color-background: #FBFBFC;
@@ -23,10 +65,12 @@
   --color-paper: #EAEBEF;          /* off-white levemente azulado — texto em fundo escuro (não conflita com shadcn) */
   --color-paper-dim: #B8BAC2;      /* cinza claro acinzentado p/ texto secundário em fundo escuro */
 
-  /* Fonts ARCHÉ — Open Sans única (protótipo oficial: serif/sans/mono = Open Sans) */
-  --font-sans: var(--font-opensans), system-ui, -apple-system, "Segoe UI", sans-serif;
-  --font-serif: var(--font-opensans), system-ui, sans-serif;
-  --font-mono: var(--font-opensans), system-ui, sans-serif;
+  /* Fonts ARCHÉ — binários exatos do protótipo primeiro; Google Open Sans
+     só como rede de segurança p/ glifos fora do subset. */
+  --font-sans: "Arche Sans", var(--font-opensans), system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-serif: "Arche Sans", var(--font-opensans), system-ui, sans-serif;
+  --font-mono: "Arche Sans", var(--font-opensans), system-ui, sans-serif;
+  --font-inter-proto: "Arche Inter", var(--font-inter), system-ui, sans-serif;
 
   /* Type scale (display) */
   --text-display-2xl: clamp(4.5rem, 11vw, 11rem);
