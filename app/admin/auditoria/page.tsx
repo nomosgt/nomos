@@ -34,11 +34,11 @@ export default async function AuditoriaPage() {
     tolerante<{ id: string; created_at: string; campo: string; valor_anterior: string | null; valor_novo: string | null; autor_nome: string | null; justificativa: string | null }>(
       admin.from("empresa_dados_audit").select("id, created_at, campo, valor_anterior, valor_novo, autor_nome, justificativa").order("created_at", { ascending: false }).limit(60),
     ),
-    tolerante<{ id: string; created_at: string; descricao: string; autor_tipo: string | null }>(
-      admin.from("atividade_historico").select("id, created_at, descricao, autor_tipo").order("created_at", { ascending: false }).limit(60),
+    tolerante<{ id: string; created_at: string; evento: string; autor: string | null }>(
+      admin.from("atividade_historico").select("id, created_at, evento, autor").order("created_at", { ascending: false }).limit(60),
     ),
-    tolerante<{ id: string; created_at: string; tipo: string; detalhe: string | null }>(
-      admin.from("analise_eventos").select("id, created_at, tipo, detalhe").order("created_at", { ascending: false }).limit(60),
+    tolerante<{ id: string; created_at: string; evento: string; detalhe: string | null; autor: string | null }>(
+      admin.from("analise_eventos").select("id, created_at, evento, detalhe, autor").order("created_at", { ascending: false }).limit(60),
     ),
   ]);
 
@@ -46,8 +46,8 @@ export default async function AuditoriaPage() {
     ...cad.map((e) => ({ id: "c" + e.id, quando: e.created_at, origem: "Cadastro", quem: e.autor_nome || "—", o_que: `${e.campo}: "${e.valor_anterior ?? "—"}" → "${e.valor_novo ?? "—"}"` })),
     ...caso.map((e) => ({ id: "k" + e.id, quando: e.created_at, origem: "Caso", quem: e.autor_nome || "—", o_que: `${e.campo}: "${e.valor_anterior ?? "—"}" → "${e.valor_novo ?? "—"}"` })),
     ...emp.map((e) => ({ id: "e" + e.id, quando: e.created_at, origem: "Dados empresariais", quem: e.autor_nome || "—", o_que: `${e.campo}: "${e.valor_anterior ?? "—"}" → "${e.valor_novo ?? "—"}"${e.justificativa ? ` (justificativa: ${e.justificativa})` : ""}` })),
-    ...ativ.map((e) => ({ id: "a" + e.id, quando: e.created_at, origem: "Atividade", quem: e.autor_tipo || "—", o_que: e.descricao })),
-    ...anal.map((e) => ({ id: "n" + e.id, quando: e.created_at, origem: "Análise", quem: "—", o_que: `${e.tipo}${e.detalhe ? ` — ${e.detalhe}` : ""}` })),
+    ...ativ.map((e) => ({ id: "a" + e.id, quando: e.created_at, origem: "Atividade", quem: e.autor || "—", o_que: e.evento })),
+    ...anal.map((e) => ({ id: "n" + e.id, quando: e.created_at, origem: "Análise", quem: e.autor || "—", o_que: `${e.evento}${e.detalhe ? ` — ${e.detalhe}` : ""}` })),
   ].sort((a, b) => b.quando.localeCompare(a.quando)).slice(0, 120);
 
   const CORES: Record<string, "ok" | "warn" | "bad" | "info"> = {

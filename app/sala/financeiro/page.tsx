@@ -26,7 +26,7 @@ export default async function SalaFinanceiroPage() {
     supabase.from("client_cases").select("id, titulo, potencial_estimado, valor_recuperado").eq("client_id", uid).neq("status", "arquivado"),
     supabase
       .from("case_financeiro")
-      .select("id, created_at, estagio, valor, descricao, case_titulo")
+      .select("id, created_at, tipo, valor, descricao, case_titulo")
       .eq("client_id", uid)
       .order("created_at", { ascending: false })
       .limit(200),
@@ -56,8 +56,8 @@ export default async function SalaFinanceiroPage() {
             {lanc.map((l) => (
               <div key={l.id} className="flex flex-wrap items-center gap-3 border-b border-[#f1eee8] pb-2 last:border-0">
                 <span className="font-mono text-[11px] text-[#8a8ca3]">{fmtData(l.created_at)}</span>
-                <StTag tone={l.estagio === "recuperado" ? "ok" : l.estagio === "ajuste" ? "warn" : "info"}>
-                  {ESTAGIO_LABEL[l.estagio] || l.estagio}
+                <StTag tone={l.tipo === "recuperado" ? "ok" : l.tipo === "ajuste" ? "warn" : "info"}>
+                  {ESTAGIO_LABEL[l.tipo] || l.tipo}
                 </StTag>
                 <span className="min-w-0 flex-1 truncate text-[13px] text-[#14173d]">
                   {l.descricao || l.case_titulo || "Lançamento"}
