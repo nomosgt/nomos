@@ -65,7 +65,7 @@ export function novoContatoTemplate(data: {
     v ? `<tr><td style="padding:6px 12px;color:#666;font-size:13px;">${l}</td><td style="padding:6px 12px;font-size:14px;">${escape(v)}</td></tr>` : "";
 
   return `
-  <div style="font-family:-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fafafa;padding:32px;">
+  <div style="font-family:'Open Sans',-apple-system,BlinkMacSystemFont,'Segoe UI',Helvetica,Arial,sans-serif;max-width:560px;margin:0 auto;background:#fafafa;padding:32px;">
     <h2 style="margin:0 0 4px;font-size:20px;color:#0e1525;">Novo contato — Arché</h2>
     <p style="margin:0 0 24px;color:#666;font-size:13px;">Origem: ${escape(data.origem || "contato")}</p>
     <table style="width:100%;background:white;border-collapse:collapse;">
