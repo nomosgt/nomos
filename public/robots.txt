@@ -1,0 +1,7 @@
+User-agent: *
+Disallow: /prototipo.html
+Disallow: /prototipo
+Disallow: /admin
+Disallow: /sala
+Disallow: /parceiros
+Disallow: /acesso
